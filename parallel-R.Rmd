@@ -1,0 +1,360 @@
+---
+layout: default
+title: Parallel processing in R
+---
+
+# 1. Threading, particularly for linear algebra
+
+### 2.2.1) R
+
+Threading in R is limited to linear algebra, provided R is linked against a threaded BLAS.
+
+Here's some code that illustrates
+the speed of using a threaded BLAS:
+
+```{r, R-linalg, eval=FALSE}
+```
+
+Here the elapsed time indicates that using four threads gave us a two times (2x) speedup in terms of real time, while the user time indicates that the threaded calculation took a bit more total processing time (combining time across all processors) because of the overhead of using multiple threads. 
+
+Note that the code also illustrates use of an R package that can control the number of threads from within R.
+
+
+### 2.4.2) Conflict between openBLAS and some parallel functionality in R
+
+There are conflicts between forking in R and threaded BLAS that in
+some cases have affected:
+
+- *foreach* (when using the *parallel* (and *multicore*) backends),
+- *mclapply*, and
+- *parLapply* and *parSapply* (only if *cluster* is set up with forking -- not the default).
+
+The result is that if linear algebra is used within your parallel
+code, R hangs. This has affected both openBLAS and ACML in the past, 
+though it may not affect current versions of these software.
+
+If you find your R session hanging, before running an R job that does linear algebra,
+you can set OMP_NUM_THREADS to 1 to prevent the BLAS from doing
+threaded calculations. Alternatively, you can use MPI as the parallel
+backend (via *doMPI* in place of *doParallel*).
+You may also be able to convert your code to use *par{L,S}apply*
+with the default PSOCK type and avoid *foreach* entirely.
+
+
+### 2.4.3) Conflict between threaded BLAS and R profiling
+
+There is also a conflict between threaded BLAS and R profiling, so
+if you are using *Rprof*, you may need to set OMP_NUM_THREADS
+to one. This has definitely occurred with openBLAS; I'm not sure about
+other threaded BLAS libraries.
+
+**Caution**: Note that I don't pay any attention to possible
+danger in generating random numbers in separate processes in this Section. More on
+this issue in Section 4.
+
+
+
+## 3.1) Parallel loops and *apply* functions in R
+
+### 3.1.1) Parallel for loops with *foreach*
+
+A simple way to exploit parallelism in R  is to use the *foreach* package to do a for loop in parallel.
+
+The *foreach* package provides a *foreach* command that
+allows you to do this easily. *foreach* can use a variety of
+parallel ``back-ends''. For our purposes, the main one is use of the *parallel* package to use shared
+memory cores. When using *parallel* as the
+back-end, you should see multiple processes (as many as you registered;
+ideally each at 100%) when you  monitor CPU usage. The multiple processes
+are created by forking or using sockets. *foreach* can also use *Rmpi* or *SNOW* to access cores in
+a distributed memory setting; please see the tutorial on distributed parallel processing mentioned above.
+
+Here we'll parallelize leave-one-out cross-validation for a random forest model. An iteration involves holding out a data point, fitting the model with all the other data points, and then predicting the held-out point.
+
+```{r, foreach}
+```
+(Note that the printed statements from `cat` are not showing up in the creation of this document but should show if you run the code.)
+
+ Note that *foreach*
+also provides functionality for collecting and managing
+the results to avoid some of the bookkeeping
+you would need to do if writing your own standard for loop.
+The result of *foreach* will generally be a list, unless 
+we request the results be combined in different way, as we do here using `.combine = c`.
+
+You can debug by running serially using *%do%* rather than
+*%dopar%*. Note that you may need to load packages within the
+*foreach* construct to ensure a package is available to all of
+the calculations.
+
+It is possible to use foreach to parallelize over nested loops. Suppose that the outer loop has too few tasks to effectively parallelize over and you also want to parallelize over the inner loop as well. Provided the calculations in each task (defined based on the pair of indexes from both loops) are independent of the other tasks, you can define two foreach loops, with the outer foreach using the `%:%` operator and the inner foreach using the usual `%dopar%` operator. More details can be found [in this vignette](https://cran.r-project.org/web/packages/foreach/vignettes/nested.pdf). 
+
+
+### 3.1.2) Parallel apply functionality
+
+The *parallel* package has the ability to parallelize the various
+*apply* functions (apply, lapply, sapply, etc.). It's a bit hard to find the [vignette for the parallel package](http://stat.ethz.ch/R-manual/R-devel/library/parallel/doc/parallel.pdf)
+because parallel is not listed as one of
+the contributed packages on CRAN (it gets installed with R by default).
+
+We'll consider parallel lapply and sapply. These rely on having started a cluster using *cluster*, which  uses the PSOCK mechanism as in the SNOW package - starting new jobs via *Rscript* 
+and communicating via a technology called sockets.
+
+```{r, parallel_lsApply, eval=TRUE}
+```
+
+Here the miniscule user time is probably because the time spent in the worker processes is not counted at the level of the overall master process that dispatches the workers.
+
+For help with these functions and additional related parallelization functions (including *parApply*), see `help(clusterApply)`.
+
+*mclapply* is an alternative that uses forking to start up the worker processes.
+
+```{r, mclapply, eval=TRUE}
+```
+
+Note that some R packages can directly interact with the parallelization
+packages to work with multiple cores. E.g., the *boot* package
+can make use of the *parallel* package directly. 
+
+### 3.1.3) Loading packages and accessing global variables within your parallel tasks
+
+Whether you need to explicitly load packages and export global variables from the master process to the parallelized worker processes depends on the details of how you are doing the parallelization.
+
+With *foreach* with the *doParallel* backend, parallel *apply* statements (starting the cluster via *makeForkCluster*, instead of the usual *makeCluster*), and *mclapply*, packages and global variables in the main R process are automatically available to the worker tasks without any work on your part. This is because all of these approaches fork the original R process, thereby creating worker processes with the same state as the original R process. Interestingly, this means that global variables in the forked worker processes are just references to the objects in memory in the original R process. So the additional processes do not use additional memory for those objects (despite what is shown in *top*) and there is no time involved in making copies. However, if you modify objects in the worker processes then copies are made. 
+
+In contrast, with parallel *apply* statements when starting the cluster using the standard *makeCluster* (which sets up a so-called *PSOCK* cluster, starting the R worker processes via *Rscript*), one needs to load packages within the code that is executed in parallel. In addition one needs to use *clusterExport* to tell R which objects in the global environment should be available to the worker processes. This involves making as many copies of the objects as there are worker processes, so one can easily exceed the physical memory (RAM) on the machine if one has large objects, and the copying of large objects will take time. 
+
+
+
+
+## 5.1) Ensuring separate sequences in R
+
+In R, the  *rlecuyer* package deals with this.
+The L'Ecuyer algorithm has a period of $2^{191}$, which it divides
+into subsequences of length $2^{127}$. 
+
+
+### 5.1.1) With the parallel package
+
+Here's how you initialize independent sequences on different processes
+when using the *parallel* package's parallel apply functionality
+(illustrated here with *parSapply*).
+
+```{r, RNG-apply, eval=TRUE}
+```
+
+
+If you want to explicitly move from stream to stream, you can use
+*nextRNGStream*. For example:
+
+```{r, RNGstream, eval=FALSE}
+```
+
+When using *mclapply*, you can use the *mc.set.seed* argument
+as follows (note that *mc.set.seed* is TRUE by default, so you
+should get different seeds for the different processes by default),
+but one needs to invoke `RNGkind("L'Ecuyer-CMRG")`
+to get independent streams via the L'Ecuyer algorithm.
+
+```{r, RNG-mclapply, eval=TRUE}
+```
+
+The documentation for *mcparallel* gives more information about
+reproducibility based on *mc.set.seed*.
+
+
+### 5.1.2) With foreach
+
+
+#### Getting independent streams
+
+One question is whether *foreach* deals with RNG correctly. This
+is not documented, but the developers (Revolution Analytics) are well
+aware of RNG issues. Digging into the underlying code reveals that
+the *doParallel* backend invokes *mclapply*
+and sets *mc.set.seed* to TRUE by default. This suggests that
+the discussion above r.e. *mclapply* holds for *foreach*
+as well, so you should do `RNGkind("L'Ecuyer-CMRG")`
+before your foreach call. 
+
+#### Ensuring reproducibility
+
+While using *foreach* as just described should ensure that the
+streams on each worker are are distinct, it does not ensure reproducibility
+because task chunks may be assigned to workers differently in different
+runs and the substreams are specific to workers, not to tasks. 
+
+For backends other than *doMPI*, such as *doParallel*, there is a package
+called *doRNG* that ensures that *foreach* loops are reproducible. (For *doMPI* you simply pass `.options.mpi = list(seed = your_seed_value_here)` as an additional argument to *foreach*.)
+
+Here's how you do it:
+
+```{r, RNG-doRNG}
+```
+
+You can ignore the warnings about closing unused connections printed out above.
+
+
+## 3.1) R
+
+### 3.1.1) *foreach* with the *doMPI* and *doSNOW* backends
+
+Just as we used *foreach* in a shared memory context, we can
+use it in a distributed memory context as well, and R will handle
+everything behind the scenes for you. 
+
+#### *doMPI*
+
+Start R through the *mpirun* command as discussed above, either
+as a batch job or for interactive use. We'll only ask for 1 process
+because the worker processes will be started automatically from within R (but using the machine names information passed to mpirun).
+
+```
+mpirun -machinefile .hosts -np 1 R CMD BATCH -q --no-save doMPI.R doMPI.out
+mpirun -machinefile .hosts -np 1 R --no-save
+```
+
+Here's R code for using *Rmpi* as the back-end to *foreach*.
+If you call *startMPIcluster* with no arguments, it will start
+up one fewer worker processes than the number of hosts times slots given to mpirun
+so your R code will be more portable. 
+
+```{r, doMPI, eval=FALSE, cache=TRUE}
+```
+
+```{r, doMPI-test, engine='bash'}
+mpirun -machinefile .hosts -np 1 R CMD BATCH -q --no-save doMPI.R doMPI.out
+cat doMPI.out
+```
+
+A caution concerning Rmpi/doMPI: when you invoke `startMPIcluster()`,
+all the slave R processes become 100% active and stay active until
+the cluster is closed. In addition, when *foreach* is actually
+running, the master process also becomes 100% active. So using this
+functionality involves some inefficiency in CPU usage. This inefficiency
+is not seen with a sockets cluster (Section 3.1.4) nor when using other
+Rmpi functionality - i.e., starting slaves with *mpi.spawn.Rslaves*
+and then issuing commands to the slaves.
+
+If you specified `-np` with more than one process then as with the C-based
+MPI job above, you can control the threading via OMP_NUM_THREADS
+and the -x flag to *mpirun*. Note that this only works when the
+R processes are directly started by *mpirun*, which they are
+not if you set -np 1. The *maxcores* argument to *startMPIcluster()*
+does not seem to function (perhaps it does on other systems).
+
+Sidenote: You can use *doMPI* on a single node, which might be useful for avoiding
+some of the conflicts between R's forking functionality and openBLAS that
+can cause R to hang when using *foreach* with *doParallel*.
+
+#### *doSNOW*
+
+The *doSNOW* backend has the advantage that it doesn't need to have MPI installed on the system. MPI can be tricky to install and keep working, so this is an easy approach to using *foreach* across multiple machines.
+
+Simply start R as you usually would. 
+
+Here's R code for using *doSNOW* as the back-end to *foreach*. Make sure to use the `type = "SOCK"` argument or *doSNOW* will actually use MPI behind the scenes. 
+
+```{r, doSNOW, eval=FALSE, cache=TRUE}
+```
+
+#### Loading packages and accessing variables within your parallel tasks
+
+When using *foreach* with multiple machines, you need to use the *.packages* argument (or load the package in the code being run in parallel) to load any packages needed in the code. You do not need to explicitly export variables from the master process to the workers. Rather, *foreach* determines which variables in the global environment of the master process are used in the code being run in parallel and makes copies of those in each worker process. Note that these variables are read-only on the workers and cannot be modified (if you try to do so, you'll notice that *foreach* actually did not make copies of the variables that your code tries to modify). 
+
+### 3.1.2) Using pbdR
+
+There is a project to enhance R's capability for distributed
+memory processing called [pbdR](http://r-pbd.org). For an extensive tutorial, see the
+[pbdDEMO vignette](https://github.com/wrathematics/pbdDEMO/blob/master/inst/doc/pbdDEMO-guide.pdf?raw=true).
+ *pbdR* is designed for
+SPMD processing in batch mode, which means that you start up multiple
+processes in a non-interactive fashion using mpirun. The same code
+runs in each R process so you need to have the code behavior depend
+on the process ID.
+
+*pbdR* provides the following capabilities:
+ - the ability to do some parallel apply-style computations (this section),
+ - the ability to do distributed linear algebra by interfacing to *ScaLapack* (see Section 4), and
+ - an alternative to *Rmpi* for interfacing with MPI (see Section 5).
+
+
+Personally, I think the second of the three is the most exciting as
+it's a functionality not readily available in R or even more generally
+in other readily-accessible software.
+
+Let's see parallel-apply style computations in pbdR.
+
+Here's some basic syntax for doing a distributed *apply()* on
+a matrix that is on one of the workers. So in this case, the matrix is not initially distributed to the workers -- that is done as part of the *pbdApply* computation. (One can also use *pbdApply* on matrices that are already distributed, and this is of course recommended for large matrices -- see Section 4.) 
+
+As mentioned above, pbdR code is always run in batch mode, with the same code running on all of the processes. This means that you often need to explicitly build in logic about which process should execute a given piece of code, including print statements. Here the check for `comm.rank() == 0` allows us to only create the matrix and call some print statements on the master node (rank 0).
+
+```{r, pbd-apply, cache=TRUE, eval=FALSE}
+```
+
+
+
+```{r, pbd-apply-example, engine='bash'}
+mpirun -machinefile .hosts -np 4 Rscript pbd-apply.R > pbd-apply.out
+cat pbd-apply.out
+```
+
+In this case it's a fair amount slower to parallelize the calculation than just to do it in R using *rowSums()*, because of the overhead of communication (including passing the data) with the workers.
+
+
+### 3.1.3) Using parallel apply functionality in Rmpi
+
+*Rmpi* is a package that provides MPI capabilities from R, including low-level MPI type calls (see Section 5). It also provides high-level wrapper functions that use MPI behind the scenes, including parallel apply functionality for operating on lists (and vectors) with functions such as *mpi.parSapply*. 
+
+The documentation (see `help(mpi.parSapply)`) documents a number of confusingly-named functions. It appears that they are basically multi-node versions of the analogous *parSapply* and related functions. 
+
+```{r, mpi.parSapply, eval=FALSE}
+```
+
+```{r, mpi.parSapply-example, engine='bash'}
+mpirun -machinefile .hosts -np 1 R CMD BATCH -q --no-save mpi.parSapply.R mpi.parSapply.out
+cat mpi.parSapply.out
+```
+
+In some cases, it may be useful to specify *job.num* when the number of tasks is bigger than the number of worker processes to ensure load-balancing.
+
+### 3.1.4) Using sockets
+
+One can also set up a cluster with the worker processes communicating via sockets. You just need to specify
+a character vector with the machine names as the input to *makeCluster()*. A nice thing about this is that it doesn't involve any of the complications of working with needing MPI installed.
+
+```{r, sockets, cache=TRUE}
+```
+
+Note the use of *clusterExport*, needed to make variables in the master process available to the workers; this involves making a copy of each variable for each worker process. You'd also need to load any packages used in the code being run in parallel in that code. 
+
+### 3.1.5) The *partools* package
+
+*partools* is a somewhat new package developed by Norm Matloff at UC-Davis. He has the perspective that Spark/Hadoop are not the right tools in many cases when doing statistics-related work and has developed some simple tools for parallelizing computation across multiple nodes, also referred to as *Snowdoop*. The tools make use of the key idea in Hadoop of a distributed file system and distributed data objects but avoid the complications of trying to ensure fault tolerance, which is critical only on very large clusters of machines.
+
+I won't go into details, but *partools* allows you to split up your data across multiple nodes and then read the data into R in parallel across R sessions running on those nodes, all controlled from a single master R session. You can then do operations on the subsets and gather results back to the master session as needed. One point that confused me in the *partools* vignette is that it shows how to split up a dataset that you can read into your R session, but it's not clear what one does if the dataset is too big to read into a single R session. 
+
+## Other parallel functionality in R
+
+One can use *mcparallel* in the *parallel* package to
+send different chunks of code to different processes. Here we would
+need to manage the number of tasks so that we don't have more tasks
+than available cores.
+
+```{r, mcparallel, eval=TRUE}
+```
+
+Note that *mcparallel* also allows the use of the *mc.set.seed*
+argument as with *mclapply*.
+
+Note that on the cluster, one should create only as many parallel
+blocks of code as were requested when submitting the job.
+
+Now let's consider parallel evaluation of a vectorized function. This
+will often only be worthwhile on very long vectors and for computationally
+intensive calculations. (The *Matern* call here is more time-consuming
+than *exp*).
+
+```{r, pvec, eval=TRUE}
+```
