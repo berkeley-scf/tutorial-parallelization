@@ -4,9 +4,11 @@ layout: default
 author: Christopher Paciorek
 ---
 
-## 1. This Tutorial
+## 1 This Tutorial
 
-This tutorial covers the use of parallelization (on either one machine or multiple machines/nodes) in Python, R, MATLAB and C/C++. 
+THIS TUTORIAL IS UNDER CONSTRUCTION. The Python and R pages are still undergoing major changes.
+
+This tutorial covers the use of parallelization (on either one machine or multiple machines/nodes) in Python, R, MATLAB and C/C++. Please click on the links above for material specific to each language.
 
 You should be able to replicate much of what is covered here provided you have the relevant software on your computer, but some of the parallelization approaches may not work on Windows.
 
@@ -18,9 +20,9 @@ Materials for this tutorial, including the Markdown files and associated code fi
 git clone https://github.com/berkeley-scf/tutorial-parallelization
 ```
 
-This tutorial by Christopher Paciorek is licensed under a Creative Commons Attribution 3.0 Unported License.
+This tutorial by Christopher Paciorek of the UC Berkeley Statistical Computing Facility is licensed under a Creative Commons Attribution 3.0 Unported License.
 
-## 2. Some useful terminology
+## 2 Some useful terminology
 
 ### 2.1 Computer architecture
 
@@ -54,7 +56,7 @@ communicating with them via a communication technology called sockets.
   - load-balanced: when all the cores that are part of a computation are busy for the entire period of time the computation is running.
   
  
-## 3. Types of parallel processing
+## 3 Types of parallel processing
 
 There are two basic flavors of parallel processing (leaving aside
 GPUs): shared memory (single machine) and distributed memory (multiple machines). With shared memory, multiple
@@ -63,7 +65,7 @@ memory, you have multiple nodes, each with their own memory. You can
 think of each node as a separate computer connected by a fast network. 
 
 
-### 3.1. Shared memory
+### 3.1 Shared memory
 
 For shared memory parallelism, each core is accessing the same memory
 so there is no need to pass information (in the form of messages)
@@ -85,7 +87,7 @@ Threads generally do share objects in memory, thereby allowing us to have a sing
 
 One very common use of threading is for linear algebra, using threaded linear alebra packages accessed from Python, R, MATLAB, or C/C++.
 
-### 3.2. Distributed memory
+### 3.2 Distributed memory
 
 Parallel programming for distributed memory parallelism requires passing
 messages containing information (code, data, etc.) between the different nodes. 
@@ -94,7 +96,7 @@ A standard protocol for passing messages is MPI, of which there are various vers
 
 Tools such as ipyparallel, Dask and Ray in Python and R's future package all manage the work of moving information between nodes for you (and don't generally use MPI). 
 
-### 3.3. Other type of parallel processing
+### 3.3 Other type of parallel processing
 
 We won't cover either of these in this tutorial.
 
@@ -115,7 +117,7 @@ memory environment, using the MapReduce approach.
 
 Note that Dask provides a lot of the same functionality as Spark, allowing one to create distributed datasets where pieces of the dataset live on different machines but can be treated as a single dataset from the perspective of the user.
 
-# 4. Parallelization strategies
+# 4 Parallelization strategies
 
 Some of the considerations that apply when thinking about how effective a given parallelization approach will be include:
 

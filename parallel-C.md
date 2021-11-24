@@ -262,26 +262,20 @@ There are C (*mpicc*) and C++ (*mpic++*) compilers for MPI programs (*mpicxx* an
 I'll use the MPI C++ compiler
 even though the code is all plain C code.
 
-```bash
-echo 'gandalf slots=1' > .hosts
-echo 'radagast slots=1' >> .hosts
-echo 'arwen slots=2' >> .hosts
-```
+Then we'll run the executable via `mpirun`. Here the code will just run on my single machine, called `arwen`.
+See Section 3.3 for details on how to run on multiple machines.
+
 
 ```bash
 mpicxx mpiHello.c -o mpiHello
-cat .hosts # what hosts do I expect it to run on?
-mpirun -machinefile .hosts -np 4 mpiHello
+mpirun -np 4 mpiHello
 ```
 
 Here's the output we would expect:
 
 ```
-## gandalf slots=1
-## radagast slots=1
-## arwen slots=2
-## Hello from processor 0 of 4 on gandalf
-## Hello from processor 1 of 4 on radagast
+## Hello from processor 0 of 4 on arwen
+## Hello from processor 1 of 4 on arwen
 ## Hello from processor 2 of 4 on arwen
 ## Hello from processor 3 of 4 on arwen
 ```
@@ -328,3 +322,56 @@ QUAD_MPI:
 
 23 November 2021 03:28:36 PM
 ```
+
+## 3.3 Starting MPI-based jobs
+
+MPI-based executables require that you start your process(es) in a special way via the *mpirun* command. Note that *mpirun*, *mpiexec* and *orterun* are synonyms under *openMPI*. 
+
+The basic requirements for starting such a job are that you specify the number of processes you want to run and that you indicate what machines those processes should run on. Those machines should be networked together such that MPI can ssh to the various machines without any password required.
+
+### 3.3.1 Running an MPI job with machines specified manually
+
+
+There are two ways to tell *mpirun* the machines on which to run the worker processes.
+
+First, we can pass the machine names directly, replicating the name
+if we want multiple processes on a single machine. In the example here, these are machines accessible to me, and you would need to replace those names with the names of machines you have access to. You'll need to [set up SSH keys](http://statistics.berkeley.edu/computing/sshkeys) so that you can access the machines without a password.
+
+
+```bash
+mpirun --host gandalf,radagast,arwen,arwen -np 4 hostname
+```
+
+Alternatively, we can create a file with the relevant information.
+
+```bash
+echo 'gandalf slots=1' > .hosts
+echo 'radagast slots=1' >> .hosts
+echo 'arwen slots=2' >> .hosts
+mpirun -machinefile .hosts -np 4 hostname
+```
+
+One can also just duplicate a given machine name as many times as desired, rather than using `slots`.
+
+### 3.3.2 Running an MPI job within a Slurm job
+
+If you are running your code as part of a job submitted to Slurm, you generally won't need to pass the *machinefile* or *np* arguments as MPI will get that information from Slurm. So you can simply run your executable, in this case first checking which machines mpirun is using:
+
+```bash
+mpirun hostname
+mpirun quad_mpi
+```
+
+### 3.3.3 Additional details
+
+To limit the number of threads for each process, we can tell *mpirun*
+to export the value of *OMP_NUM_THREADS* to the processes. E.g., calling a C program, *quad_mpi*:
+
+```bash
+export OMP_NUM_THREADS=2
+mpirun -machinefile .hosts -np 4 -x OMP_NUM_THREADS quad_mpi
+```
+
+There are additional details involved in carefully controlling how processes are allocated to nodes, but the default arguments for mpirun should do a reasonable job in many situations. 
+
+
