@@ -16,10 +16,11 @@ Threading in R is limited to linear algebra, provided R is linked against a thre
 The BLAS is the library of basic linear algebra operations (written in
 Fortran or C). A fast BLAS can greatly speed up linear algebra
 relative to the default BLAS on a machine. Some fast BLAS libraries
-are 
- - Intel's *MKL*; may be available for educational use for free
- - *OpenBLAS*; open source and free
- - *vecLib* for Macs; provided with your Mac
+are
+
+  - Intel's *MKL*; may be available for educational use for free
+  - *OpenBLAS*; open source and free
+  - *vecLib* for Macs; provided with your Mac
 
 
 In addition to being fast when used on a single core, all of these BLAS libraries are
@@ -159,7 +160,9 @@ out <- foreach(i = seq_len(30)) %dopar% {
 out[1:3]
 
 ## Replicate our cross-validation from future_lapply.
-## Use %dorng% instead of the standard %dopar% to safely generate random numbers in parallel (Section 5)
+
+## Use %dorng% instead of the standard %dopar% to safely
+## generate random numbers in parallel (Section 5)
 library(doRNG)
 out <- foreach(i = seq_along(Y), .combine = c) %dorng% {
     looFit(i, Y, X)
@@ -190,7 +193,7 @@ If you're working with large objects, making a copy of the objects for each
 of the worker processes can be a significant time cost and can greatly increase
 your memory use.
 
-On non-Windows machines, the `multicore` plan (not available on Windows or in RStudio) forks the main R process.
+The `multicore` plan (not available on Windows or in RStudio) forks the main R process.
 
 ```{r, eval=FALSE}
 plan(multicore, workers = 4)
@@ -221,7 +224,8 @@ plan(cluster, workers = workers)
 # Check we are getting workers in the right places:
 tmp <- future_sapply(seq_along(workers),
                      function(i)
-                       cat("Worker running as process", Sys.getpid(), "on", Sys.info()[['nodename']], "\n"))
+                       cat("Worker running as process", Sys.getpid(),
+                           "on", Sys.info()[['nodename']], "\n"))
 # Now use parallel_lapply, foreach, etc. as before
 ```
 
@@ -233,7 +237,8 @@ plan(cluster, workers = workers)
 # and verify we're actually connected to the workers:
 future_sapply(seq_along(workers),
               function(i)
-                cat("Worker running in process", Sys.getpid(), "on", Sys.info()[['nodename']], "\n"))
+                cat("Worker running in process", Sys.getpid(),
+                    "on", Sys.info()[['nodename']], "\n"))
 # Now use parallel_lapply, parallel_sapply, foreach, etc. as before
 ```
 
@@ -254,8 +259,9 @@ cl <- makeCluster(nCores)
 # clusterExport(cl, c('x', 'y')) # if the processes need objects
 # from master's workspace (not needed here as no global vars used)
 
+# First approach: parLapply
 result1 <- parLapply(cl, seq_along(Y), looFit, Y, X)
-
+# Second approach: mclapply
 result2 <- mclapply(seq_along(Y), looFit, Y, X)
 ```
 
@@ -307,7 +313,7 @@ cl = makeCluster(machines, type = "SOCK")
 parSapply(cl, 1:5, function(i) return(mean(1:i)))
 
 # With foreach:
-library(doSNOW)
+library(doSNOW, quietly = TRUE)
 registerDoSNOW(cl)
 # Now use foreach as usual
 ```
@@ -414,6 +420,8 @@ registerDoRNG(seed = 1)
 ## Now use foreach with %dopar%
 ```
 
+### mclapply
+
 When using *mclapply*, you can use the *mc.set.seed* argument
 as follows (note that *mc.set.seed* is TRUE by default, so you
 should get different seeds for the different processes by default),
@@ -430,7 +438,7 @@ res <- mclapply(seq_len(Y), looFit, Y, X, mc.cores = 4,
 
 # 6 The *partools* package
 
-*partools* is a package developed by Norm Matloff at UC-Davis. He has the perspective that Spark/Hadoop are not the right tools in many cases when doing statistics-related work and has developed some simple tools for parallelizing computation across multiple nodes, also referred to as *Snowdoop*. The tools make use of the key idea in Hadoop of a distributed file system and distributed data objects but avoid the complications of trying to ensure fault tolerance, which is critical only on very large clusters of machines.
+*partools* is a package developed by Norm Matloff at UC-Davis. He has the perspective that Spark/Hadoop are not the right tools in many cases when doing statistics-related work and has developed some simple tools for parallelizing computation across multiple nodes, also referred to as *Snowdoop*. The tools make use of the key idea in Spark/Hadoop of a distributed file system and distributed data objects but avoid the complications of trying to ensure fault tolerance, which is critical only on very large clusters of machines.
 
 I won't go into details, but *partools* allows you to split up your data across multiple nodes and then read the data into R in parallel across R sessions running on those nodes, all controlled from a single master R session. You can then do operations on the subsets and gather results back to the master session as needed. One point that confused me in the *partools* vignette is that it shows how to split up a dataset that you can read into your R session, but it's not clear what one does if the dataset is too big to read into a single R session. 
 

@@ -4,9 +4,9 @@ layout: default
 author: Christopher Paciorek
 ---
 
-## 1 This Tutorial
+## 1 This tutorial
 
-THIS TUTORIAL IS UNDER CONSTRUCTION. The Python and R pages are still undergoing major changes.
+THIS TUTORIAL IS UNDER CONSTRUCTION. The Python page is still undergoing major changes.
 
 This tutorial covers the use of parallelization (on either one machine or multiple machines/nodes) in Python, R, MATLAB and C/C++. Please click on the links above for material specific to each language.
 

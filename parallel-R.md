@@ -20,9 +20,11 @@ against a threaded BLAS.
 
 The BLAS is the library of basic linear algebra operations (written in
 Fortran or C). A fast BLAS can greatly speed up linear algebra relative
-to the default BLAS on a machine. Some fast BLAS libraries are - Intel’s
-*MKL*; may be available for educational use for free - *OpenBLAS*; open
-source and free - *vecLib* for Macs; provided with your Mac
+to the default BLAS on a machine. Some fast BLAS libraries are
+
+-   Intel’s *MKL*; may be available for educational use for free
+-   *OpenBLAS*; open source and free
+-   *vecLib* for Macs; provided with your Mac
 
 In addition to being fast when used on a single core, all of these BLAS
 libraries are threaded - if your computer has multiple cores and there
@@ -196,7 +198,9 @@ out[1:3]
 
 ``` r
 ## Replicate our cross-validation from future_lapply.
-## Use %dorng% instead of the standard %dopar% to safely generate random numbers in parallel (Section 5)
+
+## Use %dorng% instead of the standard %dopar% to safely
+## generate random numbers in parallel (Section 5)
 library(doRNG)
 ```
 
@@ -243,8 +247,8 @@ If you’re working with large objects, making a copy of the objects for
 each of the worker processes can be a significant time cost and can
 greatly increase your memory use.
 
-On non-Windows machines, the `multicore` plan (not available on Windows
-or in RStudio) forks the main R process.
+The `multicore` plan (not available on Windows or in RStudio) forks the
+main R process.
 
 ``` r
 plan(multicore, workers = 4)
@@ -285,13 +289,14 @@ plan(cluster, workers = workers)
 # Check we are getting workers in the right places:
 tmp <- future_sapply(seq_along(workers),
                      function(i)
-                       cat("Worker running as process", Sys.getpid(), "on", Sys.info()[['nodename']], "\n"))
+                       cat("Worker running as process", Sys.getpid(),
+                           "on", Sys.info()[['nodename']], "\n"))
 ```
 
-    ## Worker running as process 437717 on arwen 
-    ## Worker running as process 437825 on arwen 
-    ## Worker running as process 3502647 on beren 
-    ## Worker running as process 3502737 on beren
+    ## Worker running as process 439749 on arwen 
+    ## Worker running as process 439869 on arwen 
+    ## Worker running as process 3504324 on beren 
+    ## Worker running as process 3504414 on beren
 
 ``` r
 # Now use parallel_lapply, foreach, etc. as before
@@ -309,7 +314,8 @@ plan(cluster, workers = workers)
 # and verify we're actually connected to the workers:
 future_sapply(seq_along(workers),
               function(i)
-                cat("Worker running in process", Sys.getpid(), "on", Sys.info()[['nodename']], "\n"))
+                cat("Worker running in process", Sys.getpid(),
+                    "on", Sys.info()[['nodename']], "\n"))
 # Now use parallel_lapply, parallel_sapply, foreach, etc. as before
 ```
 
@@ -333,8 +339,9 @@ cl <- makeCluster(nCores)
 # clusterExport(cl, c('x', 'y')) # if the processes need objects
 # from master's workspace (not needed here as no global vars used)
 
+# First approach: parLapply
 result1 <- parLapply(cl, seq_along(Y), looFit, Y, X)
-
+# Second approach: mclapply
 result2 <- mclapply(seq_along(Y), looFit, Y, X)
 ```
 
@@ -413,12 +420,8 @@ parSapply(cl, 1:5, function(i) return(mean(1:i)))
 
 ``` r
 # With foreach:
-library(doSNOW)
+library(doSNOW, quietly = TRUE)
 ```
-
-    ## Loading required package: iterators
-
-    ## Loading required package: snow
 
     ## 
     ## Attaching package: 'snow'
@@ -555,6 +558,8 @@ registerDoRNG(seed = 1)
 ## Now use foreach with %dopar%
 ```
 
+### mclapply
+
 When using *mclapply*, you can use the *mc.set.seed* argument as follows
 (note that *mc.set.seed* is TRUE by default, so you should get different
 seeds for the different processes by default), but one needs to invoke
@@ -575,7 +580,7 @@ res <- mclapply(seq_len(Y), looFit, Y, X, mc.cores = 4,
 the perspective that Spark/Hadoop are not the right tools in many cases
 when doing statistics-related work and has developed some simple tools
 for parallelizing computation across multiple nodes, also referred to as
-*Snowdoop*. The tools make use of the key idea in Hadoop of a
+*Snowdoop*. The tools make use of the key idea in Spark/Hadoop of a
 distributed file system and distributed data objects but avoid the
 complications of trying to ensure fault tolerance, which is critical
 only on very large clusters of machines.
