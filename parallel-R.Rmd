@@ -7,6 +7,8 @@ title: Parallel processing in R
 
 R provides a variety of functionality for parallelization, including threaded operations (linear algebra), parallel for loops and lapply-type statements, and parallelization across multiple machines. This material focuses on R's future package, a flexible and powerful approach to parallelization in R.
 
+
+
 # 2 Threading
 
 Threading in R is limited to linear algebra, provided R is linked against a threaded BLAS.
@@ -27,7 +29,7 @@ In addition to being fast when used on a single core, all of these BLAS librarie
 threaded - if your computer has multiple cores and there are free
 resources, your linear algebra will use multiple cores, provided your installed R is linked against the threaded BLAS installed on your machine and provided
 OMP_NUM_THREADS is not set to one. (Macs make use of
-VECLIB_MAXIMUM_THREADS rather than OMP_NUM_THREADS.)
+VECLIB_MAXIMUM_THREADS rather than OMP_NUM_THREADS. And if R is linked against MKL, you'll need to use MKL_NUM_THREADS.)
 
 **To use an optimized BLAS on your own machine(s), see [these instructions](https://statistics.berkeley.edu/computing/blas).**
 
@@ -72,7 +74,7 @@ available to a process.
 
 For most threaded code (that based on the openMP protocol), the number
 of threads can be set by setting the OMP_NUM_THREADS environment
-variable (VECLIB_MAXIMUM_THREADS on a Mac). E.g., to set it for four
+variable (VECLIB_MAXIMUM_THREADS on a Mac and MKL_NUM_THREADS if your R is linked against MKL). E.g., to set it for four
 threads in bash:
 
 ```bash
@@ -96,6 +98,9 @@ blas_set_num_threads(4)
 ```
 
 # 3 Parallel loops (including parallely lapply) via the future package
+
+All of the functionality discussed here applies *only* if the iterations/loops of your calculations can be done completely separately and do not depend on one another. This scenario is called an *embarrassingly parallel* computation.  So coding up the evolution of a time series or a Markov chain is not possible using these tools. However, bootstrapping, random forests, simulation studies, cross-validation and many other statistical methods can be handled in this way.
+
 
 One can easily parallelize  lapply (or sapply) statements or parallelize for loops using the `future` package.
 Here's we'll just show the basic mechanics of using the future package. There's much more detail in [this SCF tutorial](https://berkeley-scf.github.io/tutorial-dask-future).
@@ -245,7 +250,10 @@ future_sapply(seq_along(workers),
 
 # 4 Older alternatives to the future package for parallel loops/lapply
 
-The future package allows you to do everything that one can do using older packages/functions such as `mclapply`, `parLapply` and `foreach` wit backends such as `doParallel`, `doSNOW`, `doMPI`. So my recommendation is just to use the future package. But here is some syntax for the older approaches. 
+The future package allows you to do everything that one can do using older packages/functions such as `mclapply`, `parLapply` and `foreach` wit backends such as `doParallel`, `doSNOW`, `doMPI`. So my recommendation is just to use the future package. But here is some syntax for the older approaches.
+
+As with calculations using the future package, all of the functionality discussed here applies *only* if the iterations/loops of your calculations can be done completely separately and do not depend on one another. This scenario is called an *embarrassingly parallel* computation.  So coding up the evolution of a time series or a Markov chain is not possible using these tools. However, bootstrapping, random forests, simulation studies, cross-validation and many other statistical methods can be handled in this way.
+
 
 ## 4.1 Parallel lapply
 
