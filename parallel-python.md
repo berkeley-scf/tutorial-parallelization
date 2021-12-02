@@ -5,7 +5,7 @@ title: Parallel processing in Python
 
 # 1 Overview
 
-Python provides a variety of functionality for parallelization, including threaded operations (in particular for linear algebra), parallel looping and map statements, and parallelization across multiple machines. This material focuses on Python's ipyparallel package, with some discussion of a variety of other packages.
+Python provides a variety of functionality for parallelization, including threaded operations (in particular for linear algebra), parallel looping and map statements, and parallelization across multiple machines. This material focuses on Python's ipyparallel package, with some discussion of Dask and Ray.
 
 All of the functionality discussed here applies *only* if the iterations/loops of your calculations can be done completely separately and do not depend on one another. This scenario is called an *embarrassingly parallel* computation.  So coding up the evolution of a time series or a Markov chain is not possible using these tools. However, bootstrapping, random forests, simulation studies, cross-validation and many other statistical methods can be handled in this way.
 
@@ -26,8 +26,8 @@ In addition to being fast when used on a single core, all of these BLAS
 libraries are threaded - if your computer has multiple cores and there
 are free resources, your linear algebra will use multiple cores,
 provided your installed Python  is linked against the threaded BLAS installed
-on your machine and provided OMP\_NUM\_THREADS is not set to one. (Macs
-make use of VECLIB\_MAXIMUM\_THREADS rather than OMP\_NUM\_THREADS.)
+on your machine and provided OMP\_NUM\_THREADS is not set to one. (Macs generally make use of
+VECLIB_MAXIMUM_THREADS rather than OMP_NUM_THREADS. And if Python is linked against MKL, you'll need to use MKL_NUM_THREADS.)
 
 To use a fast, threaded BLAS, one approach is to use the Anaconda/Miniconda Python distribution. When you install numpy and scipy, these should be [automatically linked](https://docs.anaconda.com/mkl-optimizations/index.html) against a fast, threaded BLAS (MKL). More generally, simply installing numpy from PyPI [should make use of OpenBLAS](https://numpy.org/install/).
 
@@ -87,6 +87,7 @@ First we need to start our workers. As of ipyparallel version 7, we can start th
 ```python
 ## In newer versions of ipyparallel (v. 7 and later)
 import ipyparallel as ipp
+# Check the version:
 ipp.__version__
 n = 4
 cluster = ipp.Cluster(n = n)
@@ -116,7 +117,7 @@ dview.apply(lambda : "Hello, World")
 
 `dview` stands for a 'direct view', which is an interface to our cluster that allows us to 'manually' send tasks to the workers.
 
-# Parallelized machine learning example - setup
+### Parallelized machine learning example: setup
 
 Now let's see an example of how we can use our workers to run code in parallel. 
 
@@ -139,13 +140,14 @@ np.random.seed(0)
 n = 200
 p = 20
 X = np.random.normal(0, 1, size = (n, p))
-Y = X[: , 0] + pow(abs(X[:,1] * X[:,2]), 0.5) + X[:,1] - X[:,2] + np.random.normal(0, 1, n)
+Y = X[: , 0] + pow(abs(X[:,1] * X[:,2]), 0.5) + X[:,1] - X[:,2] + 
+    np.random.normal(0, 1, n)
 
 mydict = dict(X = X, Y = Y, looFit = looFit)
 dview.push(mydict)
 ```
 
-### Parallelized machine learning example - running
+### Parallelized machine learning example: execution
 
 Now let's set up a "load-balanced view". With this type of interface, one submits the tasks and the controller decides how to divide up the tasks, ideally achieving good load balancing. A load-balanced computation is one that keeps all the workers busy throughout the computation
 
@@ -159,6 +161,7 @@ def wrapper(i):
 
 # Now run the fitting, predicting on each held-out observation:
 pred = lview.map(wrapper, range(n))
+# Check a few predictions:
 pred[0:3]
 ```
 
@@ -167,6 +170,7 @@ pred[0:3]
 One can also start the workers outside of Python. This was required in older versions of ipyparallel, before version 7.
 
 ```bash
+# In the bash shell:
 export NWORKERS=4
 ipcluster start -n ${NWORKERS} &
 ```
@@ -174,6 +178,7 @@ ipcluster start -n ${NWORKERS} &
 Now in Python, we can connect to the running workers:
 
 ```python
+# In python
 import os
 import ipyparallel as ipp
 c = ipp.Client()
@@ -190,15 +195,17 @@ ipcluster stop
 
 ### 3.2 Using multiple machines or cluster nodes
 
-One can use ipyparallel in a context with multiple nodes, though the setup to get the worker processes is a bit more involved when you have multiple nodes. 
+One can use ipyparallel in a context with multiple nodes, though the setup to get the worker processes started is a bit more involved when you have multiple nodes. 
 
 If we are using the SLURM scheduling software, here's how we start up the worker processes:
 
 ```bash
+# In the bash shell (e.g., in your Slurm job script)
 ipcontroller --ip='*' &
 sleep 60
-# next line will start as many ipengines as we have SLURM tasks 
-#   because srun is a SLURM command
+# Next start as many ipengines (workers) as we have Slurm tasks. 
+# This works because srun is a Slurm command, 
+# so it knows it is running within a Slurm allocation
 srun ipengine &
 ```
 
@@ -211,18 +218,18 @@ After doing your computations and quitting your main Python session, shut down t
 ipcluster stop
 ```
 
-To start the engines in a context outside of using Slurm (provided all machines share a filesystem), you should be able ssh to each machine and run `ipengine &` for as many worker processes as you want to start as follows. In some, but not all cases (depending on how the network is set up) you may not need the `--location` flag, but if you do, it should be set to the name of the machine you're working on, e.g., by using the HOST environment variable.
+To start the engines in a context outside of using Slurm (provided all machines share a filesystem), you should be able ssh to each machine and run `ipengine & ` for as many worker processes as you want to start as follows. In some, but not all cases (depending on how the network is set up) you may not need the `--location` flag, but if you do, it should be set to the name of the machine you're working on, e.g., by using the HOST environment variable. Here we start all the workers on a single other machine, "other_host":
 
 ```bash
 ipcontroller --ip='*' --location=${HOST} &
 sleep 60
 NWORKERS=4
-ssh other_host "for (( i = 0; i < ${NWORKERS}; i++ )); do ipengine & done"
+ssh other_host "for (( i = 0; i < ${NWORKERS}; i++ )); do ipengine &; done"
 ```
 
 # 4 Dask and Ray
 
-Dask and Ray are powerful packages for parallelization that allow one to parallelize tasks in similar fashion to ipyparallel. But they also provide additional useful functionality: Dask allows one to work with large datasets that are split up across multiple processes (potentially) on multiple nodes, providing Spark/Hadoop-like functionality. Ray allows one to develop complicated apps that execute in parallel using the notion of *actors*.
+Dask and Ray are powerful packages for parallelization that allow one to parallelize tasks in similar fashion to ipyparallel. But they also provide additional useful functionality: Dask allows one to work with large datasets that are split up across multiple processes on (potentially) multiple nodes, providing Spark/Hadoop-like functionality. Ray allows one to develop complicated apps that execute in parallel using the notion of *actors*.
 
 For more details on using distributed dataset with Dask, see [this tutorial](https://berkeley-scf.github.io/tutorial-dask-future/python-dask.html). For more details on Ray's actors, please see the [Ray documentation](https://www.ray.io/docs).
 
@@ -250,7 +257,9 @@ n = 1000
 p = 10
 futures = [dask.delayed(calc_mean)(i, n) for i in range(p)]
 futures  # This is an array of placeholders for the tasks to be carried out.
-# [Delayed('calc_mean-b07564ff-149a-4db7-ac3c-1cc89b898fe5'), Delayed('calc_mean-f602cd67-97ad-4293-aeb8-e58be55a89d6'), Delayed('calc_mean-d9448f54-b1db-46aa-b367-93a46e1c202a'), Delayed('calc_mean-3bc3b20c-8caa-4537-8c51-cd3f0e46949a'),...
+# [Delayed('calc_mean-b07564ff-149a-4db7-ac3c-1cc89b898fe5'), 
+# Delayed('calc_mean-f602cd67-97ad-4293-aeb8-e58be55a89d6'), 
+# Delayed('calc_mean-d9448f54-b1db-46aa-b367-93a46e1c202a'), ...
 
 # Now ask for the output to trigger the lazy evaluation.
 results = dask.compute(futures)
@@ -283,7 +292,8 @@ n = 1000
 p = 10
 futures = [calc_mean.remote(i, n) for i in range(p)]
 futures  # This is an array of placeholders for the tasks to be carried out.
-# [ObjectRef(a67dc375e60ddd1affffffffffffffffffffffff0100000001000000), ObjectRef(63964fa4841d4a2effffffffffffffffffffffff0100000001000000), ...
+# [ObjectRef(a67dc375e60ddd1affffffffffffffffffffffff0100000001000000), 
+# ObjectRef(63964fa4841d4a2effffffffffffffffffffffff0100000001000000), ...
 
 # Now trigger the computation
 ray.get(futures)
@@ -307,19 +317,18 @@ a sequence of values between 0 and 1.
 The worst thing that could happen is that one sets things up in such
 a way that every process is using the same sequence of random numbers.
 This could happen if you mistakenly set the same seed in each process,
-e.g., using *set.seed(mySeed)* in R on every process.
+e.g., using `np.random.default_rng(1)` in Python for every worker.
 
 The naive approach is to use a different seed for each process. E.g.,
 if your processes are numbered `id = 1,2,...,p`  with a variable *id* that is  unique
 to a process, setting the seed to be the value of *id* on each process. This is likely
-not to cause problems, but raises the danger that two (or more sequences)
-might overlap. For an algorithm with dependence on the full sequence,
+not to cause problems, but raises the danger that two (or more) subsequences
+might overlap. For an algorithm with dependence on the full subsequence,
 such as an MCMC, this probably won't cause big problems (though you
 likely wouldn't know if it did), but for something like simple simulation
 studies, some of your 'independent' samples could be exact replicates
 of a sample on another process. Given the period length of the default
-generator in Python, this is actually quite unlikely,
-but it is a bit sloppy.
+generator in Python, this is actually quite unlikely, but it is a bit sloppy.
 
 One approach to avoid the problem is to do all your RNG on one process
 and distribute the random deviates, but this can be infeasible with
@@ -335,7 +344,7 @@ In recent versions of numpy there has been attention paid to this problem and th
 
 One approach is to generate one random seed per task such that the blocks of random numbers avoid overlapping with high probability, as implemented in numpy's `SeedSequence` approach.
 
-Here we use that approach within the context of an ipyparallel load-balanced view and `map`.
+Here we use that approach within the context of an ipyparallel load-balanced view.
 
 ```python
 import numpy as np
@@ -358,9 +367,9 @@ seed = 1
 ss = np.random.SeedSequence(seed)
 child_seeds = ss.spawn(p)
 
-def calc_mean(i, n, seed):
+def calc_mean(i, n, seed_i):
     import numpy as np
-    rng = np.random.default_rng(seed)
+    rng = np.random.default_rng(seed_i)
     data = rng.normal(size = n)
     return([np.mean(data), np.std(data)])
 
@@ -386,12 +395,6 @@ def calc_mean(i, n, rng):
     import numpy as np
     gen = np.random.Generator(rng.jumped(i))  ## jump in large steps, one jump per task
     data = gen.normal(size = n)
-    return([np.mean(data), np.std(data)])
-
-def calc_mean(i, n, seed):
-    import numpy as np
-    rng = np.random.default_rng(seed)
-    data = rng.normal(size = n)
     return([np.mean(data), np.std(data)])
 
 # need a wrapper function because map() only operates on one argument

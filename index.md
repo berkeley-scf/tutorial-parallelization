@@ -6,8 +6,6 @@ author: Christopher Paciorek
 
 ## 1 This tutorial
 
-THIS TUTORIAL IS UNDER CONSTRUCTION. The Python page is still undergoing major changes.
-
 This tutorial covers the use of parallelization (on either one machine or multiple machines/nodes) in Python, R, MATLAB and C/C++. Please click on the links above for material specific to each language.
 
 You should be able to replicate much of what is covered here provided you have the relevant software on your computer, but some of the parallelization approaches may not work on Windows.
@@ -117,7 +115,7 @@ memory environment, using the MapReduce approach.
 
 Note that Dask provides a lot of the same functionality as Spark, allowing one to create distributed datasets where pieces of the dataset live on different machines but can be treated as a single dataset from the perspective of the user.
 
-# 4 Parallelization strategies
+## 4 Parallelization strategies
 
 Some of the considerations that apply when thinking about how effective a given parallelization approach will be include:
 
