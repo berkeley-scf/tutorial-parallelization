@@ -108,6 +108,15 @@ blas_set_num_threads(4)
 
 # 3 Parallel loops (including parallely lapply) via the future package
 
+All of the functionality discussed here applies *only* if the
+iterations/loops of your calculations can be done completely separately
+and do not depend on one another. This scenario is called an
+*embarrassingly parallel* computation. So coding up the evolution of a
+time series or a Markov chain is not possible using these tools.
+However, bootstrapping, random forests, simulation studies,
+cross-validation and many other statistical methods can be handled in
+this way.
+
 One can easily parallelize lapply (or sapply) statements or parallelize
 for loops using the `future` package. Here’s we’ll just show the basic
 mechanics of using the future package. There’s much more detail in [this
@@ -294,10 +303,10 @@ tmp <- future_sapply(seq_along(workers),
                            "on", Sys.info()[['nodename']], "\n"))
 ```
 
-    ## Worker running as process 443010 on arwen 
-    ## Worker running as process 443117 on arwen 
-    ## Worker running as process 3507158 on beren 
-    ## Worker running as process 3507250 on beren
+    ## Worker running as process 2489402 on arwen 
+    ## Worker running as process 2489510 on arwen 
+    ## Worker running as process 4072262 on beren 
+    ## Worker running as process 4072352 on beren
 
 ``` r
 # Now use parallel_lapply, foreach, etc. as before
@@ -327,6 +336,15 @@ older packages/functions such as `mclapply`, `parLapply` and `foreach`
 wit backends such as `doParallel`, `doSNOW`, `doMPI`. So my
 recommendation is just to use the future package. But here is some
 syntax for the older approaches.
+
+As with calculations using the future package, all of the functionality
+discussed here applies *only* if the iterations/loops of your
+calculations can be done completely separately and do not depend on one
+another. This scenario is called an *embarrassingly parallel*
+computation. So coding up the evolution of a time series or a Markov
+chain is not possible using these tools. However, bootstrapping, random
+forests, simulation studies, cross-validation and many other statistical
+methods can be handled in this way.
 
 ## 4.1 Parallel lapply
 

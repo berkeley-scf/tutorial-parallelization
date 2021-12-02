@@ -10,7 +10,7 @@ Python provides a variety of functionality for parallelization, including thread
 All of the functionality discussed here applies *only* if the iterations/loops of your calculations can be done completely separately and do not depend on one another. This scenario is called an *embarrassingly parallel* computation.  So coding up the evolution of a time series or a Markov chain is not possible using these tools. However, bootstrapping, random forests, simulation studies, cross-validation and many other statistical methods can be handled in this way.
 
 
-# 2 Threading, particularly for linear algebra
+# 2 Threading
 
 ## 2.1 What is the BLAS?
 
@@ -193,7 +193,7 @@ Finally, stop the workers.
 ipcluster stop
 ```
 
-### 3.2 Using multiple machines or cluster nodes
+## 3.2 Using multiple machines or cluster nodes
 
 One can use ipyparallel in a context with multiple nodes, though the setup to get the worker processes started is a bit more involved when you have multiple nodes. 
 
