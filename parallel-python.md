@@ -97,7 +97,7 @@ c = cluster.connect_client_sync()
 c.wait_for_engines(n)
 ```
 
-### Testing our cluster
+### Testing our workers
 
 Let's verify that things seem set up ok and we can interact with all our workers:
 
@@ -301,7 +301,7 @@ ray.get(futures)
 
 # 5 Random number generation (RNG) in parallel 
 
-# 5.1 Overview
+## 5.1 Overview
 
 The key thing when thinking about random numbers in a parallel context
 is that you want to avoid having the same 'random' numbers occur on
