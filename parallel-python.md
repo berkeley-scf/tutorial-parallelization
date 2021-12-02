@@ -26,8 +26,7 @@ In addition to being fast when used on a single core, all of these BLAS
 libraries are threaded - if your computer has multiple cores and there
 are free resources, your linear algebra will use multiple cores,
 provided your installed Python  is linked against the threaded BLAS installed
-on your machine and provided OMP\_NUM\_THREADS is not set to one. (Macs generally make use of
-VECLIB_MAXIMUM_THREADS rather than OMP_NUM_THREADS. And if Python is linked against MKL, you'll need to use MKL_NUM_THREADS.)
+on your machine.
 
 To use a fast, threaded BLAS, one approach is to use the Anaconda/Miniconda Python distribution. When you install numpy and scipy, these should be [automatically linked](https://docs.anaconda.com/mkl-optimizations/index.html) against a fast, threaded BLAS (MKL). More generally, simply installing numpy from PyPI [should make use of OpenBLAS](https://numpy.org/install/).
 
@@ -58,7 +57,7 @@ available to a process.
 
 For most threaded code (that based on the openMP protocol), the number
 of threads can be set by setting the OMP_NUM_THREADS environment
-variable. Note that instead you need to use VECLIB_MAXIMUM_THREADS if on a Mac and MKL_NUM_THREADS if numpy/scipy are linked against MKL. 
+variable. Note that under some circumstances you may need to use VECLIB_MAXIMUM_THREADS if on a Mac or MKL_NUM_THREADS if numpy/scipy are linked against MKL. 
 
 For example, to set it for four
 threads in bash, do this before starting your Python session.

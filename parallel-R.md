@@ -30,9 +30,7 @@ In addition to being fast when used on a single core, all of these BLAS
 libraries are threaded - if your computer has multiple cores and there
 are free resources, your linear algebra will use multiple cores,
 provided your installed R is linked against the threaded BLAS installed
-on your machine and provided OMP\_NUM\_THREADS is not set to one. (Macs
-make use of VECLIB\_MAXIMUM\_THREADS rather than OMP\_NUM\_THREADS. And
-if R is linked against MKL, you’ll need to use MKL\_NUM\_THREADS.)
+on your machine.
 
 **To use an optimized BLAS on your own machine(s), see [these
 instructions](https://statistics.berkeley.edu/computing/blas).**
@@ -81,8 +79,11 @@ the number of threads available to a process.
 
 For most threaded code (that based on the openMP protocol), the number
 of threads can be set by setting the OMP\_NUM\_THREADS environment
-variable (VECLIB\_MAXIMUM\_THREADS on a Mac and MKL\_NUM\_THREADS if
-your R is linked against MKL). E.g., to set it for four threads in bash:
+variable. Note that under some circumstances you may need to use
+VECLIB\_MAXIMUM\_THREADS if on a Mac or MKL\_NUM\_THREADS if R is linked
+against MKL (which can be seen by running `sessionInfo`).
+
+For example, to set it for four threads in bash:
 
 ``` bash
 export OMP_NUM_THREADS=4
@@ -303,10 +304,10 @@ tmp <- future_sapply(seq_along(workers),
                            "on", Sys.info()[['nodename']], "\n"))
 ```
 
-    ## Worker running as process 2489402 on arwen 
-    ## Worker running as process 2489510 on arwen 
-    ## Worker running as process 4072262 on beren 
-    ## Worker running as process 4072352 on beren
+    ## Worker running as process 2750718 on arwen 
+    ## Worker running as process 2750871 on arwen 
+    ## Worker running as process 39942 on beren 
+    ## Worker running as process 40032 on beren
 
 ``` r
 # Now use parallel_lapply, foreach, etc. as before
