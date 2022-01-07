@@ -4,3 +4,4 @@ plugins:
 title: Parallelization tutorial
 description: Training materials for parallelization with Python, R, MATLAB and C/C++. See the top menu for pages specific to each language.
 show_downloads: false
+logo: assets/img/logo.svg
