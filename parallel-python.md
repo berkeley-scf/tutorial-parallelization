@@ -210,7 +210,7 @@ srun ipengine &
 
 At this point you should be able to connect to the running cluster using the syntax seen for single-node usage.
 
-NOTE: Be careful to set the sleep period long enough that the controller starts before trying to start the workers and the workers start before trying to connect to the workers from within Python.
+> **Warning**: Be careful to set the sleep period long enough that the controller starts before trying to start the workers and the workers start before trying to connect to the workers from within Python.
 
 After doing your computations and quitting your main Python session, shut down the cluster of workers:
 ```bash

@@ -32,8 +32,8 @@ are free resources, your linear algebra will use multiple cores,
 provided your installed R is linked against the threaded BLAS installed
 on your machine.
 
-**To use an optimized BLAS on your own machine(s), see [these
-instructions](https://statistics.berkeley.edu/computing/blas).**
+> **Note**: To use an optimized BLAS on your own machine(s), see [these
+instructions](https://statistics.berkeley.edu/computing/blas).
 
 ## 2.2 Example syntax
 
