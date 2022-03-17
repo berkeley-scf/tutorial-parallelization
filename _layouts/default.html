@@ -52,6 +52,7 @@
         
       </header>
       <section>
+        <div class="menu">
         <nav>
           <a href="{{ "/" | absolute_url }}">Overview</a> |
           <a href="parallel-python">Parallel Python</a> |
@@ -59,9 +60,10 @@
           <a href="parallel-matlab">Parallel MATLAB</a> |
           <a href="parallel-C">Parallel C/C++</a>
         </nav>
-        <p></p>
-
-      {{ content }}
+        </div>
+        <div class="main">
+          {{ content }}
+        </div>
 
       </section>
       <footer>
