@@ -4,6 +4,8 @@ layout: default
 author: Christopher Paciorek
 ---
 
+# Parallel processing in Python, R, MATLAB, and C/C++
+
 ## 1 This tutorial
 
 This tutorial covers the use of parallelization (on either one machine or multiple machines/nodes) in Python, R, MATLAB and C/C++. Please click on the links above for material specific to each language.

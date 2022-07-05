@@ -3,15 +3,17 @@ layout: default
 title: Parallel processing in C/C++
 ---
 
-# 1 Overview
+# Parallel processing in C/C++
+
+## 1 Overview
 
 Some long-standing tools for parallelizing C, C++, and Fortran code are `openMP` for writing threaded code to run in parallel on one machine and `MPI` for writing code that passages message to run in parallel across (usually) multiple nodes.
 
-# 2 Using *OpenMP* threads for basic shared memory programming in C
+## 2 Using *OpenMP* threads for basic shared memory programming in C
 
 It's straightforward to write threaded code in C and C++ (as well as Fortran) to exploit multiple cores. The basic approach is to use the OpenMP protocol. 
 
-## 2.1 Basics of OpenMP
+### 2.1 Basics of OpenMP
 
 Here's how one would parallelize a loop in C/C++ using an OpenMP compiler directive. In this case we are parallelizing the outer loop; the iterations of the outer loop are done in parallel, while the iterations of the inner loop are done serially within a thread. As with *foreach* in R, you only want to do this if the iterations do not depend on each other. The code is available as a C++ program (but the core of the code is just C code) in *testOpenMP.cpp*.
 
@@ -84,11 +86,11 @@ int main(){
 }
 ```
 
-## 2.2 Calling OpenMP-based C code from R
+### 2.2 Calling OpenMP-based C code from R
 
 The easiest path here is to use the *Rcpp* package. In this case, you can write your C++ code with OpenMP pragma statemetns as in the previous subsection. You'll need to make sure that the *PKG_CXXFLAGS* and *PKG_LIBS* environment variables are set to include `-f openmp` so the compilation is done correctly. More details/examples linked to from [this Stack overflow post](http://stackoverflow.com/questions/22748358/rcpp-with-openmp).
 
-## 2.3 More advanced use of *OpenMP* in C
+### 2.3 More advanced use of *OpenMP* in C
 
 The goal here is just to give you a sense of what is possible with OpenMP. 
 
@@ -199,9 +201,9 @@ You should also be able to use syntax like the following for the parallel for de
 
 I believe that doing this sort of calculation where multiple threads write to the same variable may be rather inefficient given time lost in waiting to have access to result, but presumably this would depend on how much time is spent in *myFun()* relative to the reduction operation.
 
-# 3 MPI
+## 3 MPI
 
-## 3.1 MPI Overview
+### 3.1 MPI Overview
 
 There are multiple MPI implementations, of which *openMPI* and
 *mpich* are very common. *openMPI* is quite common, and we'll use that.
@@ -233,7 +235,7 @@ can hang, error messages from the workers may not be seen or readily
 accessible, and it can be difficult to assess the state of the worker
 processes. 
 
-## 3.2 Basic syntax for MPI in C
+### 3.2 Basic syntax for MPI in C
 
 
 Here's a basic hello world example  The code is also in *mpiHello.c*.
@@ -323,13 +325,13 @@ QUAD_MPI:
 23 November 2021 03:28:36 PM
 ```
 
-## 3.3 Starting MPI-based jobs
+### 3.3 Starting MPI-based jobs
 
 MPI-based executables require that you start your process(es) in a special way via the *mpirun* command. Note that *mpirun*, *mpiexec* and *orterun* are synonyms under *openMPI*. 
 
 The basic requirements for starting such a job are that you specify the number of processes you want to run and that you indicate what machines those processes should run on. Those machines should be networked together such that MPI can ssh to the various machines without any password required.
 
-### 3.3.1 Running an MPI job with machines specified manually
+#### 3.3.1 Running an MPI job with machines specified manually
 
 
 There are two ways to tell *mpirun* the machines on which to run the worker processes.
@@ -353,7 +355,7 @@ mpirun -machinefile .hosts -np 4 hostname
 
 One can also just duplicate a given machine name as many times as desired, rather than using `slots`.
 
-### 3.3.2 Running an MPI job within a Slurm job
+#### 3.3.2 Running an MPI job within a Slurm job
 
 If you are running your code as part of a job submitted to Slurm, you generally won't need to pass the *machinefile* or *np* arguments as MPI will get that information from Slurm. So you can simply run your executable, in this case first checking which machines mpirun is using:
 
@@ -362,7 +364,7 @@ mpirun hostname
 mpirun quad_mpi
 ```
 
-### 3.3.3 Additional details
+#### 3.3.3 Additional details
 
 To limit the number of threads for each process, we can tell *mpirun*
 to export the value of *OMP_NUM_THREADS* to the processes. E.g., calling a C program, *quad_mpi*:

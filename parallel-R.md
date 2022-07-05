@@ -3,7 +3,9 @@ layout: default
 title: Parallel processing in R
 ---
 
-# 1 Overview
+# Parallel processing in R
+
+## 1 Overview
 
 R provides a variety of functionality for parallelization, including
 threaded operations (linear algebra), parallel for loops and lapply-type
@@ -11,12 +13,12 @@ statements, and parallelization across multiple machines. This material
 focuses on R’s future package, a flexible and powerful approach to
 parallelization in R.
 
-# 2 Threading
+## 2 Threading
 
 Threading in R is limited to linear algebra, provided R is linked
 against a threaded BLAS.
 
-## 2.1 What is the BLAS?
+### 2.1 What is the BLAS?
 
 The BLAS is the library of basic linear algebra operations (written in
 Fortran or C). A fast BLAS can greatly speed up linear algebra relative
@@ -32,10 +34,10 @@ are free resources, your linear algebra will use multiple cores,
 provided your installed R is linked against the threaded BLAS installed
 on your machine.
 
-> **Note**: To use an optimized BLAS on your own machine(s), see [these
-instructions](https://statistics.berkeley.edu/computing/blas).
+**You can [use an optimized BLAS on your own
+machine(s)](https://statistics.berkeley.edu/computing/blas).**
 
-## 2.2 Example syntax
+### 2.2 Example syntax
 
 Here’s some code that illustrates the speed of using a threaded BLAS:
 
@@ -71,16 +73,16 @@ that the threaded calculation took a bit more total processing time
 multiple threads. So the threading helps, but it’s not the 4x linear
 speedup we would hope for.
 
-## 2.3 Choosing the number of threads
+### 2.3 Choosing the number of threads
 
 In general, threaded code will detect the number of cores available on a
 machine and make use of them. However, you can also explicitly control
 the number of threads available to a process.
 
 For most threaded code (that based on the openMP protocol), the number
-of threads can be set by setting the OMP\_NUM\_THREADS environment
+of threads can be set by setting the OMP_NUM_THREADS environment
 variable. Note that under some circumstances you may need to use
-VECLIB\_MAXIMUM\_THREADS if on a Mac or MKL\_NUM\_THREADS if R is linked
+VECLIB_MAXIMUM_THREADS if on a Mac or MKL_NUM_THREADS if R is linked
 against MKL (which can be seen by running `sessionInfo`).
 
 For example, to set it for four threads in bash:
@@ -92,8 +94,8 @@ export OMP_NUM_THREADS=4
 Do this before starting your R or Python session or before running your
 compiled executable.
 
-Alternatively, you can set OMP\_NUM\_THREADS as you invoke your job,
-e.g., here with R:
+Alternatively, you can set OMP_NUM_THREADS as you invoke your job, e.g.,
+here with R:
 
     OMP_NUM_THREADS=4 R CMD BATCH --no-save job.R job.out
 
@@ -107,7 +109,7 @@ blas_set_num_threads(4)
 # now run your linear algebra
 ```
 
-# 3 Parallel loops (including parallely lapply) via the future package
+## 3 Parallel loops (including parallely lapply) via the future package
 
 All of the functionality discussed here applies *only* if the
 iterations/loops of your calculations can be done completely separately
@@ -126,7 +128,7 @@ SCF tutorial](https://berkeley-scf.github.io/tutorial-dask-future).
 In Sections 3.1 and 3.2, we’ll parallelize across multiple cores on one
 machine. Section 3.3 shows how to use multiple machines.
 
-## 3.1 Parallel lapply
+### 3.1 Parallel lapply
 
 Here we’ll parallelize an lapply operation. We need to call `plan` to
 set up the workers that will carry out the individual tasks (one for
@@ -166,7 +168,7 @@ Here the low user time is because the time spent in the worker processes
 is not counted at the level of the overall master process that
 dispatches the workers.
 
-## 3.2 Parallel for loops
+### 3.2 Parallel for loops
 
 We can use the future package in combination with the `foreach` command
 to run a for loop in parallel. Of course this will only be valid if the
@@ -180,7 +182,7 @@ last line in the `{ }` body of the foreach statement.
 source('rf.R')  # loads in data (X and Y) and looFit()
 ```
 
-    ## randomForest 4.6-14
+    ## randomForest 4.7-1
 
     ## Type rfNews() to see new features/changes/bug fixes.
 
@@ -245,10 +247,10 @@ the calculations in each task (defined based on the pair of indexes from
 both loops) are independent of the other tasks, you can define two
 foreach loops, with the outer foreach using the `%:%` operator and the
 inner foreach using the usual `%dopar%` operator. More details can be
-found [in this
+found [in this foreach
 vignette](https://cran.r-project.org/web/packages/foreach/vignettes/nested.pdf).
 
-## 3.3 Avoiding copies on each worker
+### 3.3 Avoiding copies on each worker
 
 The future package automatically identifies the objects needed by your
 future-based code and makes copies of those objects once for each worker
@@ -281,7 +283,7 @@ process.
 So, the take-home message is that using `multicore` on non-Windows
 machines can have a big advantage when working with large data objects.
 
-## 3.4 Using multiple machines or cluster nodes
+### 3.4 Using multiple machines or cluster nodes
 
 We can use the `cluster` plan to run workers across multiple machines.
 
@@ -295,7 +297,7 @@ Here we want to use two cores on one machine and two on another.
 
 ``` r
 library(future.apply)
-workers <- c(rep('arwen.berkeley.edu', 2), rep('beren.berkeley.edu', 2))
+workers <- c(rep('arwen.berkeley.edu', 2), rep('gandalf.berkeley.edu', 2))
 plan(cluster, workers = workers)
 # Check we are getting workers in the right places:
 tmp <- future_sapply(seq_along(workers),
@@ -304,10 +306,10 @@ tmp <- future_sapply(seq_along(workers),
                            "on", Sys.info()[['nodename']], "\n"))
 ```
 
-    ## Worker running as process 2750718 on arwen 
-    ## Worker running as process 2750871 on arwen 
-    ## Worker running as process 39942 on beren 
-    ## Worker running as process 40032 on beren
+    ## Worker running as process 748587 on arwen 
+    ## Worker running as process 748685 on arwen 
+    ## Worker running as process 236873 on gandalf 
+    ## Worker running as process 236945 on gandalf
 
 ``` r
 # Now use parallel_lapply, foreach, etc. as before
@@ -330,7 +332,7 @@ future_sapply(seq_along(workers),
 # Now use parallel_lapply, parallel_sapply, foreach, etc. as before
 ```
 
-# 4 Older alternatives to the future package for parallel loops/lapply
+## 4 Older alternatives to the future package for parallel loops/lapply
 
 The future package allows you to do everything that one can do using
 older packages/functions such as `mclapply`, `parLapply` and `foreach`
@@ -347,7 +349,7 @@ chain is not possible using these tools. However, bootstrapping, random
 forests, simulation studies, cross-validation and many other statistical
 methods can be handled in this way.
 
-## 4.1 Parallel lapply
+### 4.1 Parallel lapply
 
 Here are a couple of the ways to do a parallel lapply:
 
@@ -365,7 +367,7 @@ result1 <- parLapply(cl, seq_along(Y), looFit, Y, X)
 result2 <- mclapply(seq_along(Y), looFit, Y, X)
 ```
 
-## 4.2 Parallel for loops
+### 4.2 Parallel for loops
 
 And here’s how to use `doParallel` with foreach instead of `doFuture`.
 
@@ -380,7 +382,7 @@ out <- foreach(i = seq_along(Y)) %dopar% {
 }
 ```
 
-## 4.3 Avoiding copies on each worker
+### 4.3 Avoiding copies on each worker
 
 Whether you need to explicitly load packages and export global variables
 from the main process to the parallelized worker processes depends on
@@ -419,7 +421,7 @@ processes, so one can easily exceed the physical memory (RAM) on the
 machine if one has large objects, and the copying of large objects will
 take time.
 
-## 4.4 Using multiple machines or cluster nodes
+### 4.4 Using multiple machines or cluster nodes
 
 One can set up a cluster of workers across multiple nodes using
 `parallel::makeCluster`. Then one can use `parLapply` and `foreach` with
@@ -427,7 +429,7 @@ that cluster of workers.
 
 ``` r
 library(parallel)
-machines = c(rep("beren.berkeley.edu", 2), rep("arwen.berkeley.edu", 2))
+machines = c(rep("gandalf.berkeley.edu", 2), rep("arwen.berkeley.edu", 2))
 
 cl = makeCluster(machines, type = "SOCK")
 
@@ -462,7 +464,7 @@ For foreach, we used the `doSNOW` backend. The *doSNOW* backend has the
 advantage over `doMPI` that it doesn’t need to have MPI installed on the
 system.
 
-# 5 Parallel random number generation
+## 5 Parallel random number generation
 
 The key thing when thinking about random numbers in a parallel context
 is that you want to avoid having the same ‘random’ numbers occur on
@@ -503,7 +505,7 @@ In R, the *rlecuyer* package deals with this. The L’Ecuyer algorithm has
 a period of 2<sup>191</sup>, which it divides into subsequences of
 length 2<sup>127</sup>.
 
-## 5.1 Parallel RNG and the future package
+### 5.1 Parallel RNG and the future package
 
 The future package [integrates well with the L’Ecuyer parallel RNG
 approach](https://www.jottr.org/2020/09/22/push-for-statical-sound-rng/#random-number-generation-in-the-future-framework),
@@ -511,7 +513,7 @@ which guarantees non-overlapping random numbers. There is a good
 discussion about seeds for `future_lapply` and `future_sapply` in the
 help for those functions.
 
-### future\_lapply
+#### 5.1.1 future_lapply
 
 Here we can set a single seed. Behind the scenes the L’Ecuyer-CMRG RNG
 is used so that the random numbers generated for each iteration are
@@ -530,7 +532,7 @@ identical(out1, out2)
 
     ## [1] TRUE
 
-Basically future\_lapply pregenerates a seed for each iteration using
+Basically future_lapply pregenerates a seed for each iteration using
 `parallel:::nextRNGStream`, which uses the L’Ecuyer algorithm. See [more
 details here](https://github.com/HenrikBengtsson/future/issues/126).
 
@@ -538,15 +540,15 @@ I could also have set `future.seed` to a numeric value, instead of
 setting the seed using `set.seed`, to make the generated results
 reproducible.
 
-### foreach
+#### 5.1.2 foreach
 
 See the example code in `help(doFuture)` for template code on how to use
 the `%doRNG%` operator with foreach to ensure correct RNG with foreach.
 (Also shown in Section 3.2.)
 
-## 5.2 Parallel RNG with alternatives to the future package
+### 5.2 Parallel RNG with alternatives to the future package
 
-### Parallel lapply style statements
+#### 5.2.1 Parallel lapply style statements
 
 Here’s how you initialize independent sequences on different processes
 when using the *parallel* package’s parallel lapply functionality.
@@ -566,7 +568,7 @@ the default. This will give different seeds for each process, but for
 safety, you should choose the L’Ecuyer algorithm via
 `RNGkind("L'Ecuyer-CMRG")` before running `mclapply`.
 
-### foreach
+#### 5.2.2 foreach
 
 For foreach, you can use `registerDoRNG`:
 
@@ -578,7 +580,7 @@ registerDoRNG(seed = 1)
 ## Now use foreach with %dopar%
 ```
 
-### mclapply
+#### 5.2.3 mclapply
 
 When using *mclapply*, you can use the *mc.set.seed* argument as follows
 (note that *mc.set.seed* is TRUE by default, so you should get different
@@ -594,7 +596,7 @@ res <- mclapply(seq_len(Y), looFit, Y, X, mc.cores = 4,
     mc.set.seed = TRUE) 
 ```
 
-# 6 The *partools* package
+## 6 The *partools* package
 
 *partools* is a package developed by Norm Matloff at UC-Davis. He has
 the perspective that Spark/Hadoop are not the right tools in many cases

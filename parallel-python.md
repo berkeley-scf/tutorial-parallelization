@@ -3,16 +3,18 @@ layout: default
 title: Parallel processing in Python
 ---
 
-# 1 Overview
+# Parallel processing in Python
+
+## 1 Overview
 
 Python provides a variety of functionality for parallelization, including threaded operations (in particular for linear algebra), parallel looping and map statements, and parallelization across multiple machines. This material focuses on Python's ipyparallel package, with some discussion of Dask and Ray.
 
 All of the functionality discussed here applies *only* if the iterations/loops of your calculations can be done completely separately and do not depend on one another. This scenario is called an *embarrassingly parallel* computation.  So coding up the evolution of a time series or a Markov chain is not possible using these tools. However, bootstrapping, random forests, simulation studies, cross-validation and many other statistical methods can be handled in this way.
 
 
-# 2 Threading
+## 2 Threading
 
-## 2.1 What is the BLAS?
+### 2.1 What is the BLAS?
 
 The BLAS is the library of basic linear algebra operations (written in
 Fortran or C). A fast BLAS can greatly speed up linear algebra relative
@@ -30,7 +32,7 @@ on your machine.
 
 To use a fast, threaded BLAS, one approach is to use the Anaconda/Miniconda Python distribution. When you install numpy and scipy, these should be [automatically linked](https://docs.anaconda.com/mkl-optimizations/index.html) against a fast, threaded BLAS (MKL). More generally, simply installing numpy from PyPI [should make use of OpenBLAS](https://numpy.org/install/).
 
-## 2.2 Example syntax
+### 2.2 Example syntax
 
 Threading in Python is limited to linear algebra (except if using Dask), provided Python is linked against a threaded BLAS.  Python has something
 called the [Global Interpreter Lock](https://wiki.python.org/moin/GlobalInterpreterLock)
@@ -48,7 +50,7 @@ U = np.linalg.cholesky(x)
 
 If you watch the Python process via the top command, you should see CPU usage above 100% if Python is linking to a threaded BLAS.
 
-## 2.3 Fixing the number of threads (cores used)
+### 2.3 Fixing the number of threads (cores used)
 
 In general, threaded code will
 detect the number of cores available on a machine and make use of
@@ -73,11 +75,11 @@ OMP_NUM_THREADS=4 python job.py > job.out
 ```
 
  
-# 3 Basic parallelized loops/maps/apply using ipyparallel
+## 3 Basic parallelized loops/maps/apply using ipyparallel
 
-## 3.1 Parallel looping on one machine
+### 3.1 Parallel looping on one machine
 
-### Starting the workers
+#### 3.1.1 Starting the workers
 
 First we'll cover IPython Parallel (i.e., the `ipyparallel` package) functionality, which allows one to parallelize on a single machine (discussed here) or across multiple machines (see next section). In later sections, I'll discuss other packages that can be used for parallelization.
 
@@ -96,7 +98,7 @@ c = cluster.connect_client_sync()
 c.wait_for_engines(n)
 ```
 
-### Testing our workers
+#### 3.1.2 Testing our workers
 
 Let's verify that things seem set up ok and we can interact with all our workers:
 
@@ -116,7 +118,7 @@ dview.apply(lambda : "Hello, World")
 
 `dview` stands for a 'direct view', which is an interface to our cluster that allows us to 'manually' send tasks to the workers.
 
-### Parallelized machine learning example: setup
+#### 3.1.3 Parallelized machine learning example: setup
 
 Now let's see an example of how we can use our workers to run code in parallel. 
 
@@ -146,7 +148,7 @@ mydict = dict(X = X, Y = Y, looFit = looFit)
 dview.push(mydict)
 ```
 
-### Parallelized machine learning example: execution
+#### 3.1.4 Parallelized machine learning example: execution
 
 Now let's set up a "load-balanced view". With this type of interface, one submits the tasks and the controller decides how to divide up the tasks, ideally achieving good load balancing. A load-balanced computation is one that keeps all the workers busy throughout the computation
 
@@ -164,7 +166,7 @@ pred = lview.map(wrapper, range(n))
 pred[0:3]
 ```
 
-### Starting the workers outside Python
+#### 3.1.5 Starting the workers outside Python
 
 One can also start the workers outside of Python. This was required in older versions of ipyparallel, before version 7.
 
@@ -192,7 +194,7 @@ Finally, stop the workers.
 ipcluster stop
 ```
 
-## 3.2 Using multiple machines or cluster nodes
+### 3.2 Using multiple machines or cluster nodes
 
 One can use ipyparallel in a context with multiple nodes, though the setup to get the worker processes started is a bit more involved when you have multiple nodes. 
 
@@ -226,15 +228,15 @@ NWORKERS=4
 ssh other_host "for (( i = 0; i < ${NWORKERS}; i++ )); do ipengine &; done"
 ```
 
-# 4 Dask and Ray
+## 4 Dask and Ray
 
 Dask and Ray are powerful packages for parallelization that allow one to parallelize tasks in similar fashion to ipyparallel. But they also provide additional useful functionality: Dask allows one to work with large datasets that are split up across multiple processes on (potentially) multiple nodes, providing Spark/Hadoop-like functionality. Ray allows one to develop complicated apps that execute in parallel using the notion of *actors*.
 
-For more details on using distributed dataset with Dask, see [this tutorial](https://berkeley-scf.github.io/tutorial-dask-future/python-dask.html). For more details on Ray's actors, please see the [Ray documentation](https://www.ray.io/docs).
+For more details on using distributed dataset with Dask, see [this Dask tutorial](https://berkeley-scf.github.io/tutorial-dask-future/python-dask.html). For more details on Ray's actors, please see the [Ray documentation](https://www.ray.io/docs).
 
-## 4.1 Parallel looping in Dask
+### 4.1 Parallel looping in Dask
 
-There are various ways to do parallel loops in Dask, as discussed in detail in [this tutorial](https://berkeley-scf.github.io/tutorial-dask-future/python-dask.html).
+There are various ways to do parallel loops in Dask, as discussed in detail in [this Dask tutorial](https://berkeley-scf.github.io/tutorial-dask-future/python-dask.html).
 
 Here's an example of doing it with "delayed" calculations set up via list comprehension. First we'll start workers on a single machine. One can also start workers on multiple machines, as discussed in the tutorial linked to just above.
 
@@ -268,7 +270,7 @@ Execution only starts when we call `dask.compute`.
 
 Note that we set a separate seed for each task to try to ensure indepenedent random numbers between tasks, but Section 5 discusses better ways to do this.
 
-## 4.2 Parallel looping in Ray
+### 4.2 Parallel looping in Ray
 
 We'll start up  workers on a single machine. To run across multiple workers, see [this tutorial](https://berkeley-scf.github.io/tutorial-dask-future/python-ray.html) or the [Ray documentation](https://www.ray.io/docs).
 
@@ -298,9 +300,9 @@ futures  # This is an array of placeholders for the tasks to be carried out.
 ray.get(futures)
 ```
 
-# 5 Random number generation (RNG) in parallel 
+## 5 Random number generation (RNG) in parallel 
 
-## 5.1 Overview
+### 5.1 Overview
 
 The key thing when thinking about random numbers in a parallel context
 is that you want to avoid having the same 'random' numbers occur on
@@ -336,7 +338,7 @@ many random numbers.
 More generally to avoid this problem, the key is to use an algorithm
 that ensures sequences that do not overlap.
 
-## 5.2 Parallel RNG in practice
+### 5.2 Parallel RNG in practice
 
 
 In recent versions of numpy there has been attention paid to this problem and there are now [multiple approaches to getting high-quality random number generation for parallel code](https://numpy.org/doc/stable/reference/random/parallel.html).

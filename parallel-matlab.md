@@ -3,11 +3,13 @@ layout: default
 title: Parallel processing in MATLAB
 ---
 
-# 1 Overview
+# Parallel processing in MATLAB
+
+## 1 Overview
 
 MATLAB provides a variety of functionality for parallelization, including threaded operations (linear algebra and more), parallel for loops, and parallelization across multiple machines. This material will just scratch the surface of what is possible.
 
-# 2 Threading
+## 2 Threading
 
 Many MATLAB functions are automatically threaded (not just linear
 algebra), so you don't need to do anything special in your code to
@@ -36,7 +38,7 @@ matlab -singleCompThread ...
 ```
 
 
-# 3 Parallel for loops on one machine
+## 3 Parallel for loops on one machine
 
 To run a loop in parallel in MATLAB, you can use the *parfor*
 construction.  Before running the parfor you
@@ -76,7 +78,7 @@ cl.NumThreads = 2;  % 2 threads per worker
 cl.parpool(4);      % 4 workers
 ```
 
-# 4 Parallel random number generation
+## 4 Parallel random number generation
 
 MATLAB also uses the Mersenne-Twister. We can set the seed as: `rng(seed)`,
 with seed being a non-negative integer. 
@@ -99,7 +101,7 @@ randn(5, 1)
 ```
 
 
-# 5 Manually parallelizing individual tasks
+## 5 Manually parallelizing individual tasks
 
 In addition to using *parfor* in MATLAB, you can also explicitly program parallelization, managing the individual
 parallelized tasks. Here is some template code for doing this. We'll
@@ -175,7 +177,7 @@ delete(pool);
 ```
 
 
-# 6 Using MATLAB across multiple nodes
+## 6 Using MATLAB across multiple nodes
 
 To use MATLAB across multiple nodes, you need to have the MATLAB Parallel Server, which often requires an additional license. If it is installed, one can set up MATLAB so that *parfor* will distribute its work across multiple nodes. Details may vary depending on how Parallel Server is set up on your system. 
 
