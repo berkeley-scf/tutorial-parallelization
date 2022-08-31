@@ -248,7 +248,7 @@ both loops) are independent of the other tasks, you can define two
 foreach loops, with the outer foreach using the `%:%` operator and the
 inner foreach using the usual `%dopar%` operator. More details can be
 found [in this foreach
-vignette](https://cran.r-project.org/web/packages/foreach/vignettes/nested.pdf).
+vignette](https://cran.r-project.org/web/packages/foreach/vignettes/nested.html).
 
 ### 3.3 Avoiding copies on each worker
 
@@ -306,10 +306,10 @@ tmp <- future_sapply(seq_along(workers),
                            "on", Sys.info()[['nodename']], "\n"))
 ```
 
-    ## Worker running as process 748587 on arwen 
-    ## Worker running as process 748685 on arwen 
-    ## Worker running as process 236873 on gandalf 
-    ## Worker running as process 236945 on gandalf
+    ## Worker running as process 685525 on arwen 
+    ## Worker running as process 685685 on arwen 
+    ## Worker running as process 600836 on gandalf 
+    ## Worker running as process 600908 on gandalf
 
 ``` r
 # Now use parallel_lapply, foreach, etc. as before

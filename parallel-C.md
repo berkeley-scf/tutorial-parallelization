@@ -337,7 +337,7 @@ The basic requirements for starting such a job are that you specify the number o
 There are two ways to tell *mpirun* the machines on which to run the worker processes.
 
 First, we can pass the machine names directly, replicating the name
-if we want multiple processes on a single machine. In the example here, these are machines accessible to me, and you would need to replace those names with the names of machines you have access to. You'll need to [set up SSH keys](http://statistics.berkeley.edu/computing/sshkeys) so that you can access the machines without a password.
+if we want multiple processes on a single machine. In the example here, these are machines accessible to me, and you would need to replace those names with the names of machines you have access to. You'll need to [set up SSH keys](https://statistics.berkeley.edu/computing/ssh-keys) so that you can access the machines without a password.
 
 
 ```bash

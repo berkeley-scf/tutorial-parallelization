@@ -30,7 +30,7 @@ are free resources, your linear algebra will use multiple cores,
 provided your installed Python  is linked against the threaded BLAS installed
 on your machine.
 
-To use a fast, threaded BLAS, one approach is to use the Anaconda/Miniconda Python distribution. When you install numpy and scipy, these should be [automatically linked](https://docs.anaconda.com/mkl-optimizations/index.html) against a fast, threaded BLAS (MKL). More generally, simply installing numpy from PyPI [should make use of OpenBLAS](https://numpy.org/install/).
+To use a fast, threaded BLAS, one approach is to use the Anaconda/Miniconda Python distribution. When you install numpy and scipy, these should be [automatically linked](https://www.anaconda.com/blog/scikit-learn-speed-up-with-intel-and-anaconda) against a fast, threaded BLAS (MKL). More generally, simply installing numpy from PyPI [should make use of OpenBLAS](https://numpy.org/install/).
 
 ### 2.2 Example syntax
 
