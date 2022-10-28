@@ -168,6 +168,12 @@ Here the low user time is because the time spent in the worker processes
 is not counted at the level of the overall master process that
 dispatches the workers.
 
+Note that one can use `plan` without specifying the number of workers,
+in which case it will call `parallelly::availableCores()` and in general
+set the number of workers to a sensible value based on your system (and
+your scheduler allocation if your code is running on a cluster under a
+scheduler such as Slurm).
+
 ### 3.2 Parallel for loops
 
 We can use the future package in combination with the `foreach` command
@@ -306,10 +312,10 @@ tmp <- future_sapply(seq_along(workers),
                            "on", Sys.info()[['nodename']], "\n"))
 ```
 
-    ## Worker running as process 685525 on arwen 
-    ## Worker running as process 685685 on arwen 
-    ## Worker running as process 600836 on gandalf 
-    ## Worker running as process 600908 on gandalf
+    ## Worker running as process 3602807 on arwen 
+    ## Worker running as process 3602886 on arwen 
+    ## Worker running as process 785585 on gandalf 
+    ## Worker running as process 785660 on gandalf
 
 ``` r
 # Now use parallel_lapply, foreach, etc. as before
@@ -410,16 +416,16 @@ worker processes then copies are made.
 Importantly, because forking is not available on Windows, the above
 statements only apply on Linux and MacOS.
 
-In contrast, with parallel lapply (and related) statements when starting
-the cluster using the standard `makeCluster` (which sets up a so-called
-*PSOCK* cluster, starting the R worker processes via `Rscript`), one
-needs to load packages within the code that is executed in parallel. In
-addition one needs to use `clusterExport` to tell R which objects in the
-global environment should be available to the worker processes. This
-involves making as many copies of the objects as there are worker
-processes, so one can easily exceed the physical memory (RAM) on the
-machine if one has large objects, and the copying of large objects will
-take time.
+In contrast, with parallel lapply (and related) statements (but not
+foreach) when starting the cluster using the standard `makeCluster`
+(which sets up a so-called *PSOCK* cluster, starting the R worker
+processes via `Rscript`), one needs to load packages within the code
+that is executed in parallel. In addition one needs to use
+`clusterExport` to tell R which objects in the global environment should
+be available to the worker processes. This involves making as many
+copies of the objects as there are worker processes, so one can easily
+exceed the physical memory (RAM) on the machine if one has large
+objects, and the copying of large objects will take time.
 
 ### 4.4 Using multiple machines or cluster nodes
 
