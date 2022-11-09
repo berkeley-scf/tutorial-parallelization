@@ -99,7 +99,7 @@ blas_set_num_threads(4)
 # now run your linear algebra
 ```
 
-## 3 Parallel loops (including parallely lapply) via the future package
+## 3 Parallel loops (including parallel lapply) via the future package
 
 All of the functionality discussed here applies *only* if the iterations/loops of your calculations can be done completely separately and do not depend on one another. This scenario is called an *embarrassingly parallel* computation.  So coding up the evolution of a time series or a Markov chain is not possible using these tools. However, bootstrapping, random forests, simulation studies, cross-validation and many other statistical methods can be handled in this way.
 
