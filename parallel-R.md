@@ -109,7 +109,7 @@ blas_set_num_threads(4)
 # now run your linear algebra
 ```
 
-## 3 Parallel loops (including parallely lapply) via the future package
+## 3 Parallel loops (including parallel lapply) via the future package
 
 All of the functionality discussed here applies *only* if the
 iterations/loops of your calculations can be done completely separately
