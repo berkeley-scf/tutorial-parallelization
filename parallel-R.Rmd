@@ -230,27 +230,32 @@ Here we want to use two cores on one machine and two on another.
 library(future.apply)
 workers <- c(rep('arwen.berkeley.edu', 2), rep('gandalf.berkeley.edu', 2))
 plan(cluster, workers = workers)
-# Check we are getting workers in the right places:
-tmp <- future_sapply(seq_along(workers),
-                     function(i)
-                       cat("Worker running as process", Sys.getpid(),
-                           "on", Sys.info()[['nodename']], "\n"))
 # Now use parallel_lapply, foreach, etc. as before
 ```
 
 If you are using the Slurm scheduler on a Linux cluster and in your sbatch or srun command you use `--ntasks`, then the following will allow you to use as many workers as the value of `ntasks`. One caveat is that one still needs to be able to access the various machines via password-less SSH.
 
-```{r, srun, eval = FALSE}
-workers <- system('srun hostname', intern = TRUE)
-plan(cluster, workers = workers)
-# and verify we're actually connected to the workers:
-future_sapply(seq_along(workers),
-              function(i)
-                cat("Worker running in process", Sys.getpid(),
-                    "on", Sys.info()[['nodename']], "\n"))
+```{r, future-slurm, eval = FALSE}
+plan(cluster)
 # Now use parallel_lapply, parallel_sapply, foreach, etc. as before
 ```
 
+Alternatively, you could set specify the workers manually. Here we use `srun` (note this is being done within our original `sbatch` or `srun`) to run hostname once per Slurm task, returning the name of the node the task is assigned to.
+
+```{r, srun-manual, eval = FALSE}
+workers <- system('srun hostname', intern = TRUE)
+plan(cluster, workers = workers)
+# Now use parallel_lapply, parallel_sapply, foreach, etc. as before
+```
+
+In all cases, we can verify that the workers are running on the various nodes by checking the nodename of each of the workers:
+
+```{r, check-workers, eval=FALSE}
+tmp <- future_sapply(seq_len(nbrOfWorkers()), 
+              function(i)
+                cat("Worker running in process", Sys.getpid(),
+                    "on", Sys.info()[['nodename']], "\n"))
+```
 
 ## 4 Older alternatives to the future package for parallel loops/lapply
 

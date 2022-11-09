@@ -305,19 +305,6 @@ Here we want to use two cores on one machine and two on another.
 library(future.apply)
 workers <- c(rep('arwen.berkeley.edu', 2), rep('gandalf.berkeley.edu', 2))
 plan(cluster, workers = workers)
-# Check we are getting workers in the right places:
-tmp <- future_sapply(seq_along(workers),
-                     function(i)
-                       cat("Worker running as process", Sys.getpid(),
-                           "on", Sys.info()[['nodename']], "\n"))
-```
-
-    ## Worker running as process 3602807 on arwen 
-    ## Worker running as process 3602886 on arwen 
-    ## Worker running as process 785585 on gandalf 
-    ## Worker running as process 785660 on gandalf
-
-``` r
 # Now use parallel_lapply, foreach, etc. as before
 ```
 
@@ -328,14 +315,29 @@ one still needs to be able to access the various machines via
 password-less SSH.
 
 ``` r
+plan(cluster)
+# Now use parallel_lapply, parallel_sapply, foreach, etc. as before
+```
+
+Alternatively, you could set specify the workers manually. Here we use
+`srun` (note this is being done within our original `sbatch` or `srun`)
+to run hostname once per Slurm task, returning the name of the node the
+task is assigned to.
+
+``` r
 workers <- system('srun hostname', intern = TRUE)
 plan(cluster, workers = workers)
-# and verify we're actually connected to the workers:
-future_sapply(seq_along(workers),
+# Now use parallel_lapply, parallel_sapply, foreach, etc. as before
+```
+
+In all cases, we can verify that the workers are running on the various
+nodes by checking the nodename of each of the workers:
+
+``` r
+tmp <- future_sapply(seq_len(nbrOfWorkers()), 
               function(i)
                 cat("Worker running in process", Sys.getpid(),
                     "on", Sys.info()[['nodename']], "\n"))
-# Now use parallel_lapply, parallel_sapply, foreach, etc. as before
 ```
 
 ## 4 Older alternatives to the future package for parallel loops/lapply
