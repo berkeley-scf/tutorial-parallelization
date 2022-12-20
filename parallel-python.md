@@ -92,11 +92,11 @@ import ipyparallel as ipp
 ipp.__version__
 n = 4
 cluster = ipp.Cluster(n = n)
-cluster.start_cluster_sync()
-
-c = cluster.connect_client_sync()
-c.wait_for_engines(n)
+c = cluster.start_and_connect_sync()
 ```
+
+ipp.Cluster(n=cpu_count).start_and_connect_sync()
+
 
 #### 3.1.2 Testing our workers
 
