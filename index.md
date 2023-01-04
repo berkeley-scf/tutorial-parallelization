@@ -8,7 +8,7 @@ author: Christopher Paciorek
 
 ## 1 This tutorial
 
-This tutorial covers the use of parallelization (on either one machine or multiple machines/nodes) in Python, R, MATLAB and C/C++. Please click on the links above for material specific to each language.
+This tutorial covers the use of parallelization (on either one machine or multiple machines/nodes) in Python, R, Julia, MATLAB and C/C++. Please click on the links above for material specific to each language.
 
 You should be able to replicate much of what is covered here provided you have the relevant software on your computer, but some of the parallelization approaches may not work on Windows.
 
