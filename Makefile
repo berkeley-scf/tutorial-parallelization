@@ -3,9 +3,11 @@ parallel-R.md: parallel-R.Rmd
 ## 'gfm' ensures that the 'r' tag is put on chunks, so code coloring/highlighting will be done when html is produced.
 
 parallel-julia.md: parallel-julia.qmd
-	quarto render parallel-julia.qmd --to markdown
+	quarto render parallel-julia.qmd --to md
 ## To render Julia, need to specify Jupyter kernel. Also need to have IJulia installed for the user doing the rendering.
-## May be able to create a kernel that hard-codes in 4 threads to do parallel stuff.
+## Currently using a kernel that hard-codes in 4 threads (`-t 4`) to do parallel stuff.
+## Rendering occasionally/non-reproducibly fails with inscrutable error messages.
+
 
 clean:
 	rm -f parallel-R.md 

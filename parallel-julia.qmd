@@ -14,7 +14,7 @@ In addition to parallelization, the last section discusses some issues related t
 
 ## 2 Threading
 
-Threaded calculations are done in parallel on [software threads](../#31-shared-memory).
+Threaded calculations are done in parallel on [software threads](./#31-shared-memory).
 
 Threads share objects in memory with the parent process, which is useful for avoiding copies but raises the danger of a "race condition", where different threads modify data that other threads are using and cause errors..
 

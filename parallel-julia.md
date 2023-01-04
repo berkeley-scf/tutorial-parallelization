@@ -1,8 +1,5 @@
----
-jupyter: julia-1.6-t4
-title: Parallel processing in Julia
-toc-title: Table of contents
----
+Parallel processing in Julia
+================
 
 # Parallel processing in Julia
 
@@ -17,15 +14,15 @@ control tasks and sending data between processes in a fine-grained way.
 In addition to parallelization, the last section discusses some issues
 related to efficiency with for loops, in particular *fused* operations.
 This is not directly related to parallelization but given the focus on
-loops in this document, it's useful and interesting to know about.
+loops in this document, it’s useful and interesting to know about.
 
 ## 2 Threading
 
 Threaded calculations are done in parallel on [software
-threads](../#31-shared-memory).
+threads](./#31-shared-memory).
 
 Threads share objects in memory with the parent process, which is useful
-for avoiding copies but raises the danger of a "race condition", where
+for avoiding copies but raises the danger of a “race condition”, where
 different threads modify data that other threads are using and cause
 errors..
 
@@ -40,10 +37,9 @@ single core, the openBLAS library is threaded - if your computer has
 multiple cores and there are free resources, your linear algebra will
 use multiple cores
 
-Here's an example.
+Here’s an example.
 
-::: {.cell execution_count="1"}
-``` {.julia .cell-code}
+``` julia
 using LinearAlgebra
 using Distributions
 n = 7000
@@ -52,13 +48,9 @@ x = rand(Uniform(0,1), n,n);
 println(BLAS.get_num_threads())
 ```
 
-::: {.cell-output .cell-output-stdout}
     8
-:::
-:::
 
-::: {.cell execution_count="2"}
-``` {.julia .cell-code}
+``` julia
 function chol_xtx(x)
     z = x'*x   ## z is positive definite
     C = cholesky(z) 
@@ -68,24 +60,17 @@ BLAS.set_num_threads(4)
 @time chol = chol_xtx(x);  
 ```
 
-::: {.cell-output .cell-output-stdout}
-      4.753901 seconds (2.62 M allocations: 888.768 MiB, 4.58% gc time, 20.26% compilation time)
-:::
-:::
+      4.794770 seconds (2.62 M allocations: 888.768 MiB, 4.51% gc time, 19.85% compilation time)
 
-::: {.cell execution_count="3"}
-``` {.julia .cell-code}
+``` julia
 BLAS.set_num_threads(1)
 @time chol = chol_xtx(x);  
 ```
 
-::: {.cell-output .cell-output-stdout}
-     10.599172 seconds (7 allocations: 747.681 MiB, 0.22% gc time)
-:::
-:::
+     10.841495 seconds (7 allocations: 747.681 MiB, 0.22% gc time)
 
 We see that using four threads is faster than one, but in this case we
-don't get a four-fold speedup.
+don’t get a four-fold speedup.
 
 #### Number of threads
 
@@ -94,15 +79,11 @@ equal to the number of processors on your machine.
 
 As seen above, you can check the number of threads being used with:
 
-::: {.cell execution_count="4"}
-``` {.julia .cell-code}
+``` julia
 BLAS.get_num_threads()
 ```
 
-::: {.cell-output .cell-output-display execution_count="5"}
     1
-:::
-:::
 
 Other ways to control the number of threads used for linear algebra
 include:
@@ -116,13 +97,12 @@ include:
 In Julia, you can directly set up [software threads to use for parallel
 processing](https://docs.julialang.org/en/v1/manual/multi-threading).
 
-Here we'll see some examples of running a for loop in parallel, both
+Here we’ll see some examples of running a for loop in parallel, both
 acting on a single object and used as a parallel map operation.
 
 Here we can operate on a vector in parallel:
 
-::: {.cell execution_count="5"}
-``` {.julia .cell-code}
+``` julia
 using Base.Threads
 
 n = 50000000;
@@ -132,13 +112,11 @@ x = rand(n);
     x[i] = exp(x[i]) + sin(x[i]);
 end
 ```
-:::
 
 We could also threads to carry out a parallel map operation, implemented
 as a for loop.
 
-::: {.cell execution_count="6"}
-``` {.julia .cell-code}
+``` julia
 n = 1000
 
 function test(n)
@@ -153,20 +131,18 @@ a = zeros(12)
     a[i] = test(n)
 end
 ```
-:::
 
 ### 2.3 Spawning tasks on threads
 
-You can also create (aka 'spawn') individual tasks on threads, with the
+You can also create (aka ‘spawn’) individual tasks on threads, with the
 tasks running in parallel.
 
-Let's see an example (taken from
+Let’s see an example (taken from
 [here](http://ferestrepoca.github.io/paradigmas-de-programacion/paralela/tutoriales/julia/notebooks/parallelProgrammingApplications.html)
 of sorting a vector in parallel, by sorting subsets of the vector in
 separate threads.
 
-::: {.cell execution_count="7"}
-``` {.julia .cell-code}
+``` julia
 import Base.Threads.@spawn
 
 # sort the elements of `v` in place, from indices `lo` to `hi` inclusive
@@ -215,12 +191,9 @@ function psort!(v, lo::Int=1, hi::Int=length(v))
 end
 ```
 
-::: {.cell-output .cell-output-display execution_count="8"}
     psort! (generic function with 3 methods)
-:::
-:::
 
-How does this work? Let's consider an example where we sort a vector of
+How does this work? Let’s consider an example where we sort a vector of
 length 250000.
 
 The vector gets split into elements 1:125000 (run in task #1) and
@@ -234,22 +207,18 @@ Assuming we have at least four threads (including the main process),
 each of the tasks will run in a separate thread, and all four sorts on
 the vector subsets will run in parallel.
 
-::: {.cell execution_count="8"}
-``` {.julia .cell-code}
+``` julia
 x = rand(250000);
 psort!(x);
 ```
 
-::: {.cell-output .cell-output-stdout}
-    Task (runnable) @0x00007f4de04c6cb0 1 250000
-    Task (runnable) @0x00007f4de04c6cb0 125001 250000
-    Task (runnable) @0x00007f4de04c6cb0 187501 250000
-    Task (runnable) @0x00007f4de19f6380 1 125000
-    Task (runnable) @0x00007f4de19f6380 62501 125000
-    Task (runnable) @0x00007f4e4bb11510 1 62500
-    Task (runnable) @0x00007f4de19f64d0 125001 187500
-:::
-:::
+    Task (runnable) @0x00007fb5f84cecb0 1 250000
+    Task (runnable) @0x00007fb5f84cecb0 125001 250000
+    Task (runnable) @0x00007fb5f84cecb0 187501 250000
+    Task (runnable) @0x00007fb665cd7880 1 125000
+    Task (runnable) @0x00007fb665cd7b20 125001 187500
+    Task (runnable) @0x00007fb665cd7880 62501 125000
+    Task (runnable) @0x00007fb6631853c0 1 62500
 
 We see that the output from `current_task()` shows that the task labels
 correspond with what I stated above.
@@ -261,15 +230,11 @@ threads set in the Julia session.
 
 You can see the number of threads available:
 
-::: {.cell execution_count="9"}
-``` {.julia .cell-code}
+``` julia
 Threads.nthreads()
 ```
 
-::: {.cell-output .cell-output-display execution_count="10"}
     4
-:::
-:::
 
 You can control the number of threads used for threading in Julia (apart
 from linear algebra) either by:
@@ -279,7 +244,7 @@ from linear algebra) either by:
 -   starting Julia with the `-t` (or `--threads`) flag, e.g.:
     `julia -t 4`.
 
-Note that we can't use `OMP_NUM_THREADS` as the Julia threading is not
+Note that we can’t use `OMP_NUM_THREADS` as the Julia threading is not
 based on openMP.
 
 ## 3 Multi-process parallelization
@@ -291,14 +256,13 @@ processes (on one or more machines). `pmap` is good for cases where each
 task takes a non-negligible amount of time, as there is overhead
 (latency) in starting the tasks.
 
-Here we'll carry out multiple computationally expensive calculations in
+Here we’ll carry out multiple computationally expensive calculations in
 the map.
 
 We need to import packages and create the function on each of the worker
 processes using `@everywhere`.
 
-::: {.cell execution_count="10"}
-``` {.julia .cell-code}
+``` julia
 using Distributed
 
 if nprocs() == 1
@@ -308,17 +272,11 @@ end
 nprocs()
 ```
 
-::: {.cell-output .cell-output-stderr}
     WARNING: using Distributed.@spawn in module Main conflicts with an existing identifier.
-:::
 
-::: {.cell-output .cell-output-display execution_count="11"}
     5
-:::
-:::
 
-::: {.cell execution_count="11"}
-``` {.julia .cell-code}
+``` julia
 @everywhere begin
     using Distributions
     using LinearAlgebra
@@ -333,22 +291,19 @@ end
 result = pmap(test, repeat([5000],12))
 ```
 
-::: {.cell-output .cell-output-display execution_count="12"}
     12-element Vector{Float64}:
-     11.16226720557071
-     12.014264289400314
-     11.898111818872662
-     11.09311951995371
-     11.404196895665349
-     12.673542505580757
-     11.73011695918563
-     11.817326190943426
-     11.34666732332691
-     10.967735044139209
-     11.205400337082677
-     11.202193460748065
-:::
-:::
+     11.587624168621717
+     11.01287957612305
+     11.353009371144287
+     11.529781129424254
+     11.517184409348705
+     11.666906384011622
+     11.90364719914917
+     12.088846792766157
+     11.902205070297843
+     11.63588792957528
+     11.644102929454132
+     11.491299431783377
 
 One can use static allocation (prescheduling) with the `batch_size`
 argument, thereby assigning that many tasks to each worker to reduce
@@ -359,14 +314,13 @@ latentcy.
 One can execute for loops in parallel across multiple worker processes
 as follows. This is particularly handy for cases where one uses a
 reduction operator (e.g., the `+` here) so that little data needs to be
-copied back to the main process. (And in this case we don't copy any
+copied back to the main process. (And in this case we don’t copy any
 data to the workers either.)
 
-Here we'll sum over a large number of random numbers with chunks done on
+Here we’ll sum over a large number of random numbers with chunks done on
 each of the workers, comparing the time to a basic for loop.
 
-::: {.cell execution_count="12"}
-``` {.julia .cell-code}
+``` julia
 function forfun(n)
     sum = 0.0
     for i in 1:n
@@ -386,20 +340,13 @@ n=50000000
 @time forfun(n);
 ```
 
-::: {.cell-output .cell-output-stdout}
-      4.300862 seconds (50.02 M allocations: 4.472 GiB, 16.62% gc time, 0.24% compilation time)
-:::
-:::
+      4.234983 seconds (50.02 M allocations: 4.472 GiB, 16.07% gc time, 0.23% compilation time)
 
-::: {.cell execution_count="13"}
-``` {.julia .cell-code}
+``` julia
 @time pforfun(n); 
 ```
 
-::: {.cell-output .cell-output-stdout}
-      1.874745 seconds (1.05 M allocations: 61.659 MiB, 16.38% compilation time)
-:::
-:::
+      1.771453 seconds (1.05 M allocations: 61.659 MiB, 16.97% compilation time)
 
 The use of `@sync` causes the operation to block until the result is
 available so we can get the correct timing.
@@ -409,12 +356,12 @@ of data back to the main process, and this could take a lot of time. For
 such calculations, one would generally be better off using threaded for
 loops in order to take advantage of shared memory.
 
-We'd have to look into how the random number seed is set on each worker
+We’d have to look into how the random number seed is set on each worker
 to better understand any issues that might arise from parallel random
 number generation, but I believe that each worker has a different seed
 (but note that this does not explicitly ensure that the random number
 streams on the workers are distinct, as is the case if one uses the
-L'Ecuyer algorithm).
+L’Ecuyer algorithm).
 
 ### 3.3 Passing data to the workers
 
@@ -424,24 +371,20 @@ each worker, as that could make up a substantial portion of the time
 involved in the computation.
 
 One can explicitly copy a variable to the workers in an `@everywhere`
-block by using Julia's interpolation syntax:
+block by using Julia’s interpolation syntax:
 
-::: {.cell execution_count="14"}
-``` {.julia .cell-code}
+``` julia
 @everywhere begin
     x = $x  # copy to workers using interpolation syntax
     println(pointer_from_objref(x), ' ', x[1])  
 end
 ```
 
-::: {.cell-output .cell-output-stdout}
-    Ptr{Nothing} @0x00007f4d34abaa90 6.622218080343245e-6
-          From worker 5:    Ptr{Nothing} @0x00007f31fa97c330 6.622218080343245e-6
-          From worker 2:    Ptr{Nothing} @0x00007fe477b80330 6.622218080343245e-6
-          From worker 3:    Ptr{Nothing} @0x00007f7ef787c330 6.622218080343245e-6
-          From worker 4:    Ptr{Nothing} @0x00007fc9e8608330 6.622218080343245e-6
-:::
-:::
+    Ptr{Nothing} @0x00007fb5f6f51cd0 2.9128684131407567e-6
+          From worker 2:    Ptr{Nothing} @0x00007f2cbd7803d0 2.9128684131407567e-6
+          From worker 5:    Ptr{Nothing} @0x00007f53dc3bc3d0 2.9128684131407567e-6
+          From worker 4:    Ptr{Nothing} @0x00007f103331c3d0 2.9128684131407567e-6
+          From worker 3:    Ptr{Nothing} @0x00007fe8b40c43d0 2.9128684131407567e-6
 
 We see based on `pointer_from_objref` that each copy of `x` is stored at
 a distinct location in memory, even when processes are on the same
@@ -449,11 +392,10 @@ machine.
 
 Also note that if one creates a variable within an `@everywhere` block,
 that variable is available to all tasks run on the worker, so it is
-global' with respect to those tasks. Note the repeated values in the
+global’ with respect to those tasks. Note the repeated values in the
 result here.
 
-::: {.cell execution_count="15"}
-``` {.julia .cell-code}
+``` julia
 @everywhere begin
     x = rand(5)
     function test(i)
@@ -464,25 +406,22 @@ end
 result = pmap(test, 1:12, batch_size = 3)
 ```
 
-::: {.cell-output .cell-output-display execution_count="16"}
     12-element Vector{Float64}:
-     1.6357038263726364
-     2.524528943958307
-     2.80134501297326
-     2.1779980896005253
-     1.6357038263726364
-     2.524528943958307
-     2.80134501297326
-     2.1779980896005253
-     1.6357038263726364
-     2.524528943958307
-     2.80134501297326
-     2.1779980896005253
-:::
-:::
+     2.7731288573805895
+     2.919146748628892
+     3.5389861159777904
+     1.3341889819236203
+     2.7731288573805895
+     2.919146748628892
+     3.5389861159777904
+     1.3341889819236203
+     2.7731288573805895
+     2.919146748628892
+     3.5389861159777904
+     1.3341889819236203
 
 If one wants to have multiple processes all work on the same object,
-without copying it, one can consider using Julia's
+without copying it, one can consider using Julia’s
 [SharedArray](https://docs.julialang.org/en/v1/stdlib/SharedArrays/#SharedArrays.SharedArray)
 (one machine) or [DArray from the DistributedArrays
 package](https://juliaparallel.org/DistributedArrays.jl/stable/)
@@ -501,21 +440,21 @@ found
 In addition to using processes on one machine, one can use processes
 across multiple machines. One can either start the processes when you
 start the main Julia session or you can start them from within the Julia
-session. In both cases you'll need to have the ability to ssh to the
+session. In both cases you’ll need to have the ability to ssh to the
 other machines without entering your password.
 
-To start the processes when starting Julia, create a "machinefile" that
+To start the processes when starting Julia, create a “machinefile” that
 lists the names of the machines and the number of worker processes to
 start on each machine.
 
-Here's an example machinefile:
+Here’s an example machinefile:
 
     arwen.berkeley.edu
     arwen.berkeley.edu
     gandalf.berkeley.edu
     gandalf.berkeley.edu
 
-Note that if you're using Slurm on a Linux cluster, you could generate
+Note that if you’re using Slurm on a Linux cluster, you could generate
 that file in the shell from within your Slurm allocation like this:
 
     srun hostname > machines
@@ -524,36 +463,28 @@ Then start Julia like this:
 
     julia --machine-file machines
 
-From within Julia, you can add processes like this (first we'll remove
+From within Julia, you can add processes like this (first we’ll remove
 the existing worker processes started using `addprocs()` previously):
 
-::: {.cell execution_count="16"}
-``` {.julia .cell-code}
+``` julia
 rmprocs(workers())
 
 addprocs([("arwen", 2), ("gandalf", 2)])
 ```
 
-::: {.cell-output .cell-output-display execution_count="17"}
     4-element Vector{Int64}:
      6
      7
      8
      9
-:::
-:::
 
 To check on the number of processes:
 
-::: {.cell execution_count="17"}
-``` {.julia .cell-code}
+``` julia
 nprocs()
 ```
 
-::: {.cell-output .cell-output-display execution_count="18"}
     5
-:::
-:::
 
 ## 4 Loops and fused operations
 
@@ -573,48 +504,43 @@ code.)
 Contrast that to running directly as a for loop (e.g., in Julia or in
 C/C++):
 
-::: {.cell execution_count="18"}
-``` {.julia .cell-code}
+``` julia
 for i in 1:length(x)
     x[i] = exp(x[i]) + 3*sin(x[i])
 end
 ```
-:::
 
-Here temporary arrays don't need to be allocated and there is only a
+Here temporary arrays don’t need to be allocated and there is only a
 single for loop.
 
-Combining loops is called 'fusing' and is an [important optimization
+Combining loops is called ‘fusing’ and is an [important optimization
 that Julia can
 do](https://docs.julialang.org/en/v1/manual/performance-tips/#More-dots:-Fuse-vectorized-operations).
-(It's also a [key optimization done by
+(It’s also a [key optimization done by
 XLA](https://www.tensorflow.org/xla), a compiler used with Tensorflow.)
 
 Of course you might ask why use vectorized code at all given that Julia
 will [JIT
 compile](https://en.wikipedia.org/wiki/Just-in-time_compilation) the for
-loop above and run it really quickly. That's true, but reading and
+loop above and run it really quickly. That’s true, but reading and
 writing vectorized code is easier than writing for loops.
 
-Let's compare the speed of the following approaches. We'll put
+Let’s compare the speed of the following approaches. We’ll put
 everything into functions as generally [recommended when timing Julia
 code](https://www.juliabloggers.com/timing-in-julia) to avoid [global
 variables that incur a performance penalty because their type can
 change](https://julialang.org/blog/2022/08/julia-1.8-highlights/#typed_globals).
 
-First, let's find the time when directly using a for loop, as a
+First, let’s find the time when directly using a for loop, as a
 baseline.
 
-::: {.cell execution_count="19"}
-``` {.julia .cell-code}
+``` julia
 n = 50000000
 y = Array{Float64}(undef, n);
 x = rand(n);
 ```
-:::
 
-::: {.cell execution_count="20"}
-``` {.julia .cell-code}
+``` julia
 function direct_for_loop_calc(x, y)
     for i in 1:length(x)
         y[i] = exp(x[i]) + sin(x[i])
@@ -625,29 +551,25 @@ using BenchmarkTools
 @benchmark direct_for_loop_calc(x, y)
 ```
 
-::: {.cell-output .cell-output-display execution_count="20"}
-    BenchmarkTools.Trial: 6 samples with 1 evaluation.
-     Range (min … max):  753.119 ms … 936.340 ms  ┊ GC (min … max): 0.00% … 0.00%
-     Time  (median):     833.486 ms               ┊ GC (median):    0.00%
-     Time  (mean ± σ):   843.634 ms ±  61.026 ms  ┊ GC (mean ± σ):  0.00% ± 0.00%
+    BenchmarkTools.Trial: 8 samples with 1 evaluation.
+     Range (min … max):  692.701 ms … 735.093 ms  ┊ GC (min … max): 0.00% … 0.00%
+     Time  (median):     707.273 ms               ┊ GC (median):    0.00%
+     Time  (mean ± σ):   709.768 ms ±  15.301 ms  ┊ GC (mean ± σ):  0.00% ± 0.00%
 
-      █                       █ ██              █                 █  
-      █▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁█▁██▁▁▁▁▁▁▁▁▁▁▁▁▁▁█▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁█ ▁
-      753 ms           Histogram: frequency by time          936 ms <
+      █  █ █           █      █              █    █               █  
+      █▁▁█▁█▁▁▁▁▁▁▁▁▁▁▁█▁▁▁▁▁▁█▁▁▁▁▁▁▁▁▁▁▁▁▁▁█▁▁▁▁█▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁█ ▁
+      693 ms           Histogram: frequency by time          735 ms <
 
      Memory estimate: 0 bytes, allocs estimate: 0.
-:::
-:::
 
 Notice the lack of additional memory use.
 
-Now let's try a basic vectorized calculation (for which we need the
-various periods to get vectorization), without fusing. We'll reassign
+Now let’s try a basic vectorized calculation (for which we need the
+various periods to get vectorization), without fusing. We’ll reassign
 the result to the allocated `y` vector for comparability to the for loop
 implementation above.
 
-::: {.cell execution_count="21"}
-``` {.julia .cell-code}
+``` julia
 function basic_vectorized_calc(x, y)
      y .= exp.(x) + 3 * sin.(x)
 end
@@ -656,29 +578,25 @@ using BenchmarkTools
 @benchmark basic_vectorized_calc(x, y)
 ```
 
-::: {.cell-output .cell-output-display execution_count="21"}
     BenchmarkTools.Trial: 4 samples with 1 evaluation.
-     Range (min … max):  1.320 s …   1.434 s  ┊ GC (min … max): 0.27% … 7.37%
-     Time  (median):     1.378 s              ┊ GC (median):    5.23%
-     Time  (mean ± σ):   1.377 s ± 46.701 ms  ┊ GC (mean ± σ):  4.60% ± 3.01%
+     Range (min … max):  1.319 s …   1.425 s  ┊ GC (min … max): 0.22% … 7.15%
+     Time  (median):     1.373 s              ┊ GC (median):    5.05%
+     Time  (mean ± σ):   1.373 s ± 43.350 ms  ┊ GC (mean ± σ):  4.43% ± 2.94%
 
-      █                          █  █                         █  
-      █▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁█▁▁█▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁█ ▁
+      █                         █   █                         █  
+      █▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁█▁▁▁█▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁█ ▁
       1.32 s         Histogram: frequency by time        1.43 s <
 
      Memory estimate: 1.49 GiB, allocs estimate: 8.
-:::
-:::
 
 The original `x` array is 400 MB; notice the additional memory
 allocation and that this takes almost twice as long as the original for
 loop.
 
-Here's a fused version of the vectorized calculation, where the `@.`
+Here’s a fused version of the vectorized calculation, where the `@.`
 causes the loops to be fused.
 
-::: {.cell execution_count="22"}
-``` {.julia .cell-code}
+``` julia
 function fused_vectorized_calc(x, y)
     y .= @. exp(x) + 3 * sin(x)
 end
@@ -686,19 +604,16 @@ end
 @benchmark fused_vectorized_calc(x, y)
 ```
 
-::: {.cell-output .cell-output-display execution_count="22"}
-    BenchmarkTools.Trial: 7 samples with 1 evaluation.
-     Range (min … max):  707.601 ms … 735.076 ms  ┊ GC (min … max): 0.00% … 0.00%
-     Time  (median):     725.094 ms               ┊ GC (median):    0.00%
-     Time  (mean ± σ):   723.132 ms ±  10.516 ms  ┊ GC (mean ± σ):  0.00% ± 0.00%
+    BenchmarkTools.Trial: 8 samples with 1 evaluation.
+     Range (min … max):  692.704 ms … 715.739 ms  ┊ GC (min … max): 0.00% … 0.00%
+     Time  (median):     698.210 ms               ┊ GC (median):    0.00%
+     Time  (mean ± σ):   701.015 ms ±   7.690 ms  ┊ GC (mean ± σ):  0.00% ± 0.00%
 
-      █        █                 █          █          █     █    █  
-      █▁▁▁▁▁▁▁▁█▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁█▁▁▁▁▁▁▁▁▁▁█▁▁▁▁▁▁▁▁▁▁█▁▁▁▁▁█▁▁▁▁█ ▁
-      708 ms           Histogram: frequency by time          735 ms <
+      █      █   ██   █      █                   █                █  
+      █▁▁▁▁▁▁█▁▁▁██▁▁▁█▁▁▁▁▁▁█▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁█▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁█ ▁
+      693 ms           Histogram: frequency by time          716 ms <
 
      Memory estimate: 0 bytes, allocs estimate: 0.
-:::
-:::
 
 We see that the time and (lack of) memory allocation are essentially the
 same as the original basic for loop.
@@ -708,8 +623,7 @@ compute scalar quantities and then using the vectorized version of the
 function (by using `scalar_calc.()` instead of `scalar_calc()`), which
 also does the fusion.
 
-::: {.cell execution_count="23"}
-``` {.julia .cell-code}
+``` julia
 function scalar_calc(x)
     return(exp(x) + 3 * sin(x))
 end
@@ -717,16 +631,13 @@ end
 @benchmark y .= scalar_calc.(x)
 ```
 
-::: {.cell-output .cell-output-display execution_count="23"}
     BenchmarkTools.Trial: 8 samples with 1 evaluation.
-     Range (min … max):  653.546 ms … 672.753 ms  ┊ GC (min … max): 0.00% … 0.00%
-     Time  (median):     664.597 ms               ┊ GC (median):    0.00%
-     Time  (mean ± σ):   663.533 ms ±   6.299 ms  ┊ GC (mean ± σ):  0.00% ± 0.00%
+     Range (min … max):  669.094 ms … 698.508 ms  ┊ GC (min … max): 0.00% … 0.00%
+     Time  (median):     673.400 ms               ┊ GC (median):    0.00%
+     Time  (mean ± σ):   679.490 ms ±  10.463 ms  ┊ GC (mean ± σ):  0.00% ± 0.00%
 
-      █         █            █          █ █   █       █           █  
-      █▁▁▁▁▁▁▁▁▁█▁▁▁▁▁▁▁▁▁▁▁▁█▁▁▁▁▁▁▁▁▁▁█▁█▁▁▁█▁▁▁▁▁▁▁█▁▁▁▁▁▁▁▁▁▁▁█ ▁
-      654 ms           Histogram: frequency by time          673 ms <
+      ▁      ▁█▁                          ▁   ▁                   ▁  
+      █▁▁▁▁▁▁███▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁█▁▁▁█▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁█ ▁
+      669 ms           Histogram: frequency by time          699 ms <
 
      Memory estimate: 32 bytes, allocs estimate: 2.
-:::
-:::
