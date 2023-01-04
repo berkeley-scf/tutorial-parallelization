@@ -3,8 +3,6 @@ title: "Parallel processing in Julia"
 jupyter: julia-1.6-t4
 ---
 
-# Parallel processing in Julia
-
 
 ## 1 Overview
 
@@ -231,7 +229,7 @@ end
 result = pmap(test, repeat([5000],12))
 ```
 
-One can use static allocation (prescheduling) with the `batch_size` argument, thereby assigning that many tasks to each worker to reduce latentcy.
+One can use [static allocation (prescheduling)](./#4-parallelization-strategies) with the `batch_size` argument, thereby assigning that many tasks to each worker to reduce latentcy.
 
 ### 3.2 Parallel for loops
 

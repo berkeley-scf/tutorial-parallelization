@@ -1,8 +1,6 @@
 Parallel processing in Julia
 ================
 
-# Parallel processing in Julia
-
 ## 1 Overview
 
 Julia provides built-in support for various kinds of parallel processing
@@ -60,14 +58,14 @@ BLAS.set_num_threads(4)
 @time chol = chol_xtx(x);  
 ```
 
-      4.794770 seconds (2.62 M allocations: 888.768 MiB, 4.51% gc time, 19.85% compilation time)
+      4.703782 seconds (2.62 M allocations: 888.768 MiB, 4.72% gc time, 20.43% compilation time)
 
 ``` julia
 BLAS.set_num_threads(1)
 @time chol = chol_xtx(x);  
 ```
 
-     10.841495 seconds (7 allocations: 747.681 MiB, 0.22% gc time)
+     10.630900 seconds (7 allocations: 747.681 MiB, 0.22% gc time)
 
 We see that using four threads is faster than one, but in this case we
 don’t get a four-fold speedup.
@@ -212,13 +210,13 @@ x = rand(250000);
 psort!(x);
 ```
 
-    Task (runnable) @0x00007fb5f84cecb0 1 250000
-    Task (runnable) @0x00007fb5f84cecb0 125001 250000
-    Task (runnable) @0x00007fb5f84cecb0 187501 250000
-    Task (runnable) @0x00007fb665cd7880 1 125000
-    Task (runnable) @0x00007fb665cd7b20 125001 187500
-    Task (runnable) @0x00007fb665cd7880 62501 125000
-    Task (runnable) @0x00007fb6631853c0 1 62500
+    Task (runnable) @0x00007f06e44c6cb0 1 250000
+    Task (runnable) @0x00007f06e44c6cb0 125001 250000
+    Task (runnable) @0x00007f06e44c6cb0 187501 250000
+    Task (runnable) @0x00007f06e5b4d660 1 125000
+    Task (runnable) @0x00007f06e5b4d7b0 125001 187500
+    Task (runnable) @0x00007f06e5b4d660 62501 125000
+    Task (runnable) @0x00007f074c975510 1 62500
 
 We see that the output from `current_task()` shows that the task labels
 correspond with what I stated above.
@@ -292,20 +290,21 @@ result = pmap(test, repeat([5000],12))
 ```
 
     12-element Vector{Float64}:
-     11.587624168621717
-     11.01287957612305
-     11.353009371144287
-     11.529781129424254
-     11.517184409348705
-     11.666906384011622
-     11.90364719914917
-     12.088846792766157
-     11.902205070297843
-     11.63588792957528
-     11.644102929454132
-     11.491299431783377
+     11.393582444472948
+     11.105010289847105
+     11.775490377807094
+     10.84171509813776
+     11.58028782674828
+     11.89511643725844
+     11.665171194143703
+     12.00016555638367
+     12.30999760747987
+     11.544900828541468
+     11.298421536527481
+     11.675410441519608
 
-One can use static allocation (prescheduling) with the `batch_size`
+One can use [static allocation
+(prescheduling)](./#4-parallelization-strategies) with the `batch_size`
 argument, thereby assigning that many tasks to each worker to reduce
 latentcy.
 
@@ -340,13 +339,13 @@ n=50000000
 @time forfun(n);
 ```
 
-      4.234983 seconds (50.02 M allocations: 4.472 GiB, 16.07% gc time, 0.23% compilation time)
+      4.246839 seconds (50.02 M allocations: 4.472 GiB, 16.68% gc time, 0.22% compilation time)
 
 ``` julia
 @time pforfun(n); 
 ```
 
-      1.771453 seconds (1.05 M allocations: 61.659 MiB, 16.97% compilation time)
+      1.791803 seconds (1.05 M allocations: 61.737 MiB, 16.39% compilation time)
 
 The use of `@sync` causes the operation to block until the result is
 available so we can get the correct timing.
@@ -380,11 +379,11 @@ block by using Julia’s interpolation syntax:
 end
 ```
 
-    Ptr{Nothing} @0x00007fb5f6f51cd0 2.9128684131407567e-6
-          From worker 2:    Ptr{Nothing} @0x00007f2cbd7803d0 2.9128684131407567e-6
-          From worker 5:    Ptr{Nothing} @0x00007f53dc3bc3d0 2.9128684131407567e-6
-          From worker 4:    Ptr{Nothing} @0x00007f103331c3d0 2.9128684131407567e-6
-          From worker 3:    Ptr{Nothing} @0x00007fe8b40c43d0 2.9128684131407567e-6
+    Ptr{Nothing} @0x00007f063cc6e950 4.109996736056942e-6
+          From worker 2:    Ptr{Nothing} @0x00007fdbf83f4330 4.109996736056942e-6
+          From worker 5:    Ptr{Nothing} @0x00007feb3afa4330 4.109996736056942e-6
+          From worker 4:    Ptr{Nothing} @0x00007f75878e4330 4.109996736056942e-6
+          From worker 3:    Ptr{Nothing} @0x00007fdb884d8330 4.109996736056942e-6
 
 We see based on `pointer_from_objref` that each copy of `x` is stored at
 a distinct location in memory, even when processes are on the same
@@ -407,18 +406,18 @@ result = pmap(test, 1:12, batch_size = 3)
 ```
 
     12-element Vector{Float64}:
-     2.7731288573805895
-     2.919146748628892
-     3.5389861159777904
-     1.3341889819236203
-     2.7731288573805895
-     2.919146748628892
-     3.5389861159777904
-     1.3341889819236203
-     2.7731288573805895
-     2.919146748628892
-     3.5389861159777904
-     1.3341889819236203
+     2.24632549484403
+     2.9738803127128417
+     1.6320032052901892
+     1.809832545041849
+     2.24632549484403
+     2.9738803127128417
+     1.6320032052901892
+     1.809832545041849
+     2.24632549484403
+     2.9738803127128417
+     1.6320032052901892
+     1.809832545041849
 
 If one wants to have multiple processes all work on the same object,
 without copying it, one can consider using Julia’s
@@ -552,13 +551,13 @@ using BenchmarkTools
 ```
 
     BenchmarkTools.Trial: 8 samples with 1 evaluation.
-     Range (min … max):  692.701 ms … 735.093 ms  ┊ GC (min … max): 0.00% … 0.00%
-     Time  (median):     707.273 ms               ┊ GC (median):    0.00%
-     Time  (mean ± σ):   709.768 ms ±  15.301 ms  ┊ GC (mean ± σ):  0.00% ± 0.00%
+     Range (min … max):  660.864 ms … 680.575 ms  ┊ GC (min … max): 0.00% … 0.00%
+     Time  (median):     664.081 ms               ┊ GC (median):    0.00%
+     Time  (mean ± σ):   665.756 ms ±   6.216 ms  ┊ GC (mean ± σ):  0.00% ± 0.00%
 
-      █  █ █           █      █              █    █               █  
-      █▁▁█▁█▁▁▁▁▁▁▁▁▁▁▁█▁▁▁▁▁▁█▁▁▁▁▁▁▁▁▁▁▁▁▁▁█▁▁▁▁█▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁█ ▁
-      693 ms           Histogram: frequency by time          735 ms <
+      ▁ ▁      █▁ ▁  ▁                                            ▁  
+      █▁█▁▁▁▁▁▁██▁█▁▁█▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁█ ▁
+      661 ms           Histogram: frequency by time          681 ms <
 
      Memory estimate: 0 bytes, allocs estimate: 0.
 
@@ -579,13 +578,13 @@ using BenchmarkTools
 ```
 
     BenchmarkTools.Trial: 4 samples with 1 evaluation.
-     Range (min … max):  1.319 s …   1.425 s  ┊ GC (min … max): 0.22% … 7.15%
-     Time  (median):     1.373 s              ┊ GC (median):    5.05%
-     Time  (mean ± σ):   1.373 s ± 43.350 ms  ┊ GC (mean ± σ):  4.43% ± 2.94%
+     Range (min … max):  1.294 s …   1.395 s  ┊ GC (min … max): 0.23% … 7.37%
+     Time  (median):     1.354 s              ┊ GC (median):    5.31%
+     Time  (mean ± σ):   1.349 s ± 42.069 ms  ┊ GC (mean ± σ):  4.62% ± 3.04%
 
-      █                         █   █                         █  
-      █▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁█▁▁▁█▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁█ ▁
-      1.32 s         Histogram: frequency by time        1.43 s <
+      █                             █     █                   █  
+      █▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁█▁▁▁▁▁█▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁█ ▁
+      1.29 s         Histogram: frequency by time         1.4 s <
 
      Memory estimate: 1.49 GiB, allocs estimate: 8.
 
@@ -605,13 +604,13 @@ end
 ```
 
     BenchmarkTools.Trial: 8 samples with 1 evaluation.
-     Range (min … max):  692.704 ms … 715.739 ms  ┊ GC (min … max): 0.00% … 0.00%
-     Time  (median):     698.210 ms               ┊ GC (median):    0.00%
-     Time  (mean ± σ):   701.015 ms ±   7.690 ms  ┊ GC (mean ± σ):  0.00% ± 0.00%
+     Range (min … max):  681.662 ms … 697.476 ms  ┊ GC (min … max): 0.00% … 0.00%
+     Time  (median):     686.000 ms               ┊ GC (median):    0.00%
+     Time  (mean ± σ):   687.778 ms ±   5.390 ms  ┊ GC (mean ± σ):  0.00% ± 0.00%
 
-      █      █   ██   █      █                   █                █  
-      █▁▁▁▁▁▁█▁▁▁██▁▁▁█▁▁▁▁▁▁█▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁█▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁█ ▁
-      693 ms           Histogram: frequency by time          716 ms <
+      █       █  █  █   █       █                    █            █  
+      █▁▁▁▁▁▁▁█▁▁█▁▁█▁▁▁█▁▁▁▁▁▁▁█▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁█▁▁▁▁▁▁▁▁▁▁▁▁█ ▁
+      682 ms           Histogram: frequency by time          697 ms <
 
      Memory estimate: 0 bytes, allocs estimate: 0.
 
@@ -632,12 +631,12 @@ end
 ```
 
     BenchmarkTools.Trial: 8 samples with 1 evaluation.
-     Range (min … max):  669.094 ms … 698.508 ms  ┊ GC (min … max): 0.00% … 0.00%
-     Time  (median):     673.400 ms               ┊ GC (median):    0.00%
-     Time  (mean ± σ):   679.490 ms ±  10.463 ms  ┊ GC (mean ± σ):  0.00% ± 0.00%
+     Range (min … max):  654.146 ms … 718.404 ms  ┊ GC (min … max): 0.00% … 0.00%
+     Time  (median):     659.089 ms               ┊ GC (median):    0.00%
+     Time  (mean ± σ):   669.009 ms ±  22.190 ms  ┊ GC (mean ± σ):  0.00% ± 0.00%
 
-      ▁      ▁█▁                          ▁   ▁                   ▁  
-      █▁▁▁▁▁▁███▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁█▁▁▁█▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁█ ▁
-      669 ms           Histogram: frequency by time          699 ms <
+      █                                                              
+      █▇▁▁▁▁▁▁▇▁▁▁▁▁▁▁▁▇▁▁▁▁▁▁▇▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▇ ▁
+      654 ms           Histogram: frequency by time          718 ms <
 
      Memory estimate: 32 bytes, allocs estimate: 2.
