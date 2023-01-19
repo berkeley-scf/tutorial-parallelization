@@ -188,7 +188,7 @@ last line in the `{ }` body of the foreach statement.
 source('rf.R')  # loads in data (X and Y) and looFit()
 ```
 
-    ## randomForest 4.7-1
+    ## randomForest 4.7-1.1
 
     ## Type rfNews() to see new features/changes/bug fixes.
 
@@ -279,6 +279,8 @@ process.
 -   Importantly, this means that global variables in the forked worker
     processes are just references to the objects in memory in the
     original R process.
+-   You can use these global variables in functions you call in parallel
+    or pass the variables into functions as function arguments.
 -   So **the additional processes do not use additional memory for those
     objects** (despite what is shown in *top* as memory used by each
     process).
@@ -404,16 +406,21 @@ scenarios are
 -   `foreach` with the `doParallel` backend,
 -   parallel lapply (and related) statements when starting the cluster
     via `makeForkCluster`, instead of the usual `makeCluster`, and
--   use of *mclapply*.
+-   use of `mclapply`.
 
 This is because all of these approaches fork the original R process,
 thereby creating worker processes with the same state as the original R
 process. Interestingly, this means that global variables in the forked
 worker processes are just references to the objects in memory in the
 original R process. So the additional processes do not use additional
-memory for those objects (despite what is shown in *top*) and there is
+memory for those objects (despite what is shown in `top`) and there is
 no time involved in making copies. However, if you modify objects in the
 worker processes then copies are made.
+
+Caveat: with `mclapply` you can use a global variable in functions you
+call in parallel or pass the global variable in as an argument, in both
+cases without copying. However with `parLapply`, passing the global
+variable as an argument results in copies being made for some reason.
 
 Importantly, because forking is not available on Windows, the above
 statements only apply on Linux and MacOS.
