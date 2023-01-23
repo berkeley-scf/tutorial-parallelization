@@ -279,14 +279,14 @@ process.
 -   Importantly, this means that global variables in the forked worker
     processes are just references to the objects in memory in the
     original R process.
--   You can use these global variables in functions you call in parallel
-    or pass the variables into functions as function arguments.
 -   So **the additional processes do not use additional memory for those
     objects** (despite what is shown in *top* as memory used by each
     process).
 -   And there is no time involved in making copies.
 -   However, if you modify objects in the worker processes then copies
     are made.
+-   You can use these global variables in functions you call in parallel
+    or pass the variables into functions as function arguments.
 
 So, the take-home message is that using `multicore` on non-Windows
 machines can have a big advantage when working with large data objects.
@@ -419,8 +419,9 @@ worker processes then copies are made.
 
 Caveat: with `mclapply` you can use a global variable in functions you
 call in parallel or pass the global variable in as an argument, in both
-cases without copying. However with `parLapply`, passing the global
-variable as an argument results in copies being made for some reason.
+cases without copying. However with `parLapply` and `makeForkCluster`,
+passing the global variable as an argument results in copies being made
+for some reason.
 
 Importantly, because forking is not available on Windows, the above
 statements only apply on Linux and MacOS.
