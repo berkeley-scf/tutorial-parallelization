@@ -154,7 +154,34 @@ The syntax for `foreach` is a bit different than a standard for loop. Also note 
 the output for each iteration is simply the result of the last line in the `{ }` body
 of the foreach statement.
 
+Here's the syntax when using newer (version 1.0.0 and later) versions of `doFuture`:
+
 ```{r, foreach}
+source('rf.R')  # loads in data (X and Y) and looFit()
+library(doFuture, quietly = TRUE)
+
+plan(multisession, workers = 4)
+
+## Toy example of using foreach+future
+out <- foreach(i = seq_len(30)) %dofuture% {
+    mean(1:i)
+}
+out[1:3]
+
+## Replicate our cross-validation from future_lapply.
+
+## Add option to ensure safe random number generation in parallel
+## (discussed in Section 5)
+out <- foreach(i = seq_along(Y), .combine = c,
+       .options.future = list(seed = TRUE)) %dofuture% {
+       looFit(i, Y, X)
+}
+out[1:3]
+```
+
+Prior to version 1.0.0 of `doFuture`, you'd do this:
+
+```{r, foreach-old, eval=FALSE}
 source('rf.R')  # loads in data (X and Y) and looFit()
 library(future)
 plan(multisession, workers = 4)
@@ -406,8 +433,9 @@ I could also have set `future.seed` to a numeric value, instead of setting the s
 
 #### 5.1.2 foreach
 
-See the example code in `help(doFuture)` for template code on how to use the `%doRNG%` operator with foreach to ensure correct RNG with foreach. (Also shown in Section 3.2.)
+When using `%dofuture%`, you can simply include `.options.future = list(seed = TRUE)` to ensure parallel RNG is done safely (shown in Section 3.2). If you forget and have RNG in your parallelized code, `doFuture` will warn you.
 
+Before version 1.0.0 of `doFuture`, one would need to use the `%doRNG%` operator with foreach to ensure correct RNG with foreach (also seen in Section 3.2).
 
 ### 5.2 Parallel RNG with alternatives to the future package
 

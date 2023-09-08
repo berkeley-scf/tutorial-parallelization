@@ -24,9 +24,9 @@ The BLAS is the library of basic linear algebra operations (written in
 Fortran or C). A fast BLAS can greatly speed up linear algebra relative
 to the default BLAS on a machine. Some fast BLAS libraries are
 
--   Intel’s *MKL*; may be available for educational use for free
--   *OpenBLAS*; open source and free
--   *vecLib* for Macs; provided with your Mac
+- Intel’s *MKL*; may be available for educational use for free
+- *OpenBLAS*; open source and free
+- *vecLib* for Macs; provided with your Mac
 
 In addition to being fast when used on a single core, all of these BLAS
 libraries are threaded - if your computer has multiple cores and there
@@ -184,6 +184,9 @@ The syntax for `foreach` is a bit different than a standard for loop.
 Also note that the output for each iteration is simply the result of the
 last line in the `{ }` body of the foreach statement.
 
+Here’s the syntax when using newer (version 1.0.0 and later) versions of
+`doFuture`:
+
 ``` r
 source('rf.R')  # loads in data (X and Y) and looFit()
 ```
@@ -193,14 +196,12 @@ source('rf.R')  # loads in data (X and Y) and looFit()
     ## Type rfNews() to see new features/changes/bug fixes.
 
 ``` r
-library(future)
+library(doFuture, quietly = TRUE)
+
 plan(multisession, workers = 4)
 
-library(doFuture, quietly = TRUE)
-registerDoFuture()
-
 ## Toy example of using foreach+future
-out <- foreach(i = seq_len(30)) %dopar% {
+out <- foreach(i = seq_len(30)) %dofuture% {
     mean(1:i)
 }
 out[1:3]
@@ -218,22 +219,44 @@ out[1:3]
 ``` r
 ## Replicate our cross-validation from future_lapply.
 
-## Use %dorng% instead of the standard %dopar% to safely
-## generate random numbers in parallel (Section 5)
-library(doRNG)
-```
-
-    ## Loading required package: rngtools
-
-``` r
-out <- foreach(i = seq_along(Y), .combine = c) %dorng% {
-    looFit(i, Y, X)
+## Add option to ensure safe random number generation in parallel
+## (discussed in Section 5)
+out <- foreach(i = seq_along(Y), .combine = c,
+       .options.future = list(seed = TRUE)) %dofuture% {
+       looFit(i, Y, X)
 }
 out[1:3]
 ```
 
     ##         1         2         3 
-    ## 0.2772653 0.8708022 1.8286281
+    ## 0.3151692 1.0207755 1.8871612
+
+Prior to version 1.0.0 of `doFuture`, you’d do this:
+
+``` r
+source('rf.R')  # loads in data (X and Y) and looFit()
+library(future)
+plan(multisession, workers = 4)
+
+library(doFuture, quietly = TRUE)
+registerDoFuture()
+
+## Toy example of using foreach+future
+out <- foreach(i = seq_len(30)) %dopar% {
+    mean(1:i)
+}
+out[1:3]
+
+## Replicate our cross-validation from future_lapply.
+
+## Use %dorng% instead of the standard %dopar% to safely
+## generate random numbers in parallel (Section 5)
+library(doRNG)
+out <- foreach(i = seq_along(Y), .combine = c) %dorng% {
+    looFit(i, Y, X)
+}
+out[1:3]
+```
 
 Note that *foreach* also provides functionality for collecting and
 managing the results to avoid some of the bookkeeping you would need to
@@ -276,17 +299,17 @@ plan(multicore, workers = 4)
 This creates R worker processes with the same state as the original R
 process.
 
--   Importantly, this means that global variables in the forked worker
-    processes are just references to the objects in memory in the
-    original R process.
--   So **the additional processes do not use additional memory for those
-    objects** (despite what is shown in *top* as memory used by each
-    process).
--   And there is no time involved in making copies.
--   However, if you modify objects in the worker processes then copies
-    are made.
--   You can use these global variables in functions you call in parallel
-    or pass the variables into functions as function arguments.
+- Importantly, this means that global variables in the forked worker
+  processes are just references to the objects in memory in the original
+  R process.
+- So **the additional processes do not use additional memory for those
+  objects** (despite what is shown in *top* as memory used by each
+  process).
+- And there is no time involved in making copies.
+- However, if you modify objects in the worker processes then copies are
+  made.
+- You can use these global variables in functions you call in parallel
+  or pass the variables into functions as function arguments.
 
 So, the take-home message is that using `multicore` on non-Windows
 machines can have a big advantage when working with large data objects.
@@ -403,10 +426,10 @@ packages and global variables in the main R process are automatically
 available to the worker tasks without any work on your part. These
 scenarios are
 
--   `foreach` with the `doParallel` backend,
--   parallel lapply (and related) statements when starting the cluster
-    via `makeForkCluster`, instead of the usual `makeCluster`, and
--   use of `mclapply`.
+- `foreach` with the `doParallel` backend,
+- parallel lapply (and related) statements when starting the cluster via
+  `makeForkCluster`, instead of the usual `makeCluster`, and
+- use of `mclapply`.
 
 This is because all of these approaches fork the original R process,
 thereby creating worker processes with the same state as the original R
@@ -518,8 +541,8 @@ More generally to avoid this problem, the key is to use an algorithm
 that ensures sequences that do not overlap.
 
 In R, the *rlecuyer* package deals with this. The L’Ecuyer algorithm has
-a period of 2<sup>191</sup>, which it divides into subsequences of
-length 2<sup>127</sup>.
+a period of $2^{191}$, which it divides into subsequences of length
+$2^{127}$.
 
 ### 5.1 Parallel RNG and the future package
 
@@ -558,9 +581,14 @@ reproducible.
 
 #### 5.1.2 foreach
 
-See the example code in `help(doFuture)` for template code on how to use
-the `%doRNG%` operator with foreach to ensure correct RNG with foreach.
-(Also shown in Section 3.2.)
+When using `%dofuture%`, you can simply include
+`.options.future = list(seed = TRUE)` to ensure parallel RNG is done
+safely (shown in Section 3.2). If you forget and have RNG in your
+parallelized code, `doFuture` will warn you.
+
+Before version 1.0.0 of `doFuture`, one would need to use the `%doRNG%`
+operator with foreach to ensure correct RNG with foreach (also seen in
+Section 3.2).
 
 ### 5.2 Parallel RNG with alternatives to the future package
 
