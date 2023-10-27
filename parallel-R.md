@@ -533,12 +533,8 @@ samples could be exact replicates of a sample on another process. Given
 the period length of the default generators in R, this is actually quite
 unlikely, but it is a bit sloppy.
 
-One approach to avoid the problem is to do all your RNG on one process
-and distribute the random deviates, but this can be infeasible with many
-random numbers.
-
-More generally to avoid this problem, the key is to use an algorithm
-that ensures sequences that do not overlap.
+To avoid this problem, the key is to use an algorithm that ensures
+sequences that do not overlap.
 
 In R, the *rlecuyer* package deals with this. The L’Ecuyer algorithm has
 a period of $2^{191}$, which it divides into subsequences of length

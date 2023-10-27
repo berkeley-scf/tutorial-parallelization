@@ -318,7 +318,7 @@ a sequence of values between 0 and 1.
 The worst thing that could happen is that one sets things up in such
 a way that every process is using the same sequence of random numbers.
 This could happen if you mistakenly set the same seed in each process,
-e.g., using `np.random.default_rng(1)` in Python for every worker.
+e.g., using `rng = np.random.default_rng(1)` or `np.random.seed(1)` in Python for every worker.
 
 The naive approach is to use a different seed for each process. E.g.,
 if your processes are numbered `id = 1,2,...,p`  with a variable *id* that is  unique
@@ -331,11 +331,7 @@ studies, some of your 'independent' samples could be exact replicates
 of a sample on another process. Given the period length of the default
 generator in Python, this is actually quite unlikely, but it is a bit sloppy.
 
-One approach to avoid the problem is to do all your RNG on one process
-and distribute the random deviates, but this can be infeasible with
-many random numbers.
-
-More generally to avoid this problem, the key is to use an algorithm
+To avoid this problem, the key is to use an algorithm
 that ensures sequences that do not overlap.
 
 ### 5.2 Parallel RNG in practice
@@ -390,12 +386,12 @@ A second approach is to advance the state of the random number generator as if a
 
 ```python
 seed = 1
-rng = np.random.PCG64(seed)
+pcg64 = np.random.PCG64(seed)
 
 def calc_mean(i, n, rng):
     import numpy as np
-    gen = np.random.Generator(rng.jumped(i))  ## jump in large steps, one jump per task
-    data = gen.normal(size = n)
+    rng = np.random.Generator(pcg64.jumped(i))  ## jump in large steps, one jump per task
+    data = rng.normal(size = n)
     return([np.mean(data), np.std(data)])
 
 # need a wrapper function because map() only operates on one argument
