@@ -8,7 +8,9 @@ jupyter: julia-1.6-t4
 
 Julia provides built-in support for various kinds of parallel processing on one or more machines. This material focuses on some standard approaches that are (mostly) analogous to functionality in Python and R. However there is other functionality available, including the ability to control tasks and sending data between processes in a fine-grained way.
 
-In addition to parallelization, the last section discusses some issues related to efficiency with for loops, in particular *fused* operations. This is not directly related to parallelization but given the focus on loops in this document, it's useful and interesting to know about.
+In addition to parallelization, the second to last section discusses some issues related to efficiency with for loops, in particular *fused* operations. This is not directly related to parallelization but given the focus on loops in this document, it's useful and interesting to know about.
+
+Finally, the last section discussed offloading computation to the GPU, i.e., massive parallelization on many GPU cores.
 
 ## 2 Threading
 
@@ -428,3 +430,147 @@ end
 @benchmark y .= scalar_calc.(x)
 ```
 
+## 5 Using the GPU
+
+We can use `CUDA.jl` to offload computations to the GPU. Here we'll explore matrix multiplication and vectorized calculations.
+
+There are a couple key things to remember about using a GPU:
+
+ - The GPU memory is separate from CPU memory, and transferring data from the CPU to GPU (or back) is often more costly than doing the computation on the GPU.
+    - If possible, generate the data on the GPU or keep the data on the GPU when carrying out a sequence of operations.
+ - By default GPU calculations are often doing using 32-bit (4-byte) floating point numbers rather than the standard of 64-bit (8-byte) when on the CPU.
+    - This can affect speed comparisons between CPU and GPU.
+
+Note that for this section, I'm pasting in the output when running the code separately on a machine with a GPU because this document is generated on a machine without a GPU.
+
+### 5.1 Matrix multiplication
+
+Let's first consider basic matrix multiplication. In this case since we generate the matrices on the CPU, they are 64-bit.
+
+```{julia}
+using BenchmarkTools
+using CUDA
+using LinearAlgebra
+
+function matmult(x, y)
+    z = x * y
+    return z
+end
+
+m = 7000
+
+x = randn(m, m);
+y = randn(m, m);
+x_gpu = CuArray(x);
+y_gpu = CuArray(y);
+
+## These use 64-bit numbers:
+typeof(x)
+# Matrix{Float64} (alias for Array{Float64, 2})
+typeof(x_gpu)
+# CuArray{Float64, 2, CUDA.Mem.DeviceBuffer}
+
+LinearAlgebra.BLAS.set_num_threads(1);
+
+@benchmark z = matmult(x, y) 
+# BenchmarkTools.Trial: 1 sample with 1 evaluation.
+#  Single result which took 17.271 s (0.00% GC) to evaluate,
+#  with a memory estimate of 373.84 MiB, over 2 allocations.
+
+@benchmark CUDA.@sync z_gpu = matmult(x_gpu, y_gpu)
+BenchmarkTools.Trial: 65 samples with 1 evaluation.
+ Range (min … max):  53.172 ms … 90.679 ms  ┊ GC (min … max): 0.00% … 0.00%
+ Time  (median):     76.419 ms              ┊ GC (median):    0.00%
+ Time  (mean ± σ):   77.404 ms ±  4.092 ms  ┊ GC (mean ± σ):  0.00% ± 0.00%
+```
+
+Clearly the the GPU calculation is much faster, taking about 75 milliseconds.
+
+Let's compare that to the time of copying the data to the GPU:
+
+```{julia}
+@benchmark CUDA.@sync tmp = CuArray(x)
+# BenchmarkTools.Trial: 59 samples with 1 evaluation.
+#  Range (min … max):  83.766 ms … 137.849 ms  ┊ GC (min … max): 0.00% … 0.00%
+#  Time  (median):     84.684 ms               ┊ GC (median):    0.00%
+#  Time  (mean ± σ):   85.696 ms ±   7.011 ms  ┊ GC (mean ± σ):  0.00% ± 0.00%
+```
+
+This suggests that the time in copying the data is similar to that for doing the
+computation.
+
+If we count the time of transferring the data to and from the GPU, that ends up being a substantial part of the time, compared to the 75 ms for simply doing the matrix multiplication.
+
+```{julia}
+function matmult_with_transfer(x, y)
+    xc = CuArray(x)
+    yc = CuArray(y)
+    z = xc * yc
+    return Array(z)
+end
+
+@benchmark CUDA.@sync z = matmult_with_transfer(x, y) 
+# BenchmarkTools.Trial: 20 samples with 1 evaluation.
+#  Range (min … max):  251.578 ms … 258.017 ms  ┊ GC (min … max): 0.00% … 0.57%
+#  Time  (median):     253.886 ms               ┊ GC (median):    0.00%
+#  Time  (mean ± σ):   254.228 ms ±   1.708 ms  ┊ GC (mean ± σ):  4.33% ± 6.78%
+```
+
+
+As a sidenote, we can force use of 64-bit numbers on the GPU (in this case when generating values on the GPU) like this.
+
+```{julia}
+x_gpu = CUDA.randn(Float64, m, m);
+```
+
+Finally, let's consider whether the matrix multiplication is faster using 32-bit numbers.
+
+```{julia}
+x = randn(Float32, m, m);
+y = randn(Float32, m, m);
+x_gpu = CuArray(x);
+y_gpu = CuArray(y);
+typeof(x_gpu)
+
+@benchmark z = matmult(x, y) 
+# BenchmarkTools.Trial: 1 sample with 1 evaluation.
+#  Single result which took 8.671 s (0.00% GC) to evaluate,
+@benchmark CUDA.@sync z_gpu = matmult(x_gpu, y_gpu)
+# BenchmarkTools.Trial: 91 samples with 1 evaluation.
+#  Range (min … max):  41.174 ms … 70.491 ms  ┊ GC (min … max): 0.00% … 0.00%
+#  Time  (median):     54.420 ms              ┊ GC (median):    0.00%
+#  Time  (mean ± σ):   55.363 ms ±  2.912 ms  ┊ GC (mean ± σ):  0.00% ± 0.00%
+```
+
+So that's faster, though I'm not sure why the CPU implementation is about twice as fast (which makes sense in that it is working with numbers taking up half as much space) while the GPU implementation does not achieve that speedup.
+
+### 5.2 Vectorized calculations
+
+Here we'll consider using the GPU for vectorized calculations, noting that [earlier](./#4-loops-and-fused-operations) we talked about using `.` to vectorize and `@` to fuse loops in the context of CPU-based calculations.
+
+```{julia}
+# Scalar function to do something.
+function myfun(x)
+    y = exp(x) + 3 * sin(x)
+    return y
+end
+
+# Vectorized version that modified `y` in place.
+function myfun_vec(x, y)
+    y .= myfun.(x)
+    return 
+end
+
+n = 250000000; # 50000000;
+y = Vector{Float64}(undef, n);
+x = rand(n);
+
+x_gpu = CuArray(x);
+y_gpu = CuArray(y);
+
+@benchmark myfun_vec(x, y)   # 3.5 sec.
+
+@benchmark CUDA.@sync myfun_vec(x_gpu, y_gpu)  # 6 ms.
+```
+
+Of course, as in the matrix multiplication example above, if you need to copy the data to and from the GPU, that will add substantial time.
