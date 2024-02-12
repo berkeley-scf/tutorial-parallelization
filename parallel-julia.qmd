@@ -448,6 +448,8 @@ Note that for this section, I'm pasting in the output when running the code sepa
 Let's first consider basic matrix multiplication. In this case since we generate the matrices on the CPU, they are 64-bit.
 
 ```{julia}
+#| eval: false
+
 using BenchmarkTools
 using CUDA
 using LinearAlgebra
@@ -457,10 +459,10 @@ function matmult(x, y)
     return z
 end
 
-m = 7000
+n = 7000
 
-x = randn(m, m);
-y = randn(m, m);
+x = randn(n, n);
+y = randn(n, n);
 x_gpu = CuArray(x);
 y_gpu = CuArray(y);
 
@@ -489,6 +491,7 @@ Clearly the the GPU calculation is much faster, taking about 75 milliseconds.
 Let's compare that to the time of copying the data to the GPU:
 
 ```{julia}
+#| eval: false
 @benchmark CUDA.@sync tmp = CuArray(x)
 # BenchmarkTools.Trial: 59 samples with 1 evaluation.
 #  Range (min … max):  83.766 ms … 137.849 ms  ┊ GC (min … max): 0.00% … 0.00%
@@ -502,6 +505,7 @@ computation.
 If we count the time of transferring the data to and from the GPU, that ends up being a substantial part of the time, compared to the 75 ms for simply doing the matrix multiplication.
 
 ```{julia}
+#| eval: false
 function matmult_with_transfer(x, y)
     xc = CuArray(x)
     yc = CuArray(y)
@@ -520,14 +524,16 @@ end
 As a sidenote, we can force use of 64-bit numbers on the GPU (in this case when generating values on the GPU) like this.
 
 ```{julia}
-x_gpu = CUDA.randn(Float64, m, m);
+#| eval: false
+x_gpu = CUDA.randn(Float64, n, n);
 ```
 
 Finally, let's consider whether the matrix multiplication is faster using 32-bit numbers.
 
 ```{julia}
-x = randn(Float32, m, m);
-y = randn(Float32, m, m);
+#| eval: false
+x = randn(Float32, n, n);
+y = randn(Float32, n, n);
 x_gpu = CuArray(x);
 y_gpu = CuArray(y);
 typeof(x_gpu)
@@ -549,6 +555,7 @@ So that's faster, though I'm not sure why the CPU implementation is about twice 
 Here we'll consider using the GPU for vectorized calculations, noting that [earlier](./#4-loops-and-fused-operations) we talked about using `.` to vectorize and `@` to fuse loops in the context of CPU-based calculations.
 
 ```{julia}
+#| eval: false
 # Scalar function to do something.
 function myfun(x)
     y = exp(x) + 3 * sin(x)
@@ -561,7 +568,7 @@ function myfun_vec(x, y)
     return 
 end
 
-n = 250000000; # 50000000;
+n = 250000000; 
 y = Vector{Float64}(undef, n);
 x = rand(n);
 

@@ -409,6 +409,197 @@ results = lview.map(wrapper, range(p))
 Note that above, I've done everything at the level of the computational tasks. One could presumably
 do this at the level of the workers, but one would need to figure out how to maintain the state of the generator from one task to the next for any given worker.
 
+## 6 Using the GPU
+
+Python is the go-to language used to run computations on a GPU. Some of the packages that can easily offload computations to the GPU include PyTorch, Tensorflow, JAX, and CuPy. We'll discuss some of these.
+
+There are a couple key things to remember about using a GPU:
+
+ - The GPU memory is separate from CPU memory, and transferring data from the CPU to GPU (or back) is often more costly than doing the computation on the GPU.
+    - If possible, generate the data on the GPU or keep the data on the GPU when carrying out a sequence of operations.
+ - By default GPU calculations are often doing using 32-bit (4-byte) floating point numbers rather than the standard of 64-bit (8-byte) when on the CPU.
+    - This can affect speed comparisons between CPU and GPU.
+
+Note that for this section, I'm pasting in the output when running the code separately on a machine with a GPU because this document is generated on a machine without a GPU.
 
 
+At the moment, this section is UNDER CONSTRUCTION.
 
+### 6.1 Using PyTorch to access the GPU
+
+#### 6.1.1 Matrix multiplication
+
+By default PyTorch will use 32-bit numbers.
+
+```{python}
+import torch
+import time
+
+start = torch.cuda.Event(enable_timing=True)
+end = torch.cuda.Event(enable_timing=True)
+
+gpu = torch.device("cuda:0")
+
+n = 7000
+
+def matmul_wrap(x, y):
+    z = torch.matmul(x, y)
+    return(z)
+    
+    
+x = torch.randn(n,n)
+y = torch.randn(n,n)
+
+x_gpu = x.cuda() # or: `x.to("cuda")`
+y_gpu = y.cuda()
+    
+torch.set_num_threads(1)
+    
+t0 = time.time()
+z = matmul_wrap(x, y)
+print(time.time() - t0)  # 6.8 sec.
+
+start.record()
+z_gpu = matmul_wrap(x_gpu, y_gpu)
+torch.cuda.synchronize()
+end.record()
+print(start.elapsed_time(end))  # 70 milliseconds (ms)
+```
+
+So we achieved a speedup of about 100-fold over a single CPU core using an A100 GPU in this case.
+
+Let's consider the time for copying data to the GPU:
+
+```{python}
+start.record()
+x_gpu = x.cuda()
+torch.cuda.synchronize()
+end.record()
+print(start.elapsed_time(end))  # 60 ms
+```
+
+This suggests that the time in copying the data is similar to that for doing the
+matrix multiplication.
+
+We can generate data on the GPU like this:
+
+```{python}
+x_gpu = torch.randn(n,n, device=gpu)
+```
+
+#### 6.1.2 Vectorized calculations (and loop fusion)
+
+Here we'll consider using the GPU for vectorized calculations. We'll compare using numpy, CPU-based PyTorch, and GPU-based PyTorch.
+
+```{python}
+```{python}
+import torch
+import numpy
+import time
+
+start = torch.cuda.Event(enable_timing=True)
+end = torch.cuda.Event(enable_timing=True)
+
+gpu = torch.device("cuda:0")
+
+def myfun_np(x):
+    y = np.exp(x) + 3 * np.sin(x)
+    return(y)
+
+def myfun_torch(x):
+    y = torch.exp(x) + 3 * torch.sin(x)
+    return(y)
+    
+    
+n = 250000000
+x = torch.randn(n)
+x_gpu = x.cuda() # or: `x.to("cuda")`
+x_np = np.random.normal(size = n)
+
+t0 = time.time()
+y_np = myfun_np(x_np)
+time.time()-t0
+
+start.record()
+y = myfun_torch(x)
+end.record()
+print(start.elapsed_time(end))  
+
+
+start.record()
+y_gpu = wrapper_vec(x_gpu)
+torch.cuda.synchronize()
+end.record()
+print(start.elapsed_time(end))
+```
+
+One can also have PyTorch "fuse" the operations in the loop, which avoids having the different vectorized operations in `myfun` being done in separate loops under the hood. For an overview of loop fusion, see [this discussion](../parallel-julia#loops-and-fused-operations) in the context of Julia.
+
+To fuse the operations, we need to have the function in a module. In this case I defined `myfun_torch` in `myfun_torch.py`, and we need to compile the code using `torch.jit.script`. 
+
+```{python}
+from myfun_torch import myfun_torch
+myfun_torch_compiled = torch.jit.script(myfun_torch)
+
+start.record()
+y_gpu = myfun_torch_compiled(x_gpu)
+torch.cuda.synchronize()
+end.record()
+print(start.elapsed_time(end))   
+```
+
+
+#### 6.1.3 Using Apple's M2 GPU
+
+One can also use PyTorch to run computations on the GPU that comes with Apple's M2 chips.
+
+The "backend" is called "MPS", where "M" stands for "Metal", which is what Apple calls its GPU framework.
+
+```{python}
+import torch
+import time
+
+start = torch.mps.Event(enable_timing=True)
+end = torch.mps.Event(enable_timing=True)
+
+mps_device = torch.device("mps")
+x = torch.randn(n,n)
+y = torch.randn(n,n) 
+
+x_mps = x.mps() # Or: `x.to("mps")`
+y_mps = y.mps()
+    
+## On the CPU    
+torch.set_num_threads(1)
+
+t0 = time.time()
+z = matmul_wrap(x, y)
+print(time.time() - t0)
+
+## On the M2 GPU
+start.record()
+zc = wrapper_matmul(xc, yc)
+torch.mps.synchronize()
+end.record()
+print(start.elapsed_time(end))  
+```
+
+Let's see how much time is involved in transferring the data.
+
+```{python}
+x = torch.randn(n,n)
+
+start.record()
+x_mps = x.to("mps")
+torch.mps.synchronize()
+end.record()
+print(start.elapsed_time(end))  
+```
+
+We can generate data on the GPU like this:
+
+```{python}
+x_mps = torch.randn(n,n, device=mps_device)
+```
+
+## 6.2 Using JAX to access the GPU
