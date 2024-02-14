@@ -26,7 +26,8 @@ to the default BLAS on a machine. Some fast BLAS libraries are
 
 - Intel’s *MKL*; may be available for educational use for free
 - *OpenBLAS*; open source and free
-- *vecLib* for Macs; provided with your Mac
+- *vecLib* for Macs; provided with your Mac (both newer Apple Silicon
+  and older Intel Macs)
 
 In addition to being fast when used on a single core, all of these BLAS
 libraries are threaded - if your computer has multiple cores and there
@@ -82,8 +83,10 @@ the number of threads available to a process.
 For most threaded code (that based on the openMP protocol), the number
 of threads can be set by setting the OMP_NUM_THREADS environment
 variable. Note that under some circumstances you may need to use
-VECLIB_MAXIMUM_THREADS if on a Mac or MKL_NUM_THREADS if R is linked
-against MKL (which can be seen by running `sessionInfo`).
+VECLIB_MAXIMUM_THREADS if on an Intel (older) Mac or MKL_NUM_THREADS if
+R is linked against MKL (which can be seen by running `sessionInfo`).
+For information relevant for newer Apple Silicon (M1 and M2) based Macs
+see below.
 
 For example, to set it for four threads in bash:
 
@@ -108,6 +111,19 @@ library(RhpcBLASctl)
 blas_set_num_threads(4)
 # now run your linear algebra
 ```
+
+### 2.4 Fast linear algebra on Apple Silicon (M1 and M2) Macs
+
+Note that newer Macs (Apple Silicon-based M1 and M2 Macs) also provide
+the Accelerate (vecLib) BLAS, but apparently they use the Mac’s AMX
+co-processor (details are hard to find online). This gives fast
+computation, but the calculations are not using the regular CPU cores
+and so one doesn’t choose the number of threads. In particular,
+`VECLIB_MAXIMUM_THREADS` has no effect, and `top` shows only a single
+CPU in use. Rest assured that if you’ve [configured R to use Accelerate
+(vecLib)
+BLAS](https://cran.r-project.org/bin/macosx/RMacOSX-FAQ.html#Which-BLAS-is-used-and-how-can-it-be-changed_003f),
+you should see very good performance.
 
 ## 3 Parallel loops (including parallel lapply) via the future package
 

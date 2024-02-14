@@ -1,5 +1,4 @@
-Parallel processing in Julia
-================
+# Parallel processing in Julia
 
 ## 1 Overview
 
@@ -9,10 +8,14 @@ approaches that are (mostly) analogous to functionality in Python and R.
 However there is other functionality available, including the ability to
 control tasks and sending data between processes in a fine-grained way.
 
-In addition to parallelization, the last section discusses some issues
-related to efficiency with for loops, in particular *fused* operations.
-This is not directly related to parallelization but given the focus on
-loops in this document, it’s useful and interesting to know about.
+In addition to parallelization, the second to last section discusses
+some issues related to efficiency with for loops, in particular *fused*
+operations. This is not directly related to parallelization but given
+the focus on loops in this document, it’s useful and interesting to know
+about.
+
+Finally, the last section discussed offloading computation to the GPU,
+i.e., massive parallelization on many GPU cores.
 
 ## 2 Threading
 
@@ -46,7 +49,7 @@ x = rand(Uniform(0,1), n,n);
 println(BLAS.get_num_threads())
 ```
 
-    8
+    4
 
 ``` julia
 function chol_xtx(x)
@@ -58,14 +61,14 @@ BLAS.set_num_threads(4)
 @time chol = chol_xtx(x);  
 ```
 
-      4.703782 seconds (2.62 M allocations: 888.768 MiB, 4.72% gc time, 20.43% compilation time)
+      4.961541 seconds (2.93 M allocations: 890.729 MiB, 3.06% gc time, 15.49% compilation time)
 
 ``` julia
 BLAS.set_num_threads(1)
 @time chol = chol_xtx(x);  
 ```
 
-     10.630900 seconds (7 allocations: 747.681 MiB, 0.22% gc time)
+     11.009698 seconds (5 allocations: 747.681 MiB, 1.04% gc time)
 
 We see that using four threads is faster than one, but in this case we
 don’t get a four-fold speedup.
@@ -210,13 +213,13 @@ x = rand(250000);
 psort!(x);
 ```
 
-    Task (runnable) @0x00007f06e44c6cb0 1 250000
-    Task (runnable) @0x00007f06e44c6cb0 125001 250000
-    Task (runnable) @0x00007f06e44c6cb0 187501 250000
-    Task (runnable) @0x00007f06e5b4d660 1 125000
-    Task (runnable) @0x00007f06e5b4d7b0 125001 187500
-    Task (runnable) @0x00007f06e5b4d660 62501 125000
-    Task (runnable) @0x00007f074c975510 1 62500
+    Task (runnable) @0x00007fbcde92fc70 1 250000
+    Task (runnable) @0x00007fbcde92fc70 125001 250000
+    Task (runnable) @0x00007fbcde92fc70 187501 250000
+    Task (runnable) @0x00007fbc2457b540 1 125000
+    Task (runnable) @0x00007fbc2457b540 62501 125000
+    Task (runnable) @0x00007fbc2457b6b0 125001 187500
+    Task (runnable) @0x00007fbc2457b820 1 62500
 
 We see that the output from `current_task()` shows that the task labels
 correspond with what I stated above.
@@ -232,7 +235,7 @@ You can see the number of threads available:
 Threads.nthreads()
 ```
 
-    4
+    1
 
 You can control the number of threads used for threading in Julia (apart
 from linear algebra) either by:
@@ -290,18 +293,18 @@ result = pmap(test, repeat([5000],12))
 ```
 
     12-element Vector{Float64}:
-     11.393582444472948
-     11.105010289847105
-     11.775490377807094
-     10.84171509813776
-     11.58028782674828
-     11.89511643725844
-     11.665171194143703
-     12.00016555638367
-     12.30999760747987
-     11.544900828541468
-     11.298421536527481
-     11.675410441519608
+     11.618117979885692
+     11.06376951668616
+     11.99428934107493
+     12.051093418818038
+     11.751369583913448
+     10.935424840696891
+     11.633299503153365
+     11.273253787804197
+     11.556489067041587
+     11.478146864064486
+     11.590791767062417
+     11.759089651225153
 
 One can use [static allocation
 (prescheduling)](./#4-parallelization-strategies) with the `batch_size`
@@ -339,13 +342,13 @@ n=50000000
 @time forfun(n);
 ```
 
-      4.246839 seconds (50.02 M allocations: 4.472 GiB, 16.68% gc time, 0.22% compilation time)
+      2.970111 seconds (50.02 M allocations: 2.981 GiB, 14.39% gc time, 0.38% compilation time)
 
 ``` julia
 @time pforfun(n); 
 ```
 
-      1.791803 seconds (1.05 M allocations: 61.737 MiB, 16.39% compilation time)
+      1.505336 seconds (1.00 M allocations: 51.541 MiB, 30.14% compilation time)
 
 The use of `@sync` causes the operation to block until the result is
 available so we can get the correct timing.
@@ -379,11 +382,11 @@ block by using Julia’s interpolation syntax:
 end
 ```
 
-    Ptr{Nothing} @0x00007f063cc6e950 4.109996736056942e-6
-          From worker 2:    Ptr{Nothing} @0x00007fdbf83f4330 4.109996736056942e-6
-          From worker 5:    Ptr{Nothing} @0x00007feb3afa4330 4.109996736056942e-6
-          From worker 4:    Ptr{Nothing} @0x00007f75878e4330 4.109996736056942e-6
-          From worker 3:    Ptr{Nothing} @0x00007fdb884d8330 4.109996736056942e-6
+    Ptr{Nothing} @0x00007fbcdcddaaa0 1.0297244216195267e-6
+          From worker 2:    Ptr{Nothing} @0x00007f90e34f0190 1.0297244216195267e-6
+          From worker 5:    Ptr{Nothing} @0x00007fdbca50c190 1.0297244216195267e-6
+          From worker 3:    Ptr{Nothing} @0x00007f97dd908190 1.0297244216195267e-6
+          From worker 4:    Ptr{Nothing} @0x00007fc497908190 1.0297244216195267e-6
 
 We see based on `pointer_from_objref` that each copy of `x` is stored at
 a distinct location in memory, even when processes are on the same
@@ -406,18 +409,18 @@ result = pmap(test, 1:12, batch_size = 3)
 ```
 
     12-element Vector{Float64}:
-     2.24632549484403
-     2.9738803127128417
-     1.6320032052901892
-     1.809832545041849
-     2.24632549484403
-     2.9738803127128417
-     1.6320032052901892
-     1.809832545041849
-     2.24632549484403
-     2.9738803127128417
-     1.6320032052901892
-     1.809832545041849
+     1.7433114304403738
+     2.618802838382096
+     1.8441072711701718
+     3.3704371968777513
+     1.7433114304403738
+     2.618802838382096
+     1.8441072711701718
+     3.3704371968777513
+     1.7433114304403738
+     2.618802838382096
+     1.8441072711701718
+     3.3704371968777513
 
 If one wants to have multiple processes all work on the same object,
 without copying it, one can consider using Julia’s
@@ -551,13 +554,13 @@ using BenchmarkTools
 ```
 
     BenchmarkTools.Trial: 8 samples with 1 evaluation.
-     Range (min … max):  660.864 ms … 680.575 ms  ┊ GC (min … max): 0.00% … 0.00%
-     Time  (median):     664.081 ms               ┊ GC (median):    0.00%
-     Time  (mean ± σ):   665.756 ms ±   6.216 ms  ┊ GC (mean ± σ):  0.00% ± 0.00%
+     Range (min … max):  667.064 ms … 709.021 ms  ┊ GC (min … max): 0.00% … 0.00%
+     Time  (median):     686.209 ms               ┊ GC (median):    0.00%
+     Time  (mean ± σ):   686.787 ms ±  15.738 ms  ┊ GC (mean ± σ):  0.00% ± 0.00%
 
-      ▁ ▁      █▁ ▁  ▁                                            ▁  
-      █▁█▁▁▁▁▁▁██▁█▁▁█▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁█ ▁
-      661 ms           Histogram: frequency by time          681 ms <
+      █      █   █           █       █  █                        ██  
+      █▁▁▁▁▁▁█▁▁▁█▁▁▁▁▁▁▁▁▁▁▁█▁▁▁▁▁▁▁█▁▁█▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁██ ▁
+      667 ms           Histogram: frequency by time          709 ms <
 
      Memory estimate: 0 bytes, allocs estimate: 0.
 
@@ -578,13 +581,13 @@ using BenchmarkTools
 ```
 
     BenchmarkTools.Trial: 4 samples with 1 evaluation.
-     Range (min … max):  1.294 s …   1.395 s  ┊ GC (min … max): 0.23% … 7.37%
-     Time  (median):     1.354 s              ┊ GC (median):    5.31%
-     Time  (mean ± σ):   1.349 s ± 42.069 ms  ┊ GC (mean ± σ):  4.62% ± 3.04%
+     Range (min … max):  1.317 s …   1.426 s  ┊ GC (min … max): 0.21% … 6.97%
+     Time  (median):     1.414 s              ┊ GC (median):    5.00%
+     Time  (mean ± σ):   1.393 s ± 51.838 ms  ┊ GC (mean ± σ):  4.38% ± 2.88%
 
-      █                             █     █                   █  
-      █▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁█▁▁▁▁▁█▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁█ ▁
-      1.29 s         Histogram: frequency by time         1.4 s <
+      ▁                                           ▁           █  
+      █▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁█▁▁▁▁▁▁▁▁▁▁▁█ ▁
+      1.32 s         Histogram: frequency by time        1.43 s <
 
      Memory estimate: 1.49 GiB, allocs estimate: 8.
 
@@ -603,14 +606,14 @@ end
 @benchmark fused_vectorized_calc(x, y)
 ```
 
-    BenchmarkTools.Trial: 8 samples with 1 evaluation.
-     Range (min … max):  681.662 ms … 697.476 ms  ┊ GC (min … max): 0.00% … 0.00%
-     Time  (median):     686.000 ms               ┊ GC (median):    0.00%
-     Time  (mean ± σ):   687.778 ms ±   5.390 ms  ┊ GC (mean ± σ):  0.00% ± 0.00%
+    BenchmarkTools.Trial: 7 samples with 1 evaluation.
+     Range (min … max):  703.200 ms … 757.638 ms  ┊ GC (min … max): 0.00% … 0.00%
+     Time  (median):     716.658 ms               ┊ GC (median):    0.00%
+     Time  (mean ± σ):   719.435 ms ±  18.445 ms  ┊ GC (mean ± σ):  0.00% ± 0.00%
 
-      █       █  █  █   █       █                    █            █  
-      █▁▁▁▁▁▁▁█▁▁█▁▁█▁▁▁█▁▁▁▁▁▁▁█▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁█▁▁▁▁▁▁▁▁▁▁▁▁█ ▁
-      682 ms           Histogram: frequency by time          697 ms <
+      ▁  ▁    ▁      █         ▁                                  ▁  
+      █▁▁█▁▁▁▁█▁▁▁▁▁▁█▁▁▁▁▁▁▁▁▁█▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁█ ▁
+      703 ms           Histogram: frequency by time          758 ms <
 
      Memory estimate: 0 bytes, allocs estimate: 0.
 
@@ -631,12 +634,181 @@ end
 ```
 
     BenchmarkTools.Trial: 8 samples with 1 evaluation.
-     Range (min … max):  654.146 ms … 718.404 ms  ┊ GC (min … max): 0.00% … 0.00%
-     Time  (median):     659.089 ms               ┊ GC (median):    0.00%
-     Time  (mean ± σ):   669.009 ms ±  22.190 ms  ┊ GC (mean ± σ):  0.00% ± 0.00%
+     Range (min … max):  671.152 ms … 711.002 ms  ┊ GC (min … max): 0.00% … 0.00%
+     Time  (median):     676.143 ms               ┊ GC (median):    0.00%
+     Time  (mean ± σ):   684.206 ms ±  15.757 ms  ┊ GC (mean ± σ):  0.00% ± 0.00%
 
-      █                                                              
-      █▇▁▁▁▁▁▁▇▁▁▁▁▁▁▁▁▇▁▁▁▁▁▁▇▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▇ ▁
-      654 ms           Histogram: frequency by time          718 ms <
+      █ ▁ ▁     ▁                    ▁                 ▁          ▁  
+      █▁█▁█▁▁▁▁▁█▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁█▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁█▁▁▁▁▁▁▁▁▁▁█ ▁
+      671 ms           Histogram: frequency by time          711 ms <
 
      Memory estimate: 32 bytes, allocs estimate: 2.
+
+## 5 Using the GPU
+
+We can use `CUDA.jl` to offload computations to the GPU. Here we’ll
+explore matrix multiplication and vectorized calculations.
+
+There are a couple key things to remember about using a GPU:
+
+-   The GPU memory is separate from CPU memory, and transferring data
+    from the CPU to GPU (or back) is often more costly than doing the
+    computation on the GPU.
+    -   If possible, generate the data on the GPU or keep the data on
+        the GPU when carrying out a sequence of operations.
+-   By default GPU calculations are often doing using 32-bit (4-byte)
+    floating point numbers rather than the standard of 64-bit (8-byte)
+    when on the CPU.
+    -   This can affect speed comparisons between CPU and GPU.
+
+Note that for this section, I’m pasting in the output when running the
+code separately on a machine with a GPU because this document is
+generated on a machine without a GPU.
+
+### 5.1 Matrix multiplication
+
+Let’s first consider basic matrix multiplication. In this case since we
+generate the matrices on the CPU, they are 64-bit.
+
+``` julia
+using BenchmarkTools
+using CUDA
+using LinearAlgebra
+
+function matmult(x, y)
+    z = x * y
+    return z
+end
+
+n = 7000
+
+x = randn(n, n);
+y = randn(n, n);
+x_gpu = CuArray(x);
+y_gpu = CuArray(y);
+
+## These use 64-bit numbers:
+typeof(x)
+# Matrix{Float64} (alias for Array{Float64, 2})
+typeof(x_gpu)
+# CuArray{Float64, 2, CUDA.Mem.DeviceBuffer}
+
+LinearAlgebra.BLAS.set_num_threads(1);
+
+@benchmark z = matmult(x, y) 
+# BenchmarkTools.Trial: 1 sample with 1 evaluation.
+#  Single result which took 17.271 s (0.00% GC) to evaluate,
+#  with a memory estimate of 373.84 MiB, over 2 allocations.
+
+@benchmark CUDA.@sync z_gpu = matmult(x_gpu, y_gpu)
+BenchmarkTools.Trial: 65 samples with 1 evaluation.
+ Range (min … max):  53.172 ms … 90.679 ms  ┊ GC (min … max): 0.00% … 0.00%
+ Time  (median):     76.419 ms              ┊ GC (median):    0.00%
+ Time  (mean ± σ):   77.404 ms ±  4.092 ms  ┊ GC (mean ± σ):  0.00% ± 0.00%
+```
+
+Clearly the the GPU calculation is much faster, taking about 75
+milliseconds, compared to 17 seconds on the CPU (albeit using a single
+thread).
+
+Let’s compare that to the time of copying the data to the GPU:
+
+``` julia
+@benchmark CUDA.@sync tmp = CuArray(x)
+# BenchmarkTools.Trial: 59 samples with 1 evaluation.
+#  Range (min … max):  83.766 ms … 137.849 ms  ┊ GC (min … max): 0.00% … 0.00%
+#  Time  (median):     84.684 ms               ┊ GC (median):    0.00%
+#  Time  (mean ± σ):   85.696 ms ±   7.011 ms  ┊ GC (mean ± σ):  0.00% ± 0.00%
+```
+
+This suggests that the time in copying the data is similar to that for
+doing the computation.
+
+If we count the time of transferring the data to and from the GPU, that
+ends up being a substantial part of the time, compared to the 75 ms for
+simply doing the matrix multiplication.
+
+``` julia
+function matmult_with_transfer(x, y)
+    xc = CuArray(x)
+    yc = CuArray(y)
+    z = xc * yc
+    return Array(z)
+end
+
+@benchmark CUDA.@sync z = matmult_with_transfer(x, y) 
+# BenchmarkTools.Trial: 20 samples with 1 evaluation.
+#  Range (min … max):  251.578 ms … 258.017 ms  ┊ GC (min … max): 0.00% … 0.57%
+#  Time  (median):     253.886 ms               ┊ GC (median):    0.00%
+#  Time  (mean ± σ):   254.228 ms ±   1.708 ms  ┊ GC (mean ± σ):  4.33% ± 6.78%
+```
+
+As a sidenote, we can force use of 64-bit numbers on the GPU (in this
+case when generating values on the GPU) like this.
+
+``` julia
+x_gpu = CUDA.randn(Float64, n, n);
+```
+
+Finally, let’s consider whether the matrix multiplication is faster
+using 32-bit numbers.
+
+``` julia
+x = randn(Float32, n, n);
+y = randn(Float32, n, n);
+x_gpu = CuArray(x);
+y_gpu = CuArray(y);
+typeof(x_gpu)
+
+@benchmark z = matmult(x, y) 
+# BenchmarkTools.Trial: 1 sample with 1 evaluation.
+#  Single result which took 8.671 s (0.00% GC) to evaluate,
+@benchmark CUDA.@sync z_gpu = matmult(x_gpu, y_gpu)
+# BenchmarkTools.Trial: 91 samples with 1 evaluation.
+#  Range (min … max):  41.174 ms … 70.491 ms  ┊ GC (min … max): 0.00% … 0.00%
+#  Time  (median):     54.420 ms              ┊ GC (median):    0.00%
+#  Time  (mean ± σ):   55.363 ms ±  2.912 ms  ┊ GC (mean ± σ):  0.00% ± 0.00%
+```
+
+So that’s faster, though I’m not sure why the CPU implementation is
+about twice as fast (which makes sense in that it is working with
+numbers taking up half as much space) while the GPU implementation does
+not achieve that speedup (54 ms. with 32-bit compared to 75 ms. with
+64-bit).
+
+### 5.2 Vectorized calculations
+
+Here we’ll consider using the GPU for vectorized calculations, noting
+that [earlier](./#4-loops-and-fused-operations) we talked about using
+`.` to vectorize and `@` to fuse loops in the context of CPU-based
+calculations.
+
+``` julia
+# Scalar function to do something.
+function myfun(x)
+    y = exp(x) + 3 * sin(x)
+    return y
+end
+
+# Vectorized version that modifies `y` in place.
+function myfun_vec(x, y)
+    y .= myfun.(x)
+    return 
+end
+
+n = 250000000; 
+y = Vector{Float64}(undef, n);
+x = rand(n);
+
+x_gpu = CuArray(x);
+y_gpu = CuArray(y);
+
+@benchmark myfun_vec(x, y)   # 3.5 sec.
+
+@benchmark CUDA.@sync myfun_vec(x_gpu, y_gpu)  # 6 ms.
+```
+
+Here we have a massive 500x speedup of 6 ms. compared to 3.5 seconds.
+
+Of course, as in the matrix multiplication example above, if you need to
+copy the data to and from the GPU, that will add substantial time.

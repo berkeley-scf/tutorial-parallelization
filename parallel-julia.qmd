@@ -1,6 +1,6 @@
 ---
 title: "Parallel processing in Julia"
-jupyter: julia-1.6-t4
+jupyter: julia-1.8
 ---
 
 
@@ -448,7 +448,7 @@ Note that for this section, I'm pasting in the output when running the code sepa
 Let's first consider basic matrix multiplication. In this case since we generate the matrices on the CPU, they are 64-bit.
 
 ```{julia}
-#| eval: false
+#| eval: true
 
 using BenchmarkTools
 using CUDA
@@ -486,12 +486,13 @@ BenchmarkTools.Trial: 65 samples with 1 evaluation.
  Time  (mean ± σ):   77.404 ms ±  4.092 ms  ┊ GC (mean ± σ):  0.00% ± 0.00%
 ```
 
-Clearly the the GPU calculation is much faster, taking about 75 milliseconds.
+Clearly the the GPU calculation is much faster, taking about 75 milliseconds, compared to 17 seconds
+on the CPU (albeit using a single thread).
 
 Let's compare that to the time of copying the data to the GPU:
 
 ```{julia}
-#| eval: false
+#| eval: true
 @benchmark CUDA.@sync tmp = CuArray(x)
 # BenchmarkTools.Trial: 59 samples with 1 evaluation.
 #  Range (min … max):  83.766 ms … 137.849 ms  ┊ GC (min … max): 0.00% … 0.00%
@@ -505,7 +506,7 @@ computation.
 If we count the time of transferring the data to and from the GPU, that ends up being a substantial part of the time, compared to the 75 ms for simply doing the matrix multiplication.
 
 ```{julia}
-#| eval: false
+#| eval: true
 function matmult_with_transfer(x, y)
     xc = CuArray(x)
     yc = CuArray(y)
@@ -524,14 +525,14 @@ end
 As a sidenote, we can force use of 64-bit numbers on the GPU (in this case when generating values on the GPU) like this.
 
 ```{julia}
-#| eval: false
+#| eval: true
 x_gpu = CUDA.randn(Float64, n, n);
 ```
 
 Finally, let's consider whether the matrix multiplication is faster using 32-bit numbers.
 
 ```{julia}
-#| eval: false
+#| eval: true
 x = randn(Float32, n, n);
 y = randn(Float32, n, n);
 x_gpu = CuArray(x);
@@ -548,21 +549,21 @@ typeof(x_gpu)
 #  Time  (mean ± σ):   55.363 ms ±  2.912 ms  ┊ GC (mean ± σ):  0.00% ± 0.00%
 ```
 
-So that's faster, though I'm not sure why the CPU implementation is about twice as fast (which makes sense in that it is working with numbers taking up half as much space) while the GPU implementation does not achieve that speedup.
+So that's faster, though I'm not sure why the CPU implementation is about twice as fast (which makes sense in that it is working with numbers taking up half as much space) while the GPU implementation does not achieve that speedup (54 ms. with 32-bit compared to 75 ms. with 64-bit).
 
 ### 5.2 Vectorized calculations
 
 Here we'll consider using the GPU for vectorized calculations, noting that [earlier](./#4-loops-and-fused-operations) we talked about using `.` to vectorize and `@` to fuse loops in the context of CPU-based calculations.
 
 ```{julia}
-#| eval: false
+#| eval: true
 # Scalar function to do something.
 function myfun(x)
     y = exp(x) + 3 * sin(x)
     return y
 end
 
-# Vectorized version that modified `y` in place.
+# Vectorized version that modifies `y` in place.
 function myfun_vec(x, y)
     y .= myfun.(x)
     return 
@@ -579,5 +580,7 @@ y_gpu = CuArray(y);
 
 @benchmark CUDA.@sync myfun_vec(x_gpu, y_gpu)  # 6 ms.
 ```
+
+Here we have a massive 500x speedup of 6 ms. compared to 3.5 seconds.
 
 Of course, as in the matrix multiplication example above, if you need to copy the data to and from the GPU, that will add substantial time.

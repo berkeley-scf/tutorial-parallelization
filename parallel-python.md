@@ -492,9 +492,8 @@ x_gpu = torch.randn(n,n, device=gpu)
 Here we'll consider using the GPU for vectorized calculations. We'll compare using numpy, CPU-based PyTorch, and GPU-based PyTorch.
 
 ```{python}
-```{python}
 import torch
-import numpy
+import numpy as np
 import time
 
 start = torch.cuda.Event(enable_timing=True)
@@ -514,40 +513,46 @@ def myfun_torch(x):
 n = 250000000
 x = torch.randn(n)
 x_gpu = x.cuda() # or: `x.to("cuda")`
-x_np = np.random.normal(size = n)
+tmp = np.random.normal(size = n)
+x_np = tmp.astype(np.float32)  # for fair comparison
 
 t0 = time.time()
 y_np = myfun_np(x_np)
-time.time()-t0
+time.time()-t0   # 1.4 sec.
+
+torch.set_num_threads(1)
 
 start.record()
 y = myfun_torch(x)
 end.record()
-print(start.elapsed_time(end))  
+print(start.elapsed_time(end))  # 2300 ms (2.3 sec.)
 
 
 start.record()
-y_gpu = wrapper_vec(x_gpu)
+y_gpu = myfun_torch(x_gpu)
 torch.cuda.synchronize()
 end.record()
-print(start.elapsed_time(end))
+print(start.elapsed_time(end))   # 9 ms
 ```
+
+So using the GPU speeds things up by 150-fold (compared to numpy) and 250-fold (compared to CPU-based PyTorch).
 
 One can also have PyTorch "fuse" the operations in the loop, which avoids having the different vectorized operations in `myfun` being done in separate loops under the hood. For an overview of loop fusion, see [this discussion](../parallel-julia#loops-and-fused-operations) in the context of Julia.
 
 To fuse the operations, we need to have the function in a module. In this case I defined `myfun_torch` in `myfun_torch.py`, and we need to compile the code using `torch.jit.script`. 
 
 ```{python}
-from myfun_torch import myfun_torch
-myfun_torch_compiled = torch.jit.script(myfun_torch)
+from myfun_torch import myfun_torch as myfun_torch_tmp
+myfun_torch_compiled = torch.jit.script(myfun_torch_tmp)
 
 start.record()
 y_gpu = myfun_torch_compiled(x_gpu)
 torch.cuda.synchronize()
 end.record()
-print(start.elapsed_time(end))   
+print(start.elapsed_time(end))   # 4 ms
 ```
 
+So that seems to give about a two-fold speedup compared to using the GPU without loop fusion.
 
 #### 6.1.3 Using Apple's M2 GPU
 
@@ -563,26 +568,31 @@ start = torch.mps.Event(enable_timing=True)
 end = torch.mps.Event(enable_timing=True)
 
 mps_device = torch.device("mps")
+
+n = 10000
 x = torch.randn(n,n)
 y = torch.randn(n,n) 
 
-x_mps = x.mps() # Or: `x.to("mps")`
-y_mps = y.mps()
+x_mps = x.to("mps")
+y_mps = y.to("mps")
     
 ## On the CPU    
 torch.set_num_threads(1)
 
 t0 = time.time()
 z = matmul_wrap(x, y)
-print(time.time() - t0)
+print(time.time() - t0)   # 1.8 sec (1800 ms)
 
 ## On the M2 GPU
 start.record()
-zc = wrapper_matmul(xc, yc)
+z_mps = matmul_wrap(x_mps, y_mps)
 torch.mps.synchronize()
 end.record()
-print(start.elapsed_time(end))  
+print(start.elapsed_time(end)) # 950 ms
 ```
+
+So there is about a two-fold speed up.
+
 
 Let's see how much time is involved in transferring the data.
 
@@ -593,8 +603,10 @@ start.record()
 x_mps = x.to("mps")
 torch.mps.synchronize()
 end.record()
-print(start.elapsed_time(end))  
+print(start.elapsed_time(end))  # 35 ms.
 ```
+
+So it looks like the transfer time is pretty small compared to the computation time (and to the savings involved in using the M2 GPU.
 
 We can generate data on the GPU like this:
 

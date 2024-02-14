@@ -5,7 +5,9 @@ parallel-R.md: parallel-R.Rmd
 parallel-julia.md: parallel-julia.qmd
 	quarto render parallel-julia.qmd --to md
 ## To render Julia, need to specify Jupyter kernel. Also need to have IJulia installed for the user doing the rendering.
-## Currently using a kernel that hard-codes in 4 threads (`-t 4`) to do parallel stuff.
+## Before running `make parallel-julia.md`, do:
+## source activate jupyterhub-4.0
+## Previously using a kernel that hard-codes in 4 threads (`-t 4`) to do parallel stuff, but since set number of threads in code not sure why doing that. 
 ## Rendering occasionally/non-reproducibly fails with inscrutable error messages.
 
 
