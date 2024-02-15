@@ -40,7 +40,8 @@ that interferes with threading in Python (but not in threaded linear algebra pac
 
 Here's some linear algebra in  Python that will use threading if *numpy* is linked against a threaded BLAS, though I don't compare the timing for different numbers of threads here. 
 
-```python
+```{python}
+#| eval: false
 import numpy as np
 n = 5000
 x = np.random.normal(0, 1, size=(n, n))
@@ -85,7 +86,7 @@ First we'll cover IPython Parallel (i.e., the `ipyparallel` package) functionali
 
 First we need to start our workers. As of ipyparallel version 7, we can start the workers from within Python.
 
-```python
+```{python}
 ## In newer versions of ipyparallel (v. 7 and later)
 import ipyparallel as ipp
 # Check the version:
@@ -95,25 +96,24 @@ cluster = ipp.Cluster(n = n)
 c = cluster.start_and_connect_sync()
 ```
 
-ipp.Cluster(n=cpu_count).start_and_connect_sync()
-
 
 #### 3.1.2 Testing our workers
 
 Let's verify that things seem set up ok and we can interact with all our workers:
 
-```python
+```{python}
 ## Check that we have the number of workers expected:
 c.ids
-# [0, 1, 2, 3]
+```
+```{python}
 ## Set up a direct view to interface with all the workers
 dview = c[:]
 dview
-# <DirectView [0, 1, 2, 3]>
+```
+```{python}
 ## Set blocking so that we wait for the result of the parallel execution
 dview.block = True 
 dview.apply(lambda : "Hello, World")
-# ['Hello, World', 'Hello, World', 'Hello, World', 'Hello, World']
 ```
 
 `dview` stands for a 'direct view', which is an interface to our cluster that allows us to 'manually' send tasks to the workers.
@@ -126,7 +126,7 @@ We'll carry out a statistics/machine learning prediction method (random forest r
 
 First let's set up packages, data and our main function on the workers:
 
-```python
+```{python}
 dview.execute('from sklearn.ensemble import RandomForestRegressor as rfr')
 dview.execute('import numpy as np')
 
@@ -141,7 +141,7 @@ np.random.seed(0)
 n = 200
 p = 20
 X = np.random.normal(0, 1, size = (n, p))
-Y = X[: , 0] + pow(abs(X[:,1] * X[:,2]), 0.5) + X[:,1] - X[:,2] + 
+Y = X[: , 0] + pow(abs(X[:,1] * X[:,2]), 0.5) + X[:,1] - X[:,2] + \
     np.random.normal(0, 1, n)
 
 mydict = dict(X = X, Y = Y, looFit = looFit)
@@ -152,7 +152,7 @@ dview.push(mydict)
 
 Now let's set up a "load-balanced view". With this type of interface, one submits the tasks and the controller decides how to divide up the tasks, ideally achieving good load balancing. A load-balanced computation is one that keeps all the workers busy throughout the computation
 
-```python
+```{python}
 lview = c.load_balanced_view()
 lview.block = True
 
@@ -178,7 +178,8 @@ ipcluster start -n ${NWORKERS} &
 
 Now in Python, we can connect to the running workers:
 
-```python
+```{python}
+#| eval: false
 # In python
 import os
 import ipyparallel as ipp
@@ -240,14 +241,16 @@ There are various ways to do parallel loops in Dask, as discussed in detail in [
 
 Here's an example of doing it with "delayed" calculations set up via list comprehension. First we'll start workers on a single machine. One can also start workers on multiple machines, as discussed in the tutorial linked to just above.
 
-```python
+```{python}
+#| eval: false
 import dask.multiprocessing
 dask.config.set(scheduler='processes', num_workers = 4)
 ```
 
 Now we'll execute a set of tasks in parallel by wrapping the function of interest in `dask.delayed` to set up lazy evaluation that will be done in parallel using the workers already set up with the 'processes' scheduler above.
 
-```python
+```{python}
+#| eval: false
 def calc_mean(i, n):
     import numpy as np
     rng = np.random.default_rng(i)
@@ -274,14 +277,16 @@ Note that we set a separate seed for each task to try to ensure indepenedent ran
 
 We'll start up  workers on a single machine. To run across multiple workers, see [this tutorial](https://berkeley-scf.github.io/tutorial-dask-future/python-ray.html) or the [Ray documentation](https://www.ray.io/docs).
 
-```python
+```{python}
+#| eval: false
 import ray
 ray.init(num_cpus = 4)
 ```
 
 To run a computation in parallel, we decorate the function of interest with the `remote` tag:
 
-```python
+```{python}
+#| eval: false
 @ray.remote
 def calc_mean(i, n):
     import numpy as np
@@ -343,7 +348,8 @@ One approach is to generate one random seed per task such that the blocks of ran
 
 Here we use that approach within the context of an ipyparallel load-balanced view.
 
-```python
+```{python}
+#| eval: false
 import numpy as np
 import ipyparallel as ipp
 n = 4
@@ -384,7 +390,8 @@ results = lview.map(wrapper, range(p))
 
 A second approach is to advance the state of the random number generator as if a large number of random numbers had been drawn. 
 
-```python
+```{python}
+#| eval: false
 seed = 1
 pcg64 = np.random.PCG64(seed)
 
@@ -432,6 +439,7 @@ At the moment, this section is UNDER CONSTRUCTION.
 By default PyTorch will use 32-bit numbers.
 
 ```{python}
+#| eval: false
 import torch
 import time
 
@@ -471,6 +479,7 @@ So we achieved a speedup of about 100-fold over a single CPU core using an A100 
 Let's consider the time for copying data to the GPU:
 
 ```{python}
+#| eval: false
 start.record()
 x_gpu = x.cuda()
 torch.cuda.synchronize()
@@ -484,6 +493,7 @@ matrix multiplication.
 We can generate data on the GPU like this:
 
 ```{python}
+#| eval: false
 x_gpu = torch.randn(n,n, device=gpu)
 ```
 
@@ -492,6 +502,7 @@ x_gpu = torch.randn(n,n, device=gpu)
 Here we'll consider using the GPU for vectorized calculations. We'll compare using numpy, CPU-based PyTorch, and GPU-based PyTorch.
 
 ```{python}
+#| eval: false
 import torch
 import numpy as np
 import time
@@ -542,6 +553,7 @@ One can also have PyTorch "fuse" the operations in the loop, which avoids having
 To fuse the operations, we need to have the function in a module. In this case I defined `myfun_torch` in `myfun_torch.py`, and we need to compile the code using `torch.jit.script`. 
 
 ```{python}
+#| eval: false
 from myfun_torch import myfun_torch as myfun_torch_tmp
 myfun_torch_compiled = torch.jit.script(myfun_torch_tmp)
 
@@ -561,6 +573,7 @@ One can also use PyTorch to run computations on the GPU that comes with Apple's 
 The "backend" is called "MPS", where "M" stands for "Metal", which is what Apple calls its GPU framework.
 
 ```{python}
+#| eval: false
 import torch
 import time
 
@@ -597,6 +610,7 @@ So there is about a two-fold speed up.
 Let's see how much time is involved in transferring the data.
 
 ```{python}
+#| eval: false
 x = torch.randn(n,n)
 
 start.record()
@@ -611,7 +625,10 @@ So it looks like the transfer time is pretty small compared to the computation t
 We can generate data on the GPU like this:
 
 ```{python}
+#| eval: false
 x_mps = torch.randn(n,n, device=mps_device)
 ```
 
 ## 6.2 Using JAX to access the GPU
+
+UNDER CONSTRUCTION
