@@ -7,9 +7,9 @@
 Python provides a variety of functionality for parallelization,
 including threaded operations (in particular for linear algebra),
 parallel looping and map statements, and parallelization across multiple
-machines. This material focuses on Python’s ipyparallel package and on
-using the GPU via PyTorch and JAX (with a bit about CuPy), with some
-discussion of Dask and Ray.
+machines. For the CPU, this material focuses on Python’s ipyparallel
+package and JAX, with some discussion of Dask and Ray. For the GPU, the
+material focuses on PyTorch and JAX, with a bit of discussion of CuPy.
 
 Note that all of the looping-based functionality discussed here applies
 *only* if the iterations/loops of your calculations can be done
@@ -212,7 +212,7 @@ pred = lview.map(wrapper, range(n))
 pred[0:3]
 ```
 
-    [2.218135194785008, -0.40111415239915993, -0.11737133243248087]
+    [2.0945225368269256, -0.8696741139958911, -0.32442762057816776]
 
 #### 3.1.5 Starting the workers outside Python
 
@@ -800,8 +800,8 @@ t2 = time.time() - t0
 print(f"numpy time: {round(t1,3)}\njax time: {round(t2,3)}")
 ```
 
-    numpy time: 4.976
-    jax time: 1.411
+    numpy time: 4.49
+    jax time: 1.643
 
 There’s a nice speedup compared to numpy.
 
@@ -834,7 +834,7 @@ t3 = time.time() - t0
 print(f"jitted jax time: {round(t3,3)}")
 ```
 
-    jitted jax time: 0.774
+    jitted jax time: 0.793
 
 So that gives another almost 2x speedup.
 
@@ -859,8 +859,8 @@ print(round(time.time() - t0,3))
 ```
 
     numpy time:
-    4.055
-    3.067
+    5.261
+    3.024
 
 ``` python
 import jax.config
@@ -881,8 +881,8 @@ print(round(time.time() - t0,3))
 
     JAX dtype is float64
     jax time:
-    7.869
-    1.765
+    8.288
+    1.835
 
 So here the matrix multiplication is slower using JAX with 64-bit
 numbers but the Cholesky is a bit faster. If one uses 32-bit numbers,
@@ -1051,8 +1051,8 @@ t2 = time.time() - t0
 print(f"numpy time: {round(t1,3)}\njax vmap time: {round(t2,3)}")
 ```
 
-    numpy time: 3.429
-    jax vmap time: 1.184
+    numpy time: 3.654
+    jax vmap time: 1.566
 
 That gives a nice speedup. Let’s also try JIT’ing it. That gives a
 further speedup.
@@ -1066,7 +1066,7 @@ t3 = time.time() - t0
 print(f"jitted jax vmap time: {round(t3,3)}")
 ```
 
-    jitted jax vmap time: 0.312
+    jitted jax vmap time: 0.322
 
 It would make sense to explore the benefits of using a GPU here, though
 I haven’t done so.

@@ -8,9 +8,9 @@ author: Christopher Paciorek
 
 ## 1 This tutorial
 
-This tutorial covers the use of parallelization (on either one machine or multiple machines/nodes) in Python, R, Julia, MATLAB and C/C++. Please click on the links above for material specific to each language.
+This tutorial covers the use of parallelization (on either one machine or multiple machines/nodes) in Python, R, Julia, MATLAB and C/C++ and use of the GPU in Python and Julia. Please click on the links above for material specific to each language.
 
-You should be able to replicate much of what is covered here provided you have the relevant software on your computer, but some of the parallelization approaches may not work on Windows.
+You should be able to replicate much of what is covered here provided you have the relevant software on your computer, but some of the parallelization approaches may not work on Windows, and of course the GPU-based pieces require a GPU.
 
 This tutorial assumes you have a working knowledge of the relevant language, but not necessarily knowledge of parallelization.
 
