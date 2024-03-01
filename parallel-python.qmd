@@ -7,9 +7,9 @@ title: Parallel processing in Python
 
 ## 1 Overview
 
-Python provides a variety of functionality for parallelization, including threaded operations (in particular for linear algebra), parallel looping and map statements, and parallelization across multiple machines. This material focuses on Python's ipyparallel package, with some discussion of Dask and Ray.
+Python provides a variety of functionality for parallelization, including threaded operations (in particular for linear algebra), parallel looping and map statements, and parallelization across multiple machines. This material focuses on Python's ipyparallel package and on using the GPU via PyTorch and JAX (with a bit about CuPy), with some discussion of Dask and Ray.
 
-All of the functionality discussed here applies *only* if the iterations/loops of your calculations can be done completely separately and do not depend on one another. This scenario is called an *embarrassingly parallel* computation.  So coding up the evolution of a time series or a Markov chain is not possible using these tools. However, bootstrapping, random forests, simulation studies, cross-validation and many other statistical methods can be handled in this way.
+Note that all of the looping-based functionality discussed here applies *only* if the iterations/loops of your calculations can be done completely separately and do not depend on one another. This scenario is called an *embarrassingly parallel* computation.  So coding up the evolution of a time series or a Markov chain is not possible using these tools. However, bootstrapping, random forests, simulation studies, cross-validation and many other statistical methods can be handled in this way.
 
 
 ## 2 Threading
@@ -548,7 +548,7 @@ print(start.elapsed_time(end))   # 9 ms
 
 So using the GPU speeds things up by 150-fold (compared to numpy) and 250-fold (compared to CPU-based PyTorch).
 
-One can also have PyTorch "fuse" the operations in the loop, which avoids having the different vectorized operations in `myfun` being done in separate loops under the hood. For an overview of loop fusion, see [this discussion](../parallel-julia#loops-and-fused-operations) in the context of Julia.
+One can also have PyTorch "fuse" the operations in the loop, which avoids having the different vectorized operations in `myfun` being done in separate loops under the hood. For an overview of loop fusion, see [this discussion](./parallel-julia#4-loops-and-fused-operations) in the context of Julia.
 
 To fuse the operations, we need to have the function in a module. In this case I defined `myfun_torch` in `myfun_torch.py`, and we need to compile the code using `torch.jit.script`. 
 
@@ -692,7 +692,7 @@ import jax.config
 jax.config.update("jax_enable_x64", True)  
 ```
 
-Next let's consider JIT compiling it, which should [fuse the vectorized operations](../parallel-julia#loops-and-fused-operations) and avoid temporary objects. The JAX docs have a [nice discussion](https://jax.readthedocs.io/en/latest/notebooks/thinking_in_jax.html#to-jit-or-not-to-jit) of when JIT compilation will be beneficial.
+Next let's consider JIT compiling it, which should [fuse the vectorized operations](./parallel-julia#4-loops-and-fused-operations) and avoid temporary objects. The JAX docs have a [nice discussion](https://jax.readthedocs.io/en/latest/notebooks/thinking_in_jax.html#to-jit-or-not-to-jit) of when JIT compilation will be beneficial.
 
 ```{python}
 import jax
@@ -708,7 +708,7 @@ So that gives another almost 2x speedup.
 
 ### 7.2 Linear algebra
 
-Linear algebra in JAX will use multiple threads ([as discussed for numpy](./#2-threading)).
+Linear algebra in JAX will use multiple threads ([as discussed for numpy](./parallel-python#2-threading)).
 Here we'll compare 64-bit calculation, since matrix decompositions sometimes need more precision.
 
 ```{python}

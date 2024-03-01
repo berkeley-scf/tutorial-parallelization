@@ -7,15 +7,16 @@
 Python provides a variety of functionality for parallelization,
 including threaded operations (in particular for linear algebra),
 parallel looping and map statements, and parallelization across multiple
-machines. This material focuses on Python’s ipyparallel package, with
-some discussion of Dask and Ray.
+machines. This material focuses on Python’s ipyparallel package and on
+using the GPU via PyTorch and JAX (with a bit about CuPy), with some
+discussion of Dask and Ray.
 
-All of the functionality discussed here applies *only* if the
-iterations/loops of your calculations can be done completely separately
-and do not depend on one another. This scenario is called an
-*embarrassingly parallel* computation. So coding up the evolution of a
-time series or a Markov chain is not possible using these tools.
-However, bootstrapping, random forests, simulation studies,
+Note that all of the looping-based functionality discussed here applies
+*only* if the iterations/loops of your calculations can be done
+completely separately and do not depend on one another. This scenario is
+called an *embarrassingly parallel* computation. So coding up the
+evolution of a time series or a Markov chain is not possible using these
+tools. However, bootstrapping, random forests, simulation studies,
 cross-validation and many other statistical methods can be handled in
 this way.
 
@@ -211,7 +212,7 @@ pred = lview.map(wrapper, range(n))
 pred[0:3]
 ```
 
-    [2.130624801574628, -0.5915548141996736, -0.31485590639344724]
+    [2.218135194785008, -0.40111415239915993, -0.11737133243248087]
 
 #### 3.1.5 Starting the workers outside Python
 
@@ -658,7 +659,7 @@ So using the GPU speeds things up by 150-fold (compared to numpy) and
 One can also have PyTorch “fuse” the operations in the loop, which
 avoids having the different vectorized operations in `myfun` being done
 in separate loops under the hood. For an overview of loop fusion, see
-[this discussion](../parallel-julia#loops-and-fused-operations) in the
+[this discussion](./parallel-julia#4-loops-and-fused-operations) in the
 context of Julia.
 
 To fuse the operations, we need to have the function in a module. In
@@ -799,8 +800,8 @@ t2 = time.time() - t0
 print(f"numpy time: {round(t1,3)}\njax time: {round(t2,3)}")
 ```
 
-    numpy time: 4.094
-    jax time: 1.359
+    numpy time: 4.976
+    jax time: 1.411
 
 There’s a nice speedup compared to numpy.
 
@@ -818,7 +819,7 @@ jax.config.update("jax_enable_x64", True)
 ```
 
 Next let’s consider JIT compiling it, which should [fuse the vectorized
-operations](../parallel-julia#loops-and-fused-operations) and avoid
+operations](./parallel-julia#4-loops-and-fused-operations) and avoid
 temporary objects. The JAX docs have a [nice
 discussion](https://jax.readthedocs.io/en/latest/notebooks/thinking_in_jax.html#to-jit-or-not-to-jit)
 of when JIT compilation will be beneficial.
@@ -833,15 +834,15 @@ t3 = time.time() - t0
 print(f"jitted jax time: {round(t3,3)}")
 ```
 
-    jitted jax time: 0.785
+    jitted jax time: 0.774
 
 So that gives another almost 2x speedup.
 
 ### 7.2 Linear algebra
 
 Linear algebra in JAX will use multiple threads ([as discussed for
-numpy](./#2-threading)). Here we’ll compare 64-bit calculation, since
-matrix decompositions sometimes need more precision.
+numpy](./parallel-python#2-threading)). Here we’ll compare 64-bit
+calculation, since matrix decompositions sometimes need more precision.
 
 ``` python
 n = 7000
@@ -858,8 +859,8 @@ print(round(time.time() - t0,3))
 ```
 
     numpy time:
-    4.38
-    3.145
+    4.055
+    3.067
 
 ``` python
 import jax.config
@@ -880,8 +881,8 @@ print(round(time.time() - t0,3))
 
     JAX dtype is float64
     jax time:
-    8.402
-    1.724
+    7.869
+    1.765
 
 So here the matrix multiplication is slower using JAX with 64-bit
 numbers but the Cholesky is a bit faster. If one uses 32-bit numbers,
@@ -1050,8 +1051,8 @@ t2 = time.time() - t0
 print(f"numpy time: {round(t1,3)}\njax vmap time: {round(t2,3)}")
 ```
 
-    numpy time: 3.438
-    jax vmap time: 1.077
+    numpy time: 3.429
+    jax vmap time: 1.184
 
 That gives a nice speedup. Let’s also try JIT’ing it. That gives a
 further speedup.
@@ -1065,7 +1066,7 @@ t3 = time.time() - t0
 print(f"jitted jax vmap time: {round(t3,3)}")
 ```
 
-    jitted jax vmap time: 0.303
+    jitted jax vmap time: 0.312
 
 It would make sense to explore the benefits of using a GPU here, though
 I haven’t done so.
