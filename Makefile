@@ -4,6 +4,7 @@ parallel-R.md: parallel-R.Rmd
 
 parallel-python.md: parallel-python.qmd
 	quarto render parallel-python.qmd --to md
+# For GPU-based jax, I am currently using jax-test mamba env
 
 parallel-julia.md: parallel-julia.qmd
 	quarto render parallel-julia.qmd --to md

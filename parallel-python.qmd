@@ -34,7 +34,7 @@ To use a fast, threaded BLAS, one approach is to use the Anaconda/Miniconda Pyth
 
 ### 2.2 Example syntax
 
-Threading in Python is limited to linear algebra (except if using Dask), provided Python is linked against a threaded BLAS.  Python has something
+Threading in Python is limited to linear algebra (provided Python is linked against a threaded BLAS, except if using Dask or JAX or various other packages). Python has something
 called the [Global Interpreter Lock](https://wiki.python.org/moin/GlobalInterpreterLock)
 that interferes with threading in Python (but not in threaded linear algebra packages called by Python). 
 
@@ -45,7 +45,7 @@ Here's some linear algebra in  Python that will use threading if *numpy* is link
 import numpy as np
 n = 5000
 x = np.random.normal(0, 1, size=(n, n))
-x = x.T.dot(x)
+x = x.T @ x
 U = np.linalg.cholesky(x)
 ```
 
@@ -60,7 +60,7 @@ available to a process.
 
 For most threaded code (that based on the openMP protocol), the number
 of threads can be set by setting the OMP_NUM_THREADS environment
-variable. Note that under some circumstances you may need to use VECLIB_MAXIMUM_THREADS if on a Mac or MKL_NUM_THREADS if numpy/scipy are linked against MKL. 
+variable. Note that under some circumstances you may need to use VECLIB_MAXIMUM_THREADS if on an (older, Intel-based) Mac or MKL_NUM_THREADS if numpy/scipy are linked against MKL. 
 
 For example, to set it for four
 threads in bash, do this before starting your Python session.
@@ -416,25 +416,22 @@ results = lview.map(wrapper, range(p))
 Note that above, I've done everything at the level of the computational tasks. One could presumably
 do this at the level of the workers, but one would need to figure out how to maintain the state of the generator from one task to the next for any given worker.
 
-## 6 Using the GPU
+## 6 Using the GPU via PyTorch
 
-Python is the go-to language used to run computations on a GPU. Some of the packages that can easily offload computations to the GPU include PyTorch, Tensorflow, JAX, and CuPy. We'll discuss some of these.
+Python is the go-to language used to run computations on a GPU. Some of the packages that can easily offload computations to the GPU include PyTorch, Tensorflow, JAX, and CuPy. (Of course PyTorch and Tensorflow are famously used for deep learning, but they're also general numerical computing packages.) We'll discuss some of these.
 
 There are a couple key things to remember about using a GPU:
 
  - The GPU memory is separate from CPU memory, and transferring data from the CPU to GPU (or back) is often more costly than doing the computation on the GPU.
     - If possible, generate the data on the GPU or keep the data on the GPU when carrying out a sequence of operations.
  - By default GPU calculations are often doing using 32-bit (4-byte) floating point numbers rather than the standard of 64-bit (8-byte) when on the CPU.
-    - This can affect speed comparisons between CPU and GPU.
+    - This can affect speed comparisons between CPU and GPU if one doesn't compare operations with the same types of floating point numbers.
+ - GPU operations are often asynchronous -- they'll continue in the background after they start, returning control of your Python session to you and potentially making it seem like the computation happened more quickly than it did.
+    - In the examples below, note syntax that ensures the operation is done before timing concludes (e.g., `cuda.synchronize` for PyTorch and `block_until_ready` for JAX).
 
 Note that for this section, I'm pasting in the output when running the code separately on a machine with a GPU because this document is generated on a machine without a GPU.
 
-
-At the moment, this section is UNDER CONSTRUCTION.
-
-### 6.1 Using PyTorch to access the GPU
-
-#### 6.1.1 Matrix multiplication
+### 6.1 Matrix multiplication
 
 By default PyTorch will use 32-bit numbers.
 
@@ -454,10 +451,11 @@ def matmul_wrap(x, y):
     z = torch.matmul(x, y)
     return(z)
     
-    
+## Generate data on the CPU.    
 x = torch.randn(n,n)
 y = torch.randn(n,n)
 
+## Copy the objects to the GPU.
 x_gpu = x.cuda() # or: `x.to("cuda")`
 y_gpu = y.cuda()
     
@@ -480,6 +478,7 @@ Let's consider the time for copying data to the GPU:
 
 ```{python}
 #| eval: false
+x = torch.randn(n,n)
 start.record()
 x_gpu = x.cuda()
 torch.cuda.synchronize()
@@ -497,9 +496,9 @@ We can generate data on the GPU like this:
 x_gpu = torch.randn(n,n, device=gpu)
 ```
 
-#### 6.1.2 Vectorized calculations (and loop fusion)
+### 6.2 Vectorized calculations (and loop fusion)
 
-Here we'll consider using the GPU for vectorized calculations. We'll compare using numpy, CPU-based PyTorch, and GPU-based PyTorch.
+Here we'll consider using the GPU for vectorized calculations. We'll compare using numpy, CPU-based PyTorch, and GPU-based PyTorch, again with 32-bit numbers.
 
 ```{python}
 #| eval: false
@@ -527,18 +526,19 @@ x_gpu = x.cuda() # or: `x.to("cuda")`
 tmp = np.random.normal(size = n)
 x_np = tmp.astype(np.float32)  # for fair comparison
 
+## numpy
 t0 = time.time()
 y_np = myfun_np(x_np)
-time.time()-t0   # 1.4 sec.
+time.time()-t0   # 1.2 sec.
 
+## CPU-based torch (1 thread)
 torch.set_num_threads(1)
-
 start.record()
 y = myfun_torch(x)
 end.record()
-print(start.elapsed_time(end))  # 2300 ms (2.3 sec.)
+print(start.elapsed_time(end))  # 2200 ms (2.2 sec.)
 
-
+## GPU-based torch
 start.record()
 y_gpu = myfun_torch(x_gpu)
 torch.cuda.synchronize()
@@ -557,16 +557,23 @@ To fuse the operations, we need to have the function in a module. In this case I
 from myfun_torch import myfun_torch as myfun_torch_tmp
 myfun_torch_compiled = torch.jit.script(myfun_torch_tmp)
 
+## CPU plus loop fusion
+start.record()
+y = myfun_torch_compiled(x)
+end.record()
+print(start.elapsed_time(end))   # 1000 ms (1 sec.)
+
+## GPU plus loop fusion
 start.record()
 y_gpu = myfun_torch_compiled(x_gpu)
 torch.cuda.synchronize()
 end.record()
-print(start.elapsed_time(end))   # 4 ms
+print(start.elapsed_time(end))   # 3.5 ms
 ```
 
-So that seems to give about a two-fold speedup compared to using the GPU without loop fusion.
+So that seems to give a 2-3 fold speedup compared to without loop fusion.
 
-#### 6.1.3 Using Apple's M2 GPU
+### 6.3 Using Apple's M2 GPU
 
 One can also use PyTorch to run computations on the GPU that comes with Apple's M2 chips.
 
@@ -604,7 +611,7 @@ end.record()
 print(start.elapsed_time(end)) # 950 ms
 ```
 
-So there is about a two-fold speed up.
+So there is about a two-fold speed up, which isn't impressive compared to the speedup on a standard GPU.
 
 
 Let's see how much time is involved in transferring the data.
@@ -620,7 +627,7 @@ end.record()
 print(start.elapsed_time(end))  # 35 ms.
 ```
 
-So it looks like the transfer time is pretty small compared to the computation time (and to the savings involved in using the M2 GPU.
+So it looks like the transfer time is pretty small compared to the computation time (and to the savings involved in using the M2 GPU).
 
 We can generate data on the GPU like this:
 
@@ -629,6 +636,326 @@ We can generate data on the GPU like this:
 x_mps = torch.randn(n,n, device=mps_device)
 ```
 
-## 6.2 Using JAX to access the GPU
+## 7 Using JAX (for CPU and GPU)
 
-UNDER CONSTRUCTION
+You can think of JAX as a version of numpy enabled to use the GPU (or automatically parallelize on CPU threads) and provide automatic differentiation.
+
+One can also use just-in-time (JIT) compilation with JAX. Behind the scenes, the instructions are compiled to machine code for different backends (e.g., CPU and GPU) using XLA.
+
+### 7.1 Vectorized calculations (and loop fusion)
+
+Let's first consider running a vectorized calculation using JAX on the CPU, which will use multiple threads, each thread running on a separate CPU core on our computer.
+
+```{python}
+import time
+import numpy as np
+import jax.numpy as jnp
+
+def myfun_np(x):
+    y = np.exp(x) + 3 * np.sin(x)
+    return(y)
+    
+def myfun_jnp(x):
+    y = jnp.exp(x) + 3 * jnp.sin(x)
+    return(y)
+
+n = 250000000
+
+x = np.random.normal(size = n).astype(np.float32)  # for consistency
+x_jax = jnp.array(x)  # 32-bit by default
+print(x_jax.platform())
+```
+
+```{python}
+t0 = time.time()
+z = myfun_np(x)
+t1 = time.time() - t0
+
+t0 = time.time()
+z_jax = myfun_jnp(x_jax).block_until_ready()
+t2 = time.time() - t0
+
+print(f"numpy time: {round(t1,3)}\njax time: {round(t2,3)}")
+```
+
+There's a nice speedup compared to numpy.
+
+Since JAX will often execute computations asynchronously (in particular when using the GPU), the `block_until_ready` invocation ensures that the computation finishes before we stop timing.
+
+
+By default the JAX floating point type is 32-bit so we forced the use of 32-bit numbers for numpy
+for comparability. One could have JAX use 64-bit numbers like this:
+
+```{python}
+#| eval: false
+import jax.config
+jax.config.update("jax_enable_x64", True)  
+```
+
+Next let's consider JIT compiling it, which should [fuse the vectorized operations](../parallel-julia#loops-and-fused-operations) and avoid temporary objects. The JAX docs have a [nice discussion](https://jax.readthedocs.io/en/latest/notebooks/thinking_in_jax.html#to-jit-or-not-to-jit) of when JIT compilation will be beneficial.
+
+```{python}
+import jax
+myfun_jnp_jit = jax.jit(myfun_jnp)
+
+t0 = time.time()
+z_jax_jit = myfun_jnp_jit(x_jax).block_until_ready()
+t3 = time.time() - t0
+print(f"jitted jax time: {round(t3,3)}")
+```
+
+So that gives another almost 2x speedup.
+
+### 7.2 Linear algebra
+
+Linear algebra in JAX will use multiple threads ([as discussed for numpy](./#2-threading)).
+Here we'll compare 64-bit calculation, since matrix decompositions sometimes need more precision.
+
+```{python}
+n = 7000
+x = np.random.normal(0, 1, size=(n, n))
+
+t0 = time.time()
+mat = x.T @ x
+print("numpy time:")
+print(round(time.time() - t0,3))
+
+t0 = time.time()
+U = np.linalg.cholesky(mat) 
+print(round(time.time() - t0,3))
+```
+
+```{python}
+import jax.config
+jax.config.update("jax_enable_x64", True)  
+
+x_jax = jnp.array(x, dtype = jnp.float64)
+print(f"JAX dtype is {x_jax.dtype}")
+
+t0 = time.time()
+mat_jax = jnp.matmul(x_jax.transpose(), x_jax)
+print("jax time:")
+print(round(time.time() - t0,3))
+
+t0 = time.time()
+U_jax = jnp.linalg.cholesky(mat_jax)
+print(round(time.time() - t0,3))
+```
+
+So here the matrix multiplication is slower using JAX with 64-bit numbers but the Cholesky is a bit faster. If one uses 32-bit numbers, JAX is faster for both (not shown).
+
+In general, the  JAX speedups are not huge, which is not surprising given both approaches are using multiple threads to carry out the linear algebra. At the least it indicates one can move a numpy workflow to JAX without worrying about losing the threaded BLAS speed of numpy.
+
+### 7.3 Using the GPU with JAX
+
+Getting threaded CPU computation automatically is nice, but the real benefit of JAX comes in offloading computations to the GPU (and in providing automatic differentiation, not discussed in this tutorial). If a GPU is available and a [GPU-enabled JAX is installed](https://jax.readthedocs.io/en/latest/installation.html), JAX will generally try to use the GPU.
+
+Note my general comments about using the GPU in the [PyTorch section](./#6-using-the-gpu-via-pytorch).
+
+Note that for this section, I'm pasting in the output when running the code separately on a machine with a GPU because this document is generated on a machine without a GPU.
+
+We'll just repeat the experiments we ran earlier comparing numpy- and JAX-based calculations, but on a machine with an A100 GPU.
+
+
+```{python}
+#| eval: false
+import time
+import numpy as np
+import jax.numpy as jnp
+
+def myfun_np(x):
+    y = np.exp(x) + 3 * np.sin(x)
+    return(y)
+    
+def myfun_jnp(x):
+    y = jnp.exp(x) + 3 * jnp.sin(x)
+    return(y)
+
+n = 250000000
+
+x = np.random.normal(size = n).astype(np.float32)  # for consistency
+x_jax = jnp.array(x)  # 32-bit by default
+print(x_jax.platform())    # gpu
+
+t0 = time.time()
+z = myfun_np(x)
+print(time.time() - t0)    # 1.15 s.
+
+t0 = time.time()
+z_jax = myfun_jnp(x_jax).block_until_ready()
+print(time.time() - t0)    # 0.0099 s.
+```
+
+So that gives a speedup of more than 100x.
+
+
+```{python}
+#| eval: false
+import jax
+myfun_jnp_jit = jax.jit(myfun_jnp)
+
+t0 = time.time()
+z_jax_jit = myfun_jnp_jit(x_jax).block_until_ready()  # 0.0052 s.
+print(time.time() - t0)
+```
+
+JIT compilation helps a bit (about 2x).
+
+Finally, here's the linear algebra example on the GPU.
+
+```{python}
+#| eval: false
+n = 7000
+x = np.random.normal(0, 1, size=(n, n)).astype(np.float32) # for consistency
+
+t0 = time.time()
+mat = x.T @ x
+print(time.time() - t0)    # 3.7 s.
+
+t0 = time.time()
+U = np.linalg.cholesky(mat)  # 3.3 s.
+print(time.time() - t0)
+```
+
+```{python}
+#| eval: false
+x_jax = jnp.array(x)
+
+t0 = time.time()
+mat_jax = jnp.matmul(x_jax.transpose(), x_jax).block_until_ready()
+print(time.time() - t0)    # 0.025 sec.
+
+t0 = time.time()
+U_jax = jnp.linalg.cholesky(mat_jax).block_until_ready()
+print(time.time() - t0)   # 0.08 s.
+```
+
+Again we get a very impressive speedup.
+
+### 7.4 Some comments
+
+As discussed elsewhere in this tutorial, it takes time to transfer data to and from the GPU, so it's best to generate values on the GPU and keep objects on the GPU when possible.
+
+Also, JAX objects are designed to be manipulated as objects, rather than manipulating individual values.
+
+```{python}
+#| eval: false
+x_jax[0,0] = 3.17
+```
+
+```
+Traceback (most recent call last):
+  File "<stdin>", line 1, in <module>
+  File "/scratch/users/paciorek/conda/envs/jax-test/lib/python3.11/site-packages/jax/_src/numpy/array_methods.py", line 278, in _unimplemented_setitem
+    raise TypeError(msg.format(type(self)))
+TypeError: '<class 'jaxlib.xla_extension.ArrayImpl'>' object does not support item assignment. JAX arrays are immutable. Instead of ``x[idx] = y``, use ``x = x.at[idx].set(y)`` or another .at[] method: https://jax.readthedocs.io/en/latest/_autosummary/jax.numpy.ndarray.at.html
+```
+
+### 7.5 vmap and for vectorized map operations
+
+We can use JAX's `vmap` to automatically vectorize a map operation. Unlike numpy's `vectorize` or `apply_along_axis`, which are just handy syntax ("syntactic sugar") and don't actually speed anything up (because the looping is still done in Python), `vmap` actually vectorizes the loop. Behind the scenes it generates a vectorized version of the code that can run in parallel on CPU or GPU.
+
+In general, one would use this to automatically iterate over the dimension(s) of one or more arrays. This is convenient from a coding perspective (compared to explicitly writing a loop) and potentially speeds up the computation based on parallelization and by avoiding the overhead of looping at the Python level. 
+
+Here we'll standardize each column of an array using `vmap` rather than writing a loop over the columns.
+
+
+```{python}
+import jax
+import jax.numpy as jnp
+import time
+
+nr = 10000
+nc = 10000
+x = np.random.normal(size = (nr,nc)).astype(np.float32)  # for consistency
+x_jax = jnp.array(x) 
+
+def f(x):
+    ## Standardize a vector by its range.
+    return x / (np.max(x) - np.min(x))
+
+def f_jax(x):
+    return x / (jnp.max(x) - jnp.min(x))
+
+# Standardize each column.
+
+t0 = time.time()
+out = np.apply_along_axis(f, 0, x)  
+t1 = time.time() - t0
+
+# JAX vmap numbers axes in reverse order of numpy, apparently.
+f_jax_vmap = jax.vmap(f_jax, in_axes=1, out_axes=1)
+
+t0 = time.time()
+out_jax = f_jax_vmap(x_jax).block_until_ready()     
+t2 = time.time() - t0
+print(f"numpy time: {round(t1,3)}\njax vmap time: {round(t2,3)}")
+```
+
+That gives a nice speedup. Let's also try JIT'ing it. That gives a further speedup.
+
+```{python}
+f_jax_vmap_jit = jax.jit(f_jax_vmap)
+
+t0 = time.time()
+out_jax_jit = f_jax_vmap_jit(x_jax).block_until_ready()
+t3 = time.time() - t0
+print(f"jitted jax vmap time: {round(t3,3)}")
+```
+
+It would make sense to explore the benefits of using a GPU here, though I haven't done so.
+
+`vmap` has a lot of flexibility to operate on various axes of its input arguments (and structure the output axes).
+Suppose we want to do the same standardization but using the columns of a different array as what to standardize based on.
+
+```{python}
+y = np.random.normal(size = (nr,nc)).astype(np.float32)
+y_jax = jnp.array(y) 
+
+def f2_jax(x, y):
+    return x / (jnp.max(y) - jnp.min(y))
+
+out2 = jax.vmap(f2_jax, in_axes=(1,1), out_axes=1)(x_jax, y_jax)
+f2_jax_jit = jax.jit(jax.vmap(f2_jax, in_axes=(1,1), out_axes=1)) 
+out3 = f2_jax_jit(x_jax, y_jax)
+```
+
+Finally, note that `pmap` is a function with a similar-sounding name that allows one to parallelize a map operation over multiple devices (e.g., multiple GPUs).
+
+## 8 Using CuPy
+
+CuPy is another package allowing one to execute numpy-type calculations on the GPU (Nvidia only). It has some similarity to JAX.
+
+Here's a basic illustration, where we get a 175x speedup for generating a random matrix and matrix multiplication when using an A100 GPU.
+
+```{python}
+#| eval: false
+import cupy
+import numpy as np
+import time
+
+def matmul_np(n):
+    x = np.random.normal(size=(n,n))
+    z = np.matmul(x,x)
+    return(z)
+
+def matmul_cupy(n):
+    x = cupy.random.normal(size=(n,n))
+    z = cupy.matmul(x,x)
+    return(z)
+
+
+n = 7000
+
+t0 = time.time()
+z = matmul_np(n)
+print(time.time() - t0)   # 8.8 s.
+
+t0 = time.time()
+z_cupy = matmul_cupy(n)
+cupy.cuda.stream.get_current_stream().synchronize()
+print(time.time() - t0)   # .05 s.
+```
+
+You can also use `cupy.RawKernel` to execute a GPU kernel written in CUDA C/C++ directly from Python.
+That's a bit beyond our scope here, so I won't show an example.
