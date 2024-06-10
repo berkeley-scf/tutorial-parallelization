@@ -431,7 +431,9 @@ There are a couple key things to remember about using a GPU:
 
 Note that for this section, I'm pasting in the output when running the code separately on a machine with a GPU because this document is generated on a machine without a GPU.
 
-### 6.1 Matrix multiplication
+### 6.1 Linear algebra
+
+Here's an example of doing some linear algebra (simply matrix multiplication) on the GPU using PyTorch.
 
 By default PyTorch will use 32-bit numbers.
 
