@@ -96,11 +96,7 @@ A standard protocol for passing messages is MPI, of which there are various vers
 
 Tools such as ipyparallel, Dask and Ray in Python and R's future package all manage the work of moving information between nodes for you (and don't generally use MPI). 
 
-### 3.3 Other type of parallel processing
-
-We won't cover either of these in this tutorial.
-
-#### GPUs
+### 3.3 GPUs
 
 GPUs (Graphics Processing Units) are processing units originally designed
 for rendering graphics on a computer quickly. This is done by having
@@ -110,12 +106,16 @@ capability for general computation.
 
 Most researchers don't program for a GPU directly but rather use software (often machine learning software such as Tensorflow or PyTorch) that has been programmed to take advantage of a GPU if one is available.
 
-#### Spark and Hadoop
+### 3.4 Spark and Hadoop
 
 Spark and Hadoop are systems for implementing computations in a distributed
 memory environment, using the MapReduce approach.
 
+We won't cover this topic in this tutorial.
+
 Note that Dask provides a lot of the same functionality as Spark, allowing one to create distributed datasets where pieces of the dataset live on different machines but can be treated as a single dataset from the perspective of the user.
+
+
 
 ## 4 Parallelization strategies
 
