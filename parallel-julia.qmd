@@ -1,6 +1,6 @@
 ---
 title: "Parallel processing in Julia"
-jupyter: julia-1.8
+jupyter: julia-1.10
 ---
 
 

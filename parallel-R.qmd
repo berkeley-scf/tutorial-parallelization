@@ -38,7 +38,8 @@ resources, your linear algebra will use multiple cores, provided your installed 
 Here's some code that illustrates
 the speed of using a threaded BLAS:
 
-```{r, eval=FALSE}
+```{r}
+#| eval: false
 library(RhpcBLASctl)  ## package that controls number of threads from within R
 
 x <- matrix(rnorm(5000^2), 5000)
@@ -93,7 +94,7 @@ OMP_NUM_THREADS=4 R CMD BATCH --no-save job.R job.out
 
 Finally, the R package, `RhpcBLASctl`, allows you to control the number of threads from within R, as already seen in the example in the previous subsection.
 
-```{r, eval=TRUE}
+```{r}
 library(RhpcBLASctl)
 blas_set_num_threads(4)
 # now run your linear algebra
@@ -124,7 +125,8 @@ Later we'll see the use of the `multicore` and `cluster` "plans", which set up t
 
 Here we parallelize leave-one-out cross-validation for a random forest model.
 
-```{r, future_lapply, eval=FALSE}
+```{r, future_lapply}
+#| eval: false
 source('rf.R')  # loads in data (X and Y) and looFit()
 
 library(future.apply)
@@ -185,7 +187,8 @@ out[1:3]
 
 Prior to version 1.0.0 of `doFuture`, you'd do this:
 
-```{r, foreach-old, eval=FALSE}
+```{r, foreach-old}
+#| eval: false
 source('rf.R')  # loads in data (X and Y) and looFit()
 library(future)
 plan(multisession, workers = 4)
@@ -235,7 +238,8 @@ your memory use.
 
 The `multicore` plan (not available on Windows or in RStudio) forks the main R process.
 
-```{r, eval=FALSE}
+```{r}
+#| eval: false
 plan(multicore, workers = 4)
 ```
 
@@ -267,7 +271,8 @@ plan(cluster, workers = workers)
 
 If you are using the Slurm scheduler on a Linux cluster and in your sbatch or srun command you use `--ntasks`, then the following will allow you to use as many workers as the value of `ntasks`. One caveat is that one still needs to be able to access the various machines via password-less SSH.
 
-```{r, future-slurm, eval = FALSE}
+```{r, future-slurm}
+, eval = FALSE}
 plan(cluster)
 # Now use parallel_lapply, parallel_sapply, foreach, etc. as before
 ```
@@ -282,7 +287,8 @@ plan(cluster, workers = workers)
 
 In all cases, we can verify that the workers are running on the various nodes by checking the nodename of each of the workers:
 
-```{r, check-workers, eval=FALSE}
+```{r, check-workers}
+#| eval: false
 tmp <- future_sapply(seq_len(nbrOfWorkers()), 
               function(i)
                 cat("Worker running in process", Sys.getpid(),
@@ -300,7 +306,8 @@ As with calculations using the future package, all of the functionality discusse
 
 Here are a couple of the ways to do a parallel lapply:
 
-```{r, parLapply, eval=FALSE}
+```{r, parLapply}
+#| eval: false
 library(parallel)
 nCores <- 4  
 cl <- makeCluster(nCores) 
@@ -319,7 +326,8 @@ result2 <- mclapply(seq_along(Y), looFit, Y, X)
 
 And here's how to use `doParallel` with foreach instead of `doFuture`.
 
-```{r, foreach2, eval=FALSE}
+```{r, foreach2}
+#| eval: false
 library(doParallel)  # uses parallel package, a core R package
 
 nCores <- 4  
@@ -444,7 +452,8 @@ Before version 1.0.0 of `doFuture`, one would need to use the `%doRNG%` operator
 Here's how you initialize independent sequences on different processes
 when using the *parallel* package's parallel lapply functionality.
 
-```{r, RNG-apply, eval=FALSE}
+```{r, RNG-apply}
+#| eval: false
 library(parallel)
 library(rlecuyer)
 nCores <- 4
@@ -460,7 +469,8 @@ With `mclapply` you can set the argument `mc.set.seed = TRUE`, which is the defa
 
 For foreach, you can use `registerDoRNG`:
 
-```{r, foreach-rng, eval=FALSE}
+```{r, foreach-rng}
+#| eval: false
 library(doRNG)
 library(doParallel)
 registerDoParallel(4)
@@ -476,7 +486,8 @@ should get different seeds for the different processes by default),
 but one needs to invoke `RNGkind("L'Ecuyer-CMRG")`
 to get independent streams via the L'Ecuyer algorithm.
 
-```{r, RNG-mclapply, eval=FALSE}
+```{r, RNG-mclapply}
+#| eval: false
 library(parallel)
 library(rlecuyer)
 RNGkind("L'Ecuyer-CMRG")
