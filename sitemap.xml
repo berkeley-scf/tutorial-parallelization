@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url>
+    <loc>https://computing.stat.berkeley.edu/tutorial-parallelization/license.html</loc>
+    <lastmod>2025-03-01T01:17:21.180Z</lastmod>
+  </url>
+  <url>
+    <loc>https://computing.stat.berkeley.edu/tutorial-parallelization/parallel-python.html</loc>
+    <lastmod>2025-03-26T00:47:10.744Z</lastmod>
+  </url>
+  <url>
+    <loc>https://computing.stat.berkeley.edu/tutorial-parallelization/parallel-matlab.html</loc>
+    <lastmod>2025-03-25T23:16:38.982Z</lastmod>
+  </url>
+  <url>
+    <loc>https://computing.stat.berkeley.edu/tutorial-parallelization/index.html</loc>
+    <lastmod>2025-03-25T23:52:13.534Z</lastmod>
+  </url>
+  <url>
+    <loc>https://computing.stat.berkeley.edu/tutorial-parallelization/parallel-julia.html</loc>
+    <lastmod>2025-03-26T00:46:56.912Z</lastmod>
+  </url>
+  <url>
+    <loc>https://computing.stat.berkeley.edu/tutorial-parallelization/parallel-R.html</loc>
+    <lastmod>2025-03-26T00:47:29.404Z</lastmod>
+  </url>
+  <url>
+    <loc>https://computing.stat.berkeley.edu/tutorial-parallelization/parallel-C.html</loc>
+    <lastmod>2025-03-25T23:16:38.922Z</lastmod>
+  </url>
+</urlset>

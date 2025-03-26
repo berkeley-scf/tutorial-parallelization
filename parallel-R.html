@@ -1,0 +1,1100 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.6.40">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>Parallel processing in R</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { display: inline-block; text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="site_libs/quarto-nav/headroom.min.js"></script>
+<script src="site_libs/clipboard/clipboard.min.js"></script>
+<script src="site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="site_libs/quarto-search/fuse.min.js"></script>
+<script src="site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="./">
+<script src="site_libs/quarto-html/quarto.js"></script>
+<script src="site_libs/quarto-html/popper.min.js"></script>
+<script src="site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="site_libs/quarto-html/anchor.min.js"></script>
+<link href="site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="site_libs/quarto-html/quarto-syntax-highlighting-549806ee2085284f45b00abea8c6df48.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="site_libs/bootstrap/bootstrap-cd173fadfbc59501cc53580d670575f8.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "sidebar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "start",
+  "type": "textbox",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN") {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+
+<link rel="stylesheet" href="assets/styles.css">
+</head>
+
+<body class="nav-sidebar docked">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+  <nav class="quarto-secondary-nav">
+    <div class="container-fluid d-flex">
+      <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+        <i class="bi bi-layout-text-sidebar-reverse"></i>
+      </button>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./parallel-R.html">Parallel R</a></li></ol></nav>
+        <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
+        </a>
+      <button type="button" class="btn quarto-search-button" aria-label="Search" onclick="window.quartoOpenSearch();">
+        <i class="bi bi-search"></i>
+      </button>
+    </div>
+  </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article">
+<!-- sidebar -->
+  <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal quarto-sidebar-collapse-item sidebar-navigation docked overflow-auto">
+    <div class="pt-lg-2 mt-2 text-left sidebar-header sidebar-header-stacked">
+      <a href="https://statistics.berkeley.edu" class="sidebar-logo-link">
+      <img src="./assets/img/logo.svg" alt="" class="sidebar-logo py-0 d-lg-inline d-none">
+      </a>
+    <div class="sidebar-title mb-0 py-0">
+      <a href="./">SCF Parallelization Tutorial</a> 
+        <div class="sidebar-tools-main">
+    <a href="https://github.com/berkeley-scf/tutorial-parallelization" title="" class="quarto-navigation-tool px-1" aria-label="GitHub"><i class="bi bi-github"></i></a>
+</div>
+    </div>
+      </div>
+        <div class="mt-2 flex-shrink-0 align-items-center">
+        <div class="sidebar-search">
+        <div id="quarto-search" class="" title="Search"></div>
+        </div>
+        </div>
+    <div class="sidebar-menu-container"> 
+    <ul class="list-unstyled mt-1">
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Overview</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./parallel-python.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Parallel Python</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./parallel-R.html" class="sidebar-item-text sidebar-link active">
+ <span class="menu-text">Parallel R</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./parallel-julia.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Parallel Julia</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./parallel-matlab.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Parallel MATLAB</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./parallel-C.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Parallel C/C++</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./license.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">License</span></a>
+  </div>
+</li>
+    </ul>
+    </div>
+</nav>
+<div id="quarto-sidebar-glass" class="quarto-sidebar-collapse-item" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item"></div>
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#parallel-processing-in-r" id="toc-parallel-processing-in-r" class="nav-link active" data-scroll-target="#parallel-processing-in-r">Parallel processing in R</a>
+  <ul class="collapse">
+  <li><a href="#overview" id="toc-overview" class="nav-link" data-scroll-target="#overview">1 Overview</a></li>
+  <li><a href="#threading" id="toc-threading" class="nav-link" data-scroll-target="#threading">2 Threading</a>
+  <ul class="collapse">
+  <li><a href="#what-is-the-blas" id="toc-what-is-the-blas" class="nav-link" data-scroll-target="#what-is-the-blas">2.1 What is the BLAS?</a></li>
+  <li><a href="#example-syntax" id="toc-example-syntax" class="nav-link" data-scroll-target="#example-syntax">2.2 Example syntax</a></li>
+  <li><a href="#choosing-the-number-of-threads" id="toc-choosing-the-number-of-threads" class="nav-link" data-scroll-target="#choosing-the-number-of-threads">2.3 Choosing the number of threads</a></li>
+  <li><a href="#fast-linear-algebra-on-apple-silicon-m1-and-m2-macs" id="toc-fast-linear-algebra-on-apple-silicon-m1-and-m2-macs" class="nav-link" data-scroll-target="#fast-linear-algebra-on-apple-silicon-m1-and-m2-macs">2.4 Fast linear algebra on Apple Silicon (M1 and M2) Macs</a></li>
+  </ul></li>
+  <li><a href="#parallel-loops-including-parallel-lapply-via-the-future-package" id="toc-parallel-loops-including-parallel-lapply-via-the-future-package" class="nav-link" data-scroll-target="#parallel-loops-including-parallel-lapply-via-the-future-package">3 Parallel loops (including parallel lapply) via the future package</a>
+  <ul class="collapse">
+  <li><a href="#parallel-lapply" id="toc-parallel-lapply" class="nav-link" data-scroll-target="#parallel-lapply">3.1 Parallel lapply</a></li>
+  <li><a href="#parallel-for-loops" id="toc-parallel-for-loops" class="nav-link" data-scroll-target="#parallel-for-loops">3.2 Parallel for loops</a></li>
+  <li><a href="#avoiding-copies-on-each-worker" id="toc-avoiding-copies-on-each-worker" class="nav-link" data-scroll-target="#avoiding-copies-on-each-worker">3.3 Avoiding copies on each worker</a></li>
+  <li><a href="#using-multiple-machines-or-cluster-nodes" id="toc-using-multiple-machines-or-cluster-nodes" class="nav-link" data-scroll-target="#using-multiple-machines-or-cluster-nodes">3.4 Using multiple machines or cluster nodes</a></li>
+  </ul></li>
+  <li><a href="#older-alternatives-to-the-future-package-for-parallel-loopslapply" id="toc-older-alternatives-to-the-future-package-for-parallel-loopslapply" class="nav-link" data-scroll-target="#older-alternatives-to-the-future-package-for-parallel-loopslapply">4 Older alternatives to the future package for parallel loops/lapply</a>
+  <ul class="collapse">
+  <li><a href="#parallel-lapply-1" id="toc-parallel-lapply-1" class="nav-link" data-scroll-target="#parallel-lapply-1">4.1 Parallel lapply</a></li>
+  <li><a href="#parallel-for-loops-1" id="toc-parallel-for-loops-1" class="nav-link" data-scroll-target="#parallel-for-loops-1">4.2 Parallel for loops</a></li>
+  <li><a href="#avoiding-copies-on-each-worker-1" id="toc-avoiding-copies-on-each-worker-1" class="nav-link" data-scroll-target="#avoiding-copies-on-each-worker-1">4.3 Avoiding copies on each worker</a></li>
+  <li><a href="#using-multiple-machines-or-cluster-nodes-1" id="toc-using-multiple-machines-or-cluster-nodes-1" class="nav-link" data-scroll-target="#using-multiple-machines-or-cluster-nodes-1">4.4 Using multiple machines or cluster nodes</a></li>
+  </ul></li>
+  <li><a href="#parallel-random-number-generation" id="toc-parallel-random-number-generation" class="nav-link" data-scroll-target="#parallel-random-number-generation">5 Parallel random number generation</a>
+  <ul class="collapse">
+  <li><a href="#parallel-rng-and-the-future-package" id="toc-parallel-rng-and-the-future-package" class="nav-link" data-scroll-target="#parallel-rng-and-the-future-package">5.1 Parallel RNG and the future package</a></li>
+  <li><a href="#parallel-rng-with-alternatives-to-the-future-package" id="toc-parallel-rng-with-alternatives-to-the-future-package" class="nav-link" data-scroll-target="#parallel-rng-with-alternatives-to-the-future-package">5.2 Parallel RNG with alternatives to the future package</a></li>
+  </ul></li>
+  <li><a href="#the-partools-package" id="toc-the-partools-package" class="nav-link" data-scroll-target="#the-partools-package">6 The <em>partools</em> package</a></li>
+  </ul></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">Parallel processing in R</h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<section id="parallel-processing-in-r" class="level1">
+<h1>Parallel processing in R</h1>
+<section id="overview" class="level2">
+<h2 class="anchored" data-anchor-id="overview">1 Overview</h2>
+<p>R provides a variety of functionality for parallelization, including threaded operations (linear algebra), parallel for loops and lapply-type statements, and parallelization across multiple machines. This material focuses on R’s future package, a flexible and powerful approach to parallelization in R.</p>
+</section>
+<section id="threading" class="level2">
+<h2 class="anchored" data-anchor-id="threading">2 Threading</h2>
+<p>Threading in R is limited to linear algebra, provided R is linked against a threaded BLAS.</p>
+<section id="what-is-the-blas" class="level3">
+<h3 class="anchored" data-anchor-id="what-is-the-blas">2.1 What is the BLAS?</h3>
+<p>The BLAS is the library of basic linear algebra operations (written in Fortran or C). A fast BLAS can greatly speed up linear algebra relative to the default BLAS on a machine. Some fast BLAS libraries are</p>
+<ul>
+<li>Intel’s <em>MKL</em>; may be available for educational use for free</li>
+<li><em>OpenBLAS</em>; open source and free</li>
+<li><em>vecLib</em> for Macs; provided with your Mac (both newer Apple Silicon and older Intel Macs)</li>
+</ul>
+<p>In addition to being fast when used on a single core, all of these BLAS libraries are threaded - if your computer has multiple cores and there are free resources, your linear algebra will use multiple cores, provided your installed R is linked against the threaded BLAS installed on your machine.</p>
+<p><strong>You can <a href="https://statistics.berkeley.edu/computing/blas">use an optimized BLAS on your own machine(s)</a>.</strong></p>
+</section>
+<section id="example-syntax" class="level3">
+<h3 class="anchored" data-anchor-id="example-syntax">2.2 Example syntax</h3>
+<p>Here’s some code that illustrates the speed of using a threaded BLAS:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(RhpcBLASctl)  <span class="do">## package that controls number of threads from within R</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>x <span class="ot">&lt;-</span> <span class="fu">matrix</span>(<span class="fu">rnorm</span>(<span class="dv">5000</span><span class="sc">^</span><span class="dv">2</span>), <span class="dv">5000</span>)</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="do">## Control number of threads from within R. See next section for details.</span></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="fu">blas_set_num_threads</span>(<span class="dv">4</span>)</span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a><span class="fu">system.time</span>({</span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>   x <span class="ot">&lt;-</span> <span class="fu">crossprod</span>(x)</span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>   U <span class="ot">&lt;-</span> <span class="fu">chol</span>(x)</span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>})</span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a><span class="co">#   user  system elapsed </span></span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a><span class="co"># 14.104   5.403   6.752 </span></span>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a><span class="fu">blas_set_num_threads</span>(<span class="dv">1</span>)</span>
+<span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a><span class="fu">system.time</span>({</span>
+<span id="cb1-17"><a href="#cb1-17" aria-hidden="true" tabindex="-1"></a>   x <span class="ot">&lt;-</span> <span class="fu">crossprod</span>(x)</span>
+<span id="cb1-18"><a href="#cb1-18" aria-hidden="true" tabindex="-1"></a>   U <span class="ot">&lt;-</span> <span class="fu">chol</span>(x)</span>
+<span id="cb1-19"><a href="#cb1-19" aria-hidden="true" tabindex="-1"></a>})</span>
+<span id="cb1-20"><a href="#cb1-20" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-21"><a href="#cb1-21" aria-hidden="true" tabindex="-1"></a><span class="co">#   user  system elapsed </span></span>
+<span id="cb1-22"><a href="#cb1-22" aria-hidden="true" tabindex="-1"></a><span class="co"># 12.393   0.055  12.344 </span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>Here the elapsed time indicates that using four threads gave us a two times (2x) speedup in terms of real time, while the user time indicates that the threaded calculation took a bit more total processing time (combining time across all processors) because of the overhead of using multiple threads. So the threading helps, but it’s not the 4x linear speedup we would hope for.</p>
+</section>
+<section id="choosing-the-number-of-threads" class="level3">
+<h3 class="anchored" data-anchor-id="choosing-the-number-of-threads">2.3 Choosing the number of threads</h3>
+<p>In general, threaded code will detect the number of cores available on a machine and make use of them. However, you can also explicitly control the number of threads available to a process.</p>
+<p>For most threaded code (that based on the openMP protocol), the number of threads can be set by setting the OMP_NUM_THREADS environment variable. Note that under some circumstances you may need to use VECLIB_MAXIMUM_THREADS if on an Intel (older) Mac or MKL_NUM_THREADS if R is linked against MKL (which can be seen by running <code>sessionInfo</code>). For information relevant for newer Apple Silicon (M1 and M2) based Macs see below.</p>
+<p>For example, to set it for four threads in bash:</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="bu">export</span> <span class="va">OMP_NUM_THREADS</span><span class="op">=</span>4</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>Do this before starting your R or Python session or before running your compiled executable.</p>
+<p>Alternatively, you can set OMP_NUM_THREADS as you invoke your job, e.g., here with R:</p>
+<pre><code>OMP_NUM_THREADS=4 R CMD BATCH --no-save job.R job.out</code></pre>
+<p>Finally, the R package, <code>RhpcBLASctl</code>, allows you to control the number of threads from within R, as already seen in the example in the previous subsection.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(RhpcBLASctl)</span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="fu">blas_set_num_threads</span>(<span class="dv">4</span>)</span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="co"># now run your linear algebra</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+<section id="fast-linear-algebra-on-apple-silicon-m1-and-m2-macs" class="level3">
+<h3 class="anchored" data-anchor-id="fast-linear-algebra-on-apple-silicon-m1-and-m2-macs">2.4 Fast linear algebra on Apple Silicon (M1 and M2) Macs</h3>
+<p>Note that newer Macs (Apple Silicon-based M1 and M2 Macs) also provide the Accelerate (vecLib) BLAS, but apparently they use the Mac’s AMX co-processor (details are hard to find online). This gives fast computation, but the calculations are not using the regular CPU cores and so one doesn’t choose the number of threads. In particular, <code>VECLIB_MAXIMUM_THREADS</code> has no effect, and <code>top</code> shows only a single CPU in use. Rest assured that if you’ve <a href="https://cran.r-project.org/bin/macosx/RMacOSX-FAQ.html#Which-BLAS-is-used-and-how-can-it-be-changed_003f">configured R to use Accelerate (vecLib) BLAS</a>, you should see very good performance.</p>
+</section>
+</section>
+<section id="parallel-loops-including-parallel-lapply-via-the-future-package" class="level2">
+<h2 class="anchored" data-anchor-id="parallel-loops-including-parallel-lapply-via-the-future-package">3 Parallel loops (including parallel lapply) via the future package</h2>
+<p>All of the functionality discussed here applies <em>only</em> if the iterations/loops of your calculations can be done completely separately and do not depend on one another. This scenario is called an <em>embarrassingly parallel</em> computation. So coding up the evolution of a time series or a Markov chain is not possible using these tools. However, bootstrapping, random forests, simulation studies, cross-validation and many other statistical methods can be handled in this way.</p>
+<p>One can easily parallelize lapply (or sapply) statements or parallelize for loops using the <code>future</code> package. Here’s we’ll just show the basic mechanics of using the future package. There’s much more detail in <a href="https://berkeley-scf.github.io/tutorial-dask-future">this SCF tutorial</a>.</p>
+<p>In Sections 3.1 and 3.2, we’ll parallelize across multiple cores on one machine. Section 3.3 shows how to use multiple machines.</p>
+<section id="parallel-lapply" class="level3">
+<h3 class="anchored" data-anchor-id="parallel-lapply">3.1 Parallel lapply</h3>
+<p>Here we’ll parallelize an lapply operation. We need to call <code>plan</code> to set up the workers that will carry out the individual tasks (one for each element of the input list or vector) in parallel.</p>
+<p>The <code>multisession</code> “plan” simply starts worker processes on the machine you are working on. You could skip the <code>workers</code> argument and the number of workers will equal the number of cores on your machine. Later we’ll see the use of the <code>multicore</code> and <code>cluster</code> “plans”, which set up the workers in a different way.</p>
+<p>Here we parallelize leave-one-out cross-validation for a random forest model.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="fu">source</span>(<span class="st">'rf.R'</span>)  <span class="co"># loads in data (X and Y) and looFit()</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(future.apply)</span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a><span class="do">## Set up four workers to run calculations in parallel</span></span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a><span class="fu">plan</span>(multisession, <span class="at">workers =</span> <span class="dv">4</span>)</span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a><span class="do">## Run the cross-validation in parallel, four tasks at a time on the four workers</span></span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a><span class="fu">system.time</span>(</span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a>  out <span class="ot">&lt;-</span> <span class="fu">future_lapply</span>(<span class="fu">seq_along</span>(Y), looFit, Y, X, <span class="at">future.seed =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a>)   </span>
+<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a><span class="co">#   user  system elapsed </span></span>
+<span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a><span class="co">#  0.684   0.086  19.831 </span></span>
+<span id="cb5-13"><a href="#cb5-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-14"><a href="#cb5-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-15"><a href="#cb5-15" aria-hidden="true" tabindex="-1"></a><span class="do">## Side note: seq_along(Y) is a safe equivalent of 1:length(Y)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>The use of <code>future.seed</code> ensures safe parallel random number generation as discussed in Section 5.</p>
+<p>Here the low user time is because the time spent in the worker processes is not counted at the level of the overall master process that dispatches the workers.</p>
+<p>Note that one can use <code>plan</code> without specifying the number of workers, in which case it will call <code>parallelly::availableCores()</code> and in general set the number of workers to a sensible value based on your system (and your scheduler allocation if your code is running on a cluster under a scheduler such as Slurm).</p>
+</section>
+<section id="parallel-for-loops" class="level3">
+<h3 class="anchored" data-anchor-id="parallel-for-loops">3.2 Parallel for loops</h3>
+<p>We can use the future package in combination with the <code>foreach</code> command to run a for loop in parallel. Of course this will only be valid if the iterations can be computed independently.</p>
+<p>The syntax for <code>foreach</code> is a bit different than a standard for loop. Also note that the output for each iteration is simply the result of the last line in the <code>{ }</code> body of the foreach statement.</p>
+<p>Here’s the syntax when using newer (version 1.0.0 and later) versions of <code>doFuture</code>:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="fu">source</span>(<span class="st">'rf.R'</span>)  <span class="co"># loads in data (X and Y) and looFit()</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>randomForest 4.7-1.1</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Type rfNews() to see new features/changes/bug fixes.</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(doFuture, <span class="at">quietly =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a><span class="fu">plan</span>(multisession, <span class="at">workers =</span> <span class="dv">4</span>)</span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a><span class="do">## Toy example of using foreach+future</span></span>
+<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a>out <span class="ot">&lt;-</span> <span class="fu">foreach</span>(<span class="at">i =</span> <span class="fu">seq_len</span>(<span class="dv">30</span>)) <span class="sc">%dofuture%</span> {</span>
+<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mean</span>(<span class="dv">1</span><span class="sc">:</span>i)</span>
+<span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb9-9"><a href="#cb9-9" aria-hidden="true" tabindex="-1"></a>out[<span class="dv">1</span><span class="sc">:</span><span class="dv">3</span>]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[[1]]
+[1] 1
+
+[[2]]
+[1] 1.5
+
+[[3]]
+[1] 2</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="do">## Replicate our cross-validation from future_lapply.</span></span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a><span class="do">## Add option to ensure safe random number generation in parallel</span></span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a><span class="do">## (discussed in Section 5)</span></span>
+<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a>out <span class="ot">&lt;-</span> <span class="fu">foreach</span>(<span class="at">i =</span> <span class="fu">seq_along</span>(Y), <span class="at">.combine =</span> c,</span>
+<span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a>       <span class="at">.options.future =</span> <span class="fu">list</span>(<span class="at">seed =</span> <span class="cn">TRUE</span>)) <span class="sc">%dofuture%</span> {</span>
+<span id="cb11-7"><a href="#cb11-7" aria-hidden="true" tabindex="-1"></a>       <span class="fu">looFit</span>(i, Y, X)</span>
+<span id="cb11-8"><a href="#cb11-8" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb11-9"><a href="#cb11-9" aria-hidden="true" tabindex="-1"></a>out[<span class="dv">1</span><span class="sc">:</span><span class="dv">3</span>]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>        1         2         3 
+0.3151692 1.0207755 1.8871612 </code></pre>
+</div>
+</div>
+<p>Prior to version 1.0.0 of <code>doFuture</code>, you’d do this:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb13"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="fu">source</span>(<span class="st">'rf.R'</span>)  <span class="co"># loads in data (X and Y) and looFit()</span></span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(future)</span>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a><span class="fu">plan</span>(multisession, <span class="at">workers =</span> <span class="dv">4</span>)</span>
+<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(doFuture, <span class="at">quietly =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb13-6"><a href="#cb13-6" aria-hidden="true" tabindex="-1"></a><span class="fu">registerDoFuture</span>()</span>
+<span id="cb13-7"><a href="#cb13-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-8"><a href="#cb13-8" aria-hidden="true" tabindex="-1"></a><span class="do">## Toy example of using foreach+future</span></span>
+<span id="cb13-9"><a href="#cb13-9" aria-hidden="true" tabindex="-1"></a>out <span class="ot">&lt;-</span> <span class="fu">foreach</span>(<span class="at">i =</span> <span class="fu">seq_len</span>(<span class="dv">30</span>)) <span class="sc">%dopar%</span> {</span>
+<span id="cb13-10"><a href="#cb13-10" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mean</span>(<span class="dv">1</span><span class="sc">:</span>i)</span>
+<span id="cb13-11"><a href="#cb13-11" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb13-12"><a href="#cb13-12" aria-hidden="true" tabindex="-1"></a>out[<span class="dv">1</span><span class="sc">:</span><span class="dv">3</span>]</span>
+<span id="cb13-13"><a href="#cb13-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-14"><a href="#cb13-14" aria-hidden="true" tabindex="-1"></a><span class="do">## Replicate our cross-validation from future_lapply.</span></span>
+<span id="cb13-15"><a href="#cb13-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-16"><a href="#cb13-16" aria-hidden="true" tabindex="-1"></a><span class="do">## Use %dorng% instead of the standard %dopar% to safely</span></span>
+<span id="cb13-17"><a href="#cb13-17" aria-hidden="true" tabindex="-1"></a><span class="do">## generate random numbers in parallel (Section 5)</span></span>
+<span id="cb13-18"><a href="#cb13-18" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(doRNG)</span>
+<span id="cb13-19"><a href="#cb13-19" aria-hidden="true" tabindex="-1"></a>out <span class="ot">&lt;-</span> <span class="fu">foreach</span>(<span class="at">i =</span> <span class="fu">seq_along</span>(Y), <span class="at">.combine =</span> c) <span class="sc">%dorng%</span> {</span>
+<span id="cb13-20"><a href="#cb13-20" aria-hidden="true" tabindex="-1"></a>    <span class="fu">looFit</span>(i, Y, X)</span>
+<span id="cb13-21"><a href="#cb13-21" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb13-22"><a href="#cb13-22" aria-hidden="true" tabindex="-1"></a>out[<span class="dv">1</span><span class="sc">:</span><span class="dv">3</span>]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>Note that <em>foreach</em> also provides functionality for collecting and managing the results to avoid some of the bookkeeping you would need to do if writing your own standard for loop. The result of <em>foreach</em> will generally be a list, unless we request the results be combined in different way, as we do here using <code>.combine = c</code> to use <code>c()</code> to get a vector rather than a list.</p>
+<p>You can debug by running serially using <em>%do%</em> rather than <em>%dopar%</em>. Note that you may need to load packages within the <em>foreach</em> construct to ensure a package is available to all of the calculations.</p>
+<p>It is possible to use foreach to parallelize over nested loops. Suppose that the outer loop has too few tasks to effectively parallelize over and you also want to parallelize over the inner loop as well. Provided the calculations in each task (defined based on the pair of indexes from both loops) are independent of the other tasks, you can define two foreach loops, with the outer foreach using the <code>%:%</code> operator and the inner foreach using the usual <code>%dopar%</code> operator. More details can be found <a href="https://cran.r-project.org/web/packages/foreach/vignettes/nested.html">in this foreach vignette</a>.</p>
+</section>
+<section id="avoiding-copies-on-each-worker" class="level3">
+<h3 class="anchored" data-anchor-id="avoiding-copies-on-each-worker">3.3 Avoiding copies on each worker</h3>
+<p>The future package automatically identifies the objects needed by your future-based code and makes copies of those objects once for each worker process (thankfully not once for each task).</p>
+<p>If you’re working with large objects, making a copy of the objects for each of the worker processes can be a significant time cost and can greatly increase your memory use.</p>
+<p>The <code>multicore</code> plan (not available on Windows or in RStudio) forks the main R process.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb14"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="fu">plan</span>(multicore, <span class="at">workers =</span> <span class="dv">4</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>This creates R worker processes with the same state as the original R process.</p>
+<ul>
+<li>Importantly, this means that global variables in the forked worker processes are just references to the objects in memory in the original R process.</li>
+<li>So <strong>the additional processes do not use additional memory for those objects</strong> (despite what is shown in <em>top</em> as memory used by each process).</li>
+<li>And there is no time involved in making copies.</li>
+<li>However, if you modify objects in the worker processes then copies are made.</li>
+<li>You can use these global variables in functions you call in parallel or pass the variables into functions as function arguments.</li>
+</ul>
+<p>So, the take-home message is that using <code>multicore</code> on non-Windows machines can have a big advantage when working with large data objects.</p>
+</section>
+<section id="using-multiple-machines-or-cluster-nodes" class="level3">
+<h3 class="anchored" data-anchor-id="using-multiple-machines-or-cluster-nodes">3.4 Using multiple machines or cluster nodes</h3>
+<p>We can use the <code>cluster</code> plan to run workers across multiple machines.</p>
+<p>If we know the names of the machines and can access them via password-less SSH (e.g., <a href="https://statistics.berkeley.edu/computing/ssh-keys">using ssh keys</a>), then we can simply provide the names of the machines to create a cluster and use the ‘cluster’ plan.</p>
+<p>Here we want to use two cores on one machine and two on another.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb15"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(future.apply)</span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a>workers <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="fu">rep</span>(<span class="st">'arwen.berkeley.edu'</span>, <span class="dv">2</span>), <span class="fu">rep</span>(<span class="st">'radagast.berkeley.edu'</span>, <span class="dv">2</span>))</span>
+<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a><span class="fu">plan</span>(cluster, <span class="at">workers =</span> workers)</span>
+<span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Now use parallel_lapply, foreach, etc. as before</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>If you are using the Slurm scheduler on a Linux cluster and in your sbatch or srun command you use <code>--ntasks</code>, then the following will allow you to use as many workers as the value of <code>ntasks</code>. One caveat is that one still needs to be able to access the various machines via password-less SSH.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb16"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="fu">plan</span>(cluster)</span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a><span class="co"># Now use parallel_lapply, parallel_sapply, foreach, etc. as before</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>Alternatively, you could set specify the workers manually. Here we use <code>srun</code> (note this is being done within our original <code>sbatch</code> or <code>srun</code>) to run hostname once per Slurm task, returning the name of the node the task is assigned to.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb17"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a>workers <span class="ot">&lt;-</span> <span class="fu">system</span>(<span class="st">'srun hostname'</span>, <span class="at">intern =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a><span class="fu">plan</span>(cluster, <span class="at">workers =</span> workers)</span>
+<span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a><span class="co"># Now use parallel_lapply, parallel_sapply, foreach, etc. as before</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>In all cases, we can verify that the workers are running on the various nodes by checking the nodename of each of the workers:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb18"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a>tmp <span class="ot">&lt;-</span> <span class="fu">future_sapply</span>(<span class="fu">seq_len</span>(<span class="fu">nbrOfWorkers</span>()), </span>
+<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a>              <span class="cf">function</span>(i)</span>
+<span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a>                <span class="fu">cat</span>(<span class="st">"Worker running in process"</span>, <span class="fu">Sys.getpid</span>(),</span>
+<span id="cb18-4"><a href="#cb18-4" aria-hidden="true" tabindex="-1"></a>                    <span class="st">"on"</span>, <span class="fu">Sys.info</span>()[[<span class="st">'nodename'</span>]], <span class="st">"</span><span class="sc">\n</span><span class="st">"</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+</section>
+<section id="older-alternatives-to-the-future-package-for-parallel-loopslapply" class="level2">
+<h2 class="anchored" data-anchor-id="older-alternatives-to-the-future-package-for-parallel-loopslapply">4 Older alternatives to the future package for parallel loops/lapply</h2>
+<p>The future package allows you to do everything that one can do using older packages/functions such as <code>mclapply</code>, <code>parLapply</code> and <code>foreach</code> wit backends such as <code>doParallel</code>, <code>doSNOW</code>, <code>doMPI</code>. So my recommendation is just to use the future package. But here is some syntax for the older approaches.</p>
+<p>As with calculations using the future package, all of the functionality discussed here applies <em>only</em> if the iterations/loops of your calculations can be done completely separately and do not depend on one another. This scenario is called an <em>embarrassingly parallel</em> computation. So coding up the evolution of a time series or a Markov chain is not possible using these tools. However, bootstrapping, random forests, simulation studies, cross-validation and many other statistical methods can be handled in this way.</p>
+<section id="parallel-lapply-1" class="level3">
+<h3 class="anchored" data-anchor-id="parallel-lapply-1">4.1 Parallel lapply</h3>
+<p>Here are a couple of the ways to do a parallel lapply:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb19"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(parallel)</span>
+<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a>nCores <span class="ot">&lt;-</span> <span class="dv">4</span>  </span>
+<span id="cb19-3"><a href="#cb19-3" aria-hidden="true" tabindex="-1"></a>cl <span class="ot">&lt;-</span> <span class="fu">makeCluster</span>(nCores) </span>
+<span id="cb19-4"><a href="#cb19-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb19-5"><a href="#cb19-5" aria-hidden="true" tabindex="-1"></a><span class="co"># clusterExport(cl, c('x', 'y')) # if the processes need objects</span></span>
+<span id="cb19-6"><a href="#cb19-6" aria-hidden="true" tabindex="-1"></a><span class="co"># from master's workspace (not needed here as no global vars used)</span></span>
+<span id="cb19-7"><a href="#cb19-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb19-8"><a href="#cb19-8" aria-hidden="true" tabindex="-1"></a><span class="co"># First approach: parLapply</span></span>
+<span id="cb19-9"><a href="#cb19-9" aria-hidden="true" tabindex="-1"></a>result1 <span class="ot">&lt;-</span> <span class="fu">parLapply</span>(cl, <span class="fu">seq_along</span>(Y), looFit, Y, X)</span>
+<span id="cb19-10"><a href="#cb19-10" aria-hidden="true" tabindex="-1"></a><span class="co"># Second approach: mclapply</span></span>
+<span id="cb19-11"><a href="#cb19-11" aria-hidden="true" tabindex="-1"></a>result2 <span class="ot">&lt;-</span> <span class="fu">mclapply</span>(<span class="fu">seq_along</span>(Y), looFit, Y, X)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+<section id="parallel-for-loops-1" class="level3">
+<h3 class="anchored" data-anchor-id="parallel-for-loops-1">4.2 Parallel for loops</h3>
+<p>And here’s how to use <code>doParallel</code> with foreach instead of <code>doFuture</code>.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb20"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(doParallel)  <span class="co"># uses parallel package, a core R package</span></span>
+<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb20-3"><a href="#cb20-3" aria-hidden="true" tabindex="-1"></a>nCores <span class="ot">&lt;-</span> <span class="dv">4</span>  </span>
+<span id="cb20-4"><a href="#cb20-4" aria-hidden="true" tabindex="-1"></a><span class="fu">registerDoParallel</span>(nCores)</span>
+<span id="cb20-5"><a href="#cb20-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb20-6"><a href="#cb20-6" aria-hidden="true" tabindex="-1"></a>out <span class="ot">&lt;-</span> <span class="fu">foreach</span>(<span class="at">i =</span> <span class="fu">seq_along</span>(Y)) <span class="sc">%dopar%</span> {</span>
+<span id="cb20-7"><a href="#cb20-7" aria-hidden="true" tabindex="-1"></a>    <span class="fu">looFit</span>(i, Y, X)</span>
+<span id="cb20-8"><a href="#cb20-8" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+<section id="avoiding-copies-on-each-worker-1" class="level3">
+<h3 class="anchored" data-anchor-id="avoiding-copies-on-each-worker-1">4.3 Avoiding copies on each worker</h3>
+<p>Whether you need to explicitly load packages and export global variables from the main process to the parallelized worker processes depends on the details of how you are doing the parallelization.</p>
+<p>Under several scenarios (but only on Linux and MacOS, not on Windows), packages and global variables in the main R process are automatically available to the worker tasks without any work on your part. These scenarios are</p>
+<ul>
+<li><code>foreach</code> with the <code>doParallel</code> backend,</li>
+<li>parallel lapply (and related) statements when starting the cluster via <code>makeForkCluster</code>, instead of the usual <code>makeCluster</code>, and</li>
+<li>use of <code>mclapply</code>.</li>
+</ul>
+<p>This is because all of these approaches fork the original R process, thereby creating worker processes with the same state as the original R process. Interestingly, this means that global variables in the forked worker processes are just references to the objects in memory in the original R process. So the additional processes do not use additional memory for those objects (despite what is shown in <code>top</code>) and there is no time involved in making copies. However, if you modify objects in the worker processes then copies are made.</p>
+<p>Caveat: with <code>mclapply</code> you can use a global variable in functions you call in parallel or pass the global variable in as an argument, in both cases without copying. However with <code>parLapply</code> and <code>makeForkCluster</code>, passing the global variable as an argument results in copies being made for some reason.</p>
+<p>Importantly, because forking is not available on Windows, the above statements only apply on Linux and MacOS.</p>
+<p>In contrast, with parallel lapply (and related) statements (but not foreach) when starting the cluster using the standard <code>makeCluster</code> (which sets up a so-called <em>PSOCK</em> cluster, starting the R worker processes via <code>Rscript</code>), one needs to load packages within the code that is executed in parallel. In addition one needs to use <code>clusterExport</code> to tell R which objects in the global environment should be available to the worker processes. This involves making as many copies of the objects as there are worker processes, so one can easily exceed the physical memory (RAM) on the machine if one has large objects, and the copying of large objects will take time.</p>
+</section>
+<section id="using-multiple-machines-or-cluster-nodes-1" class="level3">
+<h3 class="anchored" data-anchor-id="using-multiple-machines-or-cluster-nodes-1">4.4 Using multiple machines or cluster nodes</h3>
+<p>One can set up a cluster of workers across multiple nodes using <code>parallel::makeCluster</code>. Then one can use <code>parLapply</code> and <code>foreach</code> with that cluster of workers.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb21"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(parallel)</span>
+<span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a>machines <span class="ot">=</span> <span class="fu">c</span>(<span class="fu">rep</span>(<span class="st">"gandalf.berkeley.edu"</span>, <span class="dv">2</span>), <span class="fu">rep</span>(<span class="st">"arwen.berkeley.edu"</span>, <span class="dv">2</span>))</span>
+<span id="cb21-3"><a href="#cb21-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-4"><a href="#cb21-4" aria-hidden="true" tabindex="-1"></a>cl <span class="ot">=</span> <span class="fu">makeCluster</span>(machines, <span class="at">type =</span> <span class="st">"SOCK"</span>)</span>
+<span id="cb21-5"><a href="#cb21-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-6"><a href="#cb21-6" aria-hidden="true" tabindex="-1"></a><span class="co"># With parLapply or parSapply:</span></span>
+<span id="cb21-7"><a href="#cb21-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-8"><a href="#cb21-8" aria-hidden="true" tabindex="-1"></a><span class="fu">parSapply</span>(cl, <span class="dv">1</span><span class="sc">:</span><span class="dv">5</span>, <span class="cf">function</span>(i) <span class="fu">return</span>(<span class="fu">mean</span>(<span class="dv">1</span><span class="sc">:</span>i)))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] 1.0 1.5 2.0 2.5 3.0</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb23"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a><span class="co"># With foreach:</span></span>
+<span id="cb23-2"><a href="#cb23-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(doSNOW, <span class="at">quietly =</span> <span class="cn">TRUE</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>
+Attaching package: 'snow'</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>The following objects are masked from 'package:parallel':
+
+    closeNode, clusterApply, clusterApplyLB, clusterCall, clusterEvalQ,
+    clusterExport, clusterMap, clusterSplit, makeCluster, parApply,
+    parCapply, parLapply, parRapply, parSapply, recvData, recvOneData,
+    sendData, splitIndices, stopCluster</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb26"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a><span class="fu">registerDoSNOW</span>(cl)</span>
+<span id="cb26-2"><a href="#cb26-2" aria-hidden="true" tabindex="-1"></a><span class="co"># Now use foreach as usual</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>For foreach, we used the <code>doSNOW</code> backend. The <em>doSNOW</em> backend has the advantage over <code>doMPI</code> that it doesn’t need to have MPI installed on the system.</p>
+</section>
+</section>
+<section id="parallel-random-number-generation" class="level2">
+<h2 class="anchored" data-anchor-id="parallel-random-number-generation">5 Parallel random number generation</h2>
+<p>The key thing when thinking about random numbers in a parallel context is that you want to avoid having the same ‘random’ numbers occur on multiple processes. On a computer, random numbers are not actually random but are generated as a sequence of pseudo-random numbers designed to mimic true random numbers. The sequence is finite (but very long) and eventually repeats itself. When one sets a seed, one is choosing a position in that sequence to start from. Subsequent random numbers are based on that subsequence. All random numbers can be generated from one or more random uniform numbers, so we can just think about a sequence of values between 0 and 1.</p>
+<p>The worst thing that could happen is that one sets things up in such a way that every process is using the same sequence of random numbers. This could happen if you mistakenly set the same seed in each process, e.g., using <em>set.seed(mySeed)</em> in R on every process.</p>
+<p>The naive approach is to use a different seed for each process. E.g., if your processes are numbered <code>id = 1,2,...,p</code> with a variable <em>id</em> that is unique to a process, setting the seed to be the value of <em>id</em> on each process. This is likely not to cause problems, but raises the danger that two (or more sequences) might overlap. For an algorithm with dependence on the full sequence, such as an MCMC, this probably won’t cause big problems (though you likely wouldn’t know if it did), but for something like simple simulation studies, some of your ‘independent’ samples could be exact replicates of a sample on another process. Given the period length of the default generators in R, this is actually quite unlikely, but it is a bit sloppy.</p>
+<p>To avoid this problem, the key is to use an algorithm that ensures sequences that do not overlap.</p>
+<p>In R, the <em>rlecuyer</em> package deals with this. The L’Ecuyer algorithm has a period of <span class="math inline">\(2^{191}\)</span>, which it divides into subsequences of length <span class="math inline">\(2^{127}\)</span>.</p>
+<section id="parallel-rng-and-the-future-package" class="level3">
+<h3 class="anchored" data-anchor-id="parallel-rng-and-the-future-package">5.1 Parallel RNG and the future package</h3>
+<p>The future package <a href="https://www.jottr.org/2020/09/22/push-for-statical-sound-rng/#random-number-generation-in-the-future-framework">integrates well with the L’Ecuyer parallel RNG approach</a>, which guarantees non-overlapping random numbers. There is a good discussion about seeds for <code>future_lapply</code> and <code>future_sapply</code> in the help for those functions.</p>
+<section id="future_lapply" class="level4">
+<h4 class="anchored" data-anchor-id="future_lapply">5.1.1 future_lapply</h4>
+<p>Here we can set a single seed. Behind the scenes the L’Ecuyer-CMRG RNG is used so that the random numbers generated for each iteration are independent. Note there is some overhead here when the number of iterations is large.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb27"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(future.apply)</span>
+<span id="cb27-2"><a href="#cb27-2" aria-hidden="true" tabindex="-1"></a>n <span class="ot">&lt;-</span> <span class="dv">40</span></span>
+<span id="cb27-3"><a href="#cb27-3" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">1</span>)</span>
+<span id="cb27-4"><a href="#cb27-4" aria-hidden="true" tabindex="-1"></a>out1 <span class="ot">&lt;-</span> <span class="fu">future_sapply</span>(<span class="dv">1</span><span class="sc">:</span>n, <span class="cf">function</span>(i) <span class="fu">rnorm</span>(<span class="dv">1</span>), <span class="at">future.seed =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb27-5"><a href="#cb27-5" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">1</span>)</span>
+<span id="cb27-6"><a href="#cb27-6" aria-hidden="true" tabindex="-1"></a>out2 <span class="ot">&lt;-</span> <span class="fu">future_sapply</span>(<span class="dv">1</span><span class="sc">:</span>n, <span class="cf">function</span>(i) <span class="fu">rnorm</span>(<span class="dv">1</span>), <span class="at">future.seed =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb27-7"><a href="#cb27-7" aria-hidden="true" tabindex="-1"></a><span class="fu">identical</span>(out1, out2)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] TRUE</code></pre>
+</div>
+</div>
+<p>Basically future_lapply pregenerates a seed for each iteration using <code>parallel:::nextRNGStream</code>, which uses the L’Ecuyer algorithm. See <a href="https://github.com/HenrikBengtsson/future/issues/126">more details here</a>.</p>
+<p>I could also have set <code>future.seed</code> to a numeric value, instead of setting the seed using <code>set.seed</code>, to make the generated results reproducible.</p>
+</section>
+<section id="foreach" class="level4">
+<h4 class="anchored" data-anchor-id="foreach">5.1.2 foreach</h4>
+<p>When using <code>%dofuture%</code>, you can simply include <code>.options.future = list(seed = TRUE)</code> to ensure parallel RNG is done safely (shown in Section 3.2). If you forget and have RNG in your parallelized code, <code>doFuture</code> will warn you.</p>
+<p>Before version 1.0.0 of <code>doFuture</code>, one would need to use the <code>%doRNG%</code> operator with foreach to ensure correct RNG with foreach (also seen in Section 3.2).</p>
+</section>
+</section>
+<section id="parallel-rng-with-alternatives-to-the-future-package" class="level3">
+<h3 class="anchored" data-anchor-id="parallel-rng-with-alternatives-to-the-future-package">5.2 Parallel RNG with alternatives to the future package</h3>
+<section id="parallel-lapply-style-statements" class="level4">
+<h4 class="anchored" data-anchor-id="parallel-lapply-style-statements">5.2.1 Parallel lapply style statements</h4>
+<p>Here’s how you initialize independent sequences on different processes when using the <em>parallel</em> package’s parallel lapply functionality.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb29"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb29-1"><a href="#cb29-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(parallel)</span>
+<span id="cb29-2"><a href="#cb29-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(rlecuyer)</span>
+<span id="cb29-3"><a href="#cb29-3" aria-hidden="true" tabindex="-1"></a>nCores <span class="ot">&lt;-</span> <span class="dv">4</span></span>
+<span id="cb29-4"><a href="#cb29-4" aria-hidden="true" tabindex="-1"></a>cl <span class="ot">&lt;-</span> <span class="fu">makeCluster</span>(nCores)</span>
+<span id="cb29-5"><a href="#cb29-5" aria-hidden="true" tabindex="-1"></a>iseed <span class="ot">&lt;-</span> <span class="dv">1</span></span>
+<span id="cb29-6"><a href="#cb29-6" aria-hidden="true" tabindex="-1"></a><span class="fu">clusterSetRNGStream</span>(<span class="at">cl =</span> cl, <span class="at">iseed =</span> iseed)</span>
+<span id="cb29-7"><a href="#cb29-7" aria-hidden="true" tabindex="-1"></a><span class="do">## Now proceed with your parLapply, using the `cl` object</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>With <code>mclapply</code> you can set the argument <code>mc.set.seed = TRUE</code>, which is the default. This will give different seeds for each process, but for safety, you should choose the L’Ecuyer algorithm via <code>RNGkind("L'Ecuyer-CMRG")</code> before running <code>mclapply</code>.</p>
+</section>
+<section id="foreach-1" class="level4">
+<h4 class="anchored" data-anchor-id="foreach-1">5.2.2 foreach</h4>
+<p>For foreach, you can use <code>registerDoRNG</code>:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb30"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(doRNG)</span>
+<span id="cb30-2"><a href="#cb30-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(doParallel)</span>
+<span id="cb30-3"><a href="#cb30-3" aria-hidden="true" tabindex="-1"></a><span class="fu">registerDoParallel</span>(<span class="dv">4</span>)</span>
+<span id="cb30-4"><a href="#cb30-4" aria-hidden="true" tabindex="-1"></a><span class="fu">registerDoRNG</span>(<span class="at">seed =</span> <span class="dv">1</span>)</span>
+<span id="cb30-5"><a href="#cb30-5" aria-hidden="true" tabindex="-1"></a><span class="do">## Now use foreach with %dopar%</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+<section id="mclapply" class="level4">
+<h4 class="anchored" data-anchor-id="mclapply">5.2.3 mclapply</h4>
+<p>When using <em>mclapply</em>, you can use the <em>mc.set.seed</em> argument as follows (note that <em>mc.set.seed</em> is TRUE by default, so you should get different seeds for the different processes by default), but one needs to invoke <code>RNGkind("L'Ecuyer-CMRG")</code> to get independent streams via the L’Ecuyer algorithm.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb31"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb31-1"><a href="#cb31-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(parallel)</span>
+<span id="cb31-2"><a href="#cb31-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(rlecuyer)</span>
+<span id="cb31-3"><a href="#cb31-3" aria-hidden="true" tabindex="-1"></a><span class="fu">RNGkind</span>(<span class="st">"L'Ecuyer-CMRG"</span>)</span>
+<span id="cb31-4"><a href="#cb31-4" aria-hidden="true" tabindex="-1"></a>res <span class="ot">&lt;-</span> <span class="fu">mclapply</span>(<span class="fu">seq_len</span>(Y), looFit, Y, X, <span class="at">mc.cores =</span> <span class="dv">4</span>, </span>
+<span id="cb31-5"><a href="#cb31-5" aria-hidden="true" tabindex="-1"></a>    <span class="at">mc.set.seed =</span> <span class="cn">TRUE</span>) </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+</section>
+</section>
+<section id="the-partools-package" class="level2">
+<h2 class="anchored" data-anchor-id="the-partools-package">6 The <em>partools</em> package</h2>
+<p><em>partools</em> is a package developed by Norm Matloff at UC-Davis. He has the perspective that Spark/Hadoop are not the right tools in many cases when doing statistics-related work and has developed some simple tools for parallelizing computation across multiple nodes, also referred to as <em>Snowdoop</em>. The tools make use of the key idea in Spark/Hadoop of a distributed file system and distributed data objects but avoid the complications of trying to ensure fault tolerance, which is critical only on very large clusters of machines.</p>
+<p>I won’t go into details, but <em>partools</em> allows you to split up your data across multiple nodes and then read the data into R in parallel across R sessions running on those nodes, all controlled from a single master R session. You can then do operations on the subsets and gather results back to the master session as needed. One point that confused me in the <em>partools</em> vignette is that it shows how to split up a dataset that you can read into your R session, but it’s not clear what one does if the dataset is too big to read into a single R session.</p>
+
+
+</section>
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const isCodeAnnotation = (el) => {
+    for (const clz of el.classList) {
+      if (clz.startsWith('code-annotation-')) {                     
+        return true;
+      }
+    }
+    return false;
+  }
+  const onCopySuccess = function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  }
+  const getTextToCopy = function(trigger) {
+      const codeEl = trigger.previousElementSibling.cloneNode(true);
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+  }
+  const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+    text: getTextToCopy
+  });
+  clipboard.on('success', onCopySuccess);
+  if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+    const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+      text: getTextToCopy,
+      container: window.document.getElementById('quarto-embedded-source-code-modal')
+    });
+    clipboardModal.on('success', onCopySuccess);
+  }
+    var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+    var mailtoRegex = new RegExp(/^mailto:/);
+      var filterRegex = new RegExp("https:\/\/computing\.stat\.berkeley\.edu\/tutorial-parallelization");
+    var isInternal = (href) => {
+        return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+    }
+    // Inspect non-navigation links and adorn them if external
+ 	var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+    for (var i=0; i<links.length; i++) {
+      const link = links[i];
+      if (!isInternal(link.href)) {
+        // undo the damage that might have been done by quarto-nav.js in the case of
+        // links that we want to consider external
+        if (link.dataset.originalHref !== undefined) {
+          link.href = link.dataset.originalHref;
+        }
+      }
+    }
+  function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+    const config = {
+      allowHTML: true,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start',
+    };
+    if (contentFn) {
+      config.content = contentFn;
+    }
+    if (onTriggerFn) {
+      config.onTrigger = onTriggerFn;
+    }
+    if (onUntriggerFn) {
+      config.onUntrigger = onUntriggerFn;
+    }
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      if (note) {
+        return note.innerHTML;
+      } else {
+        return "";
+      }
+    });
+  }
+  const xrefs = window.document.querySelectorAll('a.quarto-xref');
+  const processXRef = (id, note) => {
+    // Strip column container classes
+    const stripColumnClz = (el) => {
+      el.classList.remove("page-full", "page-columns");
+      if (el.children) {
+        for (const child of el.children) {
+          stripColumnClz(child);
+        }
+      }
+    }
+    stripColumnClz(note)
+    if (id === null || id.startsWith('sec-')) {
+      // Special case sections, only their first couple elements
+      const container = document.createElement("div");
+      if (note.children && note.children.length > 2) {
+        container.appendChild(note.children[0].cloneNode(true));
+        for (let i = 1; i < note.children.length; i++) {
+          const child = note.children[i];
+          if (child.tagName === "P" && child.innerText === "") {
+            continue;
+          } else {
+            container.appendChild(child.cloneNode(true));
+            break;
+          }
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(container);
+        }
+        return container.innerHTML
+      } else {
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        return note.innerHTML;
+      }
+    } else {
+      // Remove any anchor links if they are present
+      const anchorLink = note.querySelector('a.anchorjs-link');
+      if (anchorLink) {
+        anchorLink.remove();
+      }
+      if (window.Quarto?.typesetMath) {
+        window.Quarto.typesetMath(note);
+      }
+      if (note.classList.contains("callout")) {
+        return note.outerHTML;
+      } else {
+        return note.innerHTML;
+      }
+    }
+  }
+  for (var i=0; i<xrefs.length; i++) {
+    const xref = xrefs[i];
+    tippyHover(xref, undefined, function(instance) {
+      instance.disable();
+      let url = xref.getAttribute('href');
+      let hash = undefined; 
+      if (url.startsWith('#')) {
+        hash = url;
+      } else {
+        try { hash = new URL(url).hash; } catch {}
+      }
+      if (hash) {
+        const id = hash.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note !== null) {
+          try {
+            const html = processXRef(id, note.cloneNode(true));
+            instance.setContent(html);
+          } finally {
+            instance.enable();
+            instance.show();
+          }
+        } else {
+          // See if we can fetch this
+          fetch(url.split('#')[0])
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.getElementById(id);
+            if (note !== null) {
+              const html = processXRef(id, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      } else {
+        // See if we can fetch a full url (with no hash to target)
+        // This is a special case and we should probably do some content thinning / targeting
+        fetch(url)
+        .then(res => res.text())
+        .then(html => {
+          const parser = new DOMParser();
+          const htmlDoc = parser.parseFromString(html, "text/html");
+          const note = htmlDoc.querySelector('main.content');
+          if (note !== null) {
+            // This should only happen for chapter cross references
+            // (since there is no id in the URL)
+            // remove the first header
+            if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+              note.children[0].remove();
+            }
+            const html = processXRef(null, note);
+            instance.setContent(html);
+          } 
+        }).finally(() => {
+          instance.enable();
+          instance.show();
+        });
+      }
+    }, function(instance) {
+    });
+  }
+      let selectedAnnoteEl;
+      const selectorForAnnotation = ( cell, annotation) => {
+        let cellAttr = 'data-code-cell="' + cell + '"';
+        let lineAttr = 'data-code-annotation="' +  annotation + '"';
+        const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+        return selector;
+      }
+      const selectCodeLines = (annoteEl) => {
+        const doc = window.document;
+        const targetCell = annoteEl.getAttribute("data-target-cell");
+        const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+        const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+        const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+        const lineIds = lines.map((line) => {
+          return targetCell + "-" + line;
+        })
+        let top = null;
+        let height = null;
+        let parent = null;
+        if (lineIds.length > 0) {
+            //compute the position of the single el (top and bottom and make a div)
+            const el = window.document.getElementById(lineIds[0]);
+            top = el.offsetTop;
+            height = el.offsetHeight;
+            parent = el.parentElement.parentElement;
+          if (lineIds.length > 1) {
+            const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+            const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+            height = bottom - top;
+          }
+          if (top !== null && height !== null && parent !== null) {
+            // cook up a div (if necessary) and position it 
+            let div = window.document.getElementById("code-annotation-line-highlight");
+            if (div === null) {
+              div = window.document.createElement("div");
+              div.setAttribute("id", "code-annotation-line-highlight");
+              div.style.position = 'absolute';
+              parent.appendChild(div);
+            }
+            div.style.top = top - 2 + "px";
+            div.style.height = height + 4 + "px";
+            div.style.left = 0;
+            let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+            if (gutterDiv === null) {
+              gutterDiv = window.document.createElement("div");
+              gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+              gutterDiv.style.position = 'absolute';
+              const codeCell = window.document.getElementById(targetCell);
+              const gutter = codeCell.querySelector('.code-annotation-gutter');
+              gutter.appendChild(gutterDiv);
+            }
+            gutterDiv.style.top = top - 2 + "px";
+            gutterDiv.style.height = height + 4 + "px";
+          }
+          selectedAnnoteEl = annoteEl;
+        }
+      };
+      const unselectCodeLines = () => {
+        const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+        elementsIds.forEach((elId) => {
+          const div = window.document.getElementById(elId);
+          if (div) {
+            div.remove();
+          }
+        });
+        selectedAnnoteEl = undefined;
+      };
+        // Handle positioning of the toggle
+    window.addEventListener(
+      "resize",
+      throttle(() => {
+        elRect = undefined;
+        if (selectedAnnoteEl) {
+          selectCodeLines(selectedAnnoteEl);
+        }
+      }, 10)
+    );
+    function throttle(fn, ms) {
+    let throttle = false;
+    let timer;
+      return (...args) => {
+        if(!throttle) { // first call gets through
+            fn.apply(this, args);
+            throttle = true;
+        } else { // all the others get throttled
+            if(timer) clearTimeout(timer); // cancel #2
+            timer = setTimeout(() => {
+              fn.apply(this, args);
+              timer = throttle = false;
+            }, ms);
+        }
+      };
+    }
+      // Attach click handler to the DT
+      const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+      for (const annoteDlNode of annoteDls) {
+        annoteDlNode.addEventListener('click', (event) => {
+          const clickedEl = event.target;
+          if (clickedEl !== selectedAnnoteEl) {
+            unselectCodeLines();
+            const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+            if (activeEl) {
+              activeEl.classList.remove('code-annotation-active');
+            }
+            selectCodeLines(clickedEl);
+            clickedEl.classList.add('code-annotation-active');
+          } else {
+            // Unselect the line
+            unselectCodeLines();
+            clickedEl.classList.remove('code-annotation-active');
+          }
+        });
+      }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script>
+</div> <!-- /content -->
+
+
+
+
+</body></html>
