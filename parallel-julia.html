@@ -72,7 +72,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <link href="site_libs/quarto-html/quarto-syntax-highlighting-549806ee2085284f45b00abea8c6df48.css" rel="stylesheet" id="quarto-text-highlighting-styles">
 <script src="site_libs/bootstrap/bootstrap.min.js"></script>
 <link href="site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="site_libs/bootstrap/bootstrap-cd173fadfbc59501cc53580d670575f8.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<link href="site_libs/bootstrap/bootstrap-649e5f0678146f359c225094671654aa.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
 <script id="quarto-search-options" type="application/json">{
   "location": "sidebar",
   "copy-button": false,
@@ -265,7 +265,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <h3 class="anchored" data-anchor-id="threaded-linear-algebra">2.1 Threaded linear algebra</h3>
 <p>As with Python and R, Julia uses BLAS, a standard library of basic linear algebra operations (written in Fortran or C), for linear algebra operations. A fast BLAS can greatly speed up linear algebra relative to the default BLAS on a machine. Julia uses a fast, open source, free BLAS library called <em>OpenBLAS</em>. In addition to being fast when used on a single core, the openBLAS library is threaded - if your computer has multiple cores and there are free resources, your linear algebra will use multiple cores</p>
 <p>Here’s an example.</p>
-<div id="c0086b74" class="cell" data-execution_count="1">
+<div id="e7fafb45" class="cell" data-execution_count="1">
 <div class="sourceCode cell-code" id="cb1"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">BenchmarkTools</span></span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">LinearAlgebra</span></span>
@@ -278,7 +278,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <pre><code>4</code></pre>
 </div>
 </div>
-<div id="68df19ad" class="cell" data-execution_count="2">
+<div id="c81e7ade" class="cell" data-execution_count="2">
 <div class="sourceCode cell-code" id="cb3"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="kw">function</span> <span class="fu">chol_xtx</span>(x)</span>
 <span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>    z <span class="op">=</span> x<span class="op">'*</span>x   <span class="co">## z is positive definite</span></span>
 <span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>    C <span class="op">=</span> <span class="fu">cholesky</span>(z) </span>
@@ -287,14 +287,14 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>BLAS.<span class="fu">set_num_threads</span>(<span class="fl">4</span>)</span>
 <span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a><span class="pp">@btime</span> chol <span class="op">=</span> <span class="fu">chol_xtx</span>(x);  </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>  9.747 s (5 allocations: 747.68 MiB)</code></pre>
+<pre><code>  9.570 s (5 allocations: 747.68 MiB)</code></pre>
 </div>
 </div>
-<div id="f0c83b0f" class="cell" data-execution_count="3">
+<div id="b12199ed" class="cell" data-execution_count="3">
 <div class="sourceCode cell-code" id="cb5"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>BLAS.<span class="fu">set_num_threads</span>(<span class="fl">1</span>)</span>
 <span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="pp">@btime</span> chol <span class="op">=</span> <span class="fu">chol_xtx</span>(x);  </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>  11.055 s (5 allocations: 747.68 MiB)</code></pre>
+<pre><code>  10.939 s (5 allocations: 747.68 MiB)</code></pre>
 </div>
 </div>
 <p>We see that using four threads is faster than one, but in this case we don’t get a four-fold speedup.</p>
@@ -302,7 +302,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <h4 class="anchored" data-anchor-id="number-of-threads">Number of threads</h4>
 <p>By default, Julia will set the number of threads for linear algebra equal to the number of processors on your machine.</p>
 <p>As seen above, you can check the number of threads being used with:</p>
-<div id="26a206b6" class="cell" data-execution_count="4">
+<div id="981204e6" class="cell" data-execution_count="4">
 <div class="sourceCode cell-code" id="cb7"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>BLAS.<span class="fu">get_num_threads</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-display" data-execution_count="5">
 <pre><code>1</code></pre>
@@ -320,7 +320,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <p>In Julia, you can directly set up <a href="https://docs.julialang.org/en/v1/manual/multi-threading">software threads to use for parallel processing</a>.</p>
 <p>Here we’ll see some examples of running a for loop in parallel, both acting on a single object and used as a parallel map operation.</p>
 <p>Here we can operate on a vector in parallel:</p>
-<div id="6d499a1d" class="cell" data-execution_count="5">
+<div id="3be73ceb" class="cell" data-execution_count="5">
 <div class="sourceCode cell-code" id="cb9"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">Base.Threads</span></span>
 <span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>n <span class="op">=</span> <span class="fl">50000000</span>;</span>
@@ -331,7 +331,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a><span class="cf">end</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>We could also threads to carry out a parallel map operation, implemented as a for loop.</p>
-<div id="f1a17a3b" class="cell" data-execution_count="6">
+<div id="3caaeafd" class="cell" data-execution_count="6">
 <div class="sourceCode cell-code" id="cb10"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>n <span class="op">=</span> <span class="fl">1000</span></span>
 <span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a><span class="kw">function</span> <span class="fu">test</span>(n)</span>
@@ -351,7 +351,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <h3 class="anchored" data-anchor-id="spawning-tasks-on-threads">2.3 Spawning tasks on threads</h3>
 <p>You can also create (aka ‘spawn’) individual tasks on threads, with the tasks running in parallel.</p>
 <p>Let’s see an example (taken from <a href="http://ferestrepoca.github.io/paradigmas-de-programacion/paralela/tutoriales/julia/notebooks/parallelProgrammingApplications.html">here</a> of sorting a vector in parallel, by sorting subsets of the vector in separate threads.</p>
-<div id="dc0880da" class="cell" data-execution_count="7">
+<div id="f40929a6" class="cell" data-execution_count="7">
 <div class="sourceCode cell-code" id="cb11"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> <span class="bu">Base.Threads.@spawn</span></span>
 <span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a><span class="co"># sort the elements of `v` in place, from indices `lo` to `hi` inclusive</span></span>
@@ -405,17 +405,17 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <p>How does this work? Let’s consider an example where we sort a vector of length 250000.</p>
 <p>The vector gets split into elements 1:125000 (run in task #1) and 125001:250000 (run in the main call). Then the elements 1:125000 are split into 1:62500 (run in task #2) and 62501:125000 (run in task #1), while the elements 125001:250000 are split into 125001:187500 (run in task #3) and 187501:250000 (run in the main call). No more splitting occurs because vectors of length less than 100000 are run in serial.</p>
 <p>Assuming we have at least four threads (including the main process), each of the tasks will run in a separate thread, and all four sorts on the vector subsets will run in parallel.</p>
-<div id="8b5b156a" class="cell" data-execution_count="8">
+<div id="8e60fca6" class="cell" data-execution_count="8">
 <div class="sourceCode cell-code" id="cb13"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a>x <span class="op">=</span> <span class="fu">rand</span>(<span class="fl">250000</span>);</span>
 <span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a><span class="fu">psort!</span>(x);</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>Task (runnable) @0x00007fe59f8bed60 1 250000
-Task (runnable) @0x00007fe59f8bed60 125001 250000
-Task (runnable) @0x00007fe59f8bed60 187501 250000
-Task (runnable) @0x00007fe59f116270 1 125000
-Task (runnable) @0x00007fe59f116270 62501 125000
-Task (runnable) @0x00007fe59f116400 125001 187500
-Task (runnable) @0x00007fe59f116590 1 62500</code></pre>
+<pre><code>Task (runnable) @0x00007f4e79130010 1 250000
+Task (runnable) @0x00007f4e79130010 125001 250000
+Task (runnable) @0x00007f4e79130010 187501 250000
+Task (runnable) @0x00007f4e37b8f850 1 125000
+Task (runnable) @0x00007f4e37b8f850 62501 125000
+Task (runnable) @0x00007f4e37b8f9e0 125001 187500
+Task (runnable) @0x00007f4e37b8fb70 1 62500</code></pre>
 </div>
 </div>
 <p>We see that the output from <code>current_task()</code> shows that the task labels correspond with what I stated above.</p>
@@ -424,7 +424,7 @@ Task (runnable) @0x00007fe59f116590 1 62500</code></pre>
 <section id="controlling-the-number-of-threads" class="level3">
 <h3 class="anchored" data-anchor-id="controlling-the-number-of-threads">2.4 Controlling the number of threads</h3>
 <p>You can see the number of threads available:</p>
-<div id="25e2fab2" class="cell" data-execution_count="9">
+<div id="85429cf4" class="cell" data-execution_count="9">
 <div class="sourceCode cell-code" id="cb15"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="bu">Threads</span>.<span class="fu">nthreads</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-display" data-execution_count="10">
 <pre><code>1</code></pre>
@@ -445,7 +445,7 @@ Task (runnable) @0x00007fe59f116590 1 62500</code></pre>
 <p>We can use <code>pmap</code> to run a parallel map operation across multiple Julia processes (on one or more machines). <code>pmap</code> is good for cases where each task takes a non-negligible amount of time, as there is overhead (latency) in starting the tasks.</p>
 <p>Here we’ll carry out multiple computationally expensive calculations in the map.</p>
 <p>We need to import packages and create the function on each of the worker processes using <code>@everywhere</code>.</p>
-<div id="8fde5960" class="cell" data-execution_count="10">
+<div id="cdb7d8ac" class="cell" data-execution_count="10">
 <div class="sourceCode cell-code" id="cb17"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">Distributed</span></span>
 <span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> <span class="fu">nprocs</span>() <span class="op">==</span> <span class="fl">1</span></span>
@@ -460,7 +460,7 @@ Task (runnable) @0x00007fe59f116590 1 62500</code></pre>
 <pre><code>5</code></pre>
 </div>
 </div>
-<div id="cd12c17b" class="cell" data-execution_count="11">
+<div id="45e9dbde" class="cell" data-execution_count="11">
 <div class="sourceCode cell-code" id="cb20"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="pp">@everywhere</span> <span class="cf">begin</span></span>
 <span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a>    <span class="im">using</span> <span class="bu">Distributions</span></span>
 <span id="cb20-3"><a href="#cb20-3" aria-hidden="true" tabindex="-1"></a>    <span class="im">using</span> <span class="bu">LinearAlgebra</span></span>
@@ -475,18 +475,18 @@ Task (runnable) @0x00007fe59f116590 1 62500</code></pre>
 <span id="cb20-12"><a href="#cb20-12" aria-hidden="true" tabindex="-1"></a>result <span class="op">=</span> <span class="fu">pmap</span>(test, <span class="fu">repeat</span>([<span class="fl">5000</span>],<span class="fl">12</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-display" data-execution_count="12">
 <pre><code>12-element Vector{Float64}:
- 11.707986495393065
- 11.751989936203428
- 11.322395638771171
- 11.156564928552134
- 11.800798513392417
- 11.721407323554907
- 12.029028566182074
- 11.831160210476378
- 11.085769679699528
- 11.706260089760217
- 11.742702280483638
- 11.469567375730398</code></pre>
+ 11.725147692962754
+ 11.704891690228726
+ 11.220253166769993
+ 12.457955598512775
+ 11.361067062497238
+ 11.398647295348653
+ 11.61507738845333
+ 11.763773675078202
+ 11.553768171170875
+ 11.947841858227234
+ 11.117374489721474
+ 11.011917911624115</code></pre>
 </div>
 </div>
 <p>One can use <a href="./#4-parallelization-strategies">static allocation (prescheduling)</a> with the <code>batch_size</code> argument, thereby assigning that many tasks to each worker to reduce latentcy.</p>
@@ -495,7 +495,7 @@ Task (runnable) @0x00007fe59f116590 1 62500</code></pre>
 <h3 class="anchored" data-anchor-id="parallel-for-loops">3.2 Parallel for loops</h3>
 <p>One can execute for loops in parallel across multiple worker processes as follows. This is particularly handy for cases where one uses a reduction operator (e.g., the <code>+</code> here) so that little data needs to be copied back to the main process. (And in this case we don’t copy any data to the workers either.)</p>
 <p>Here we’ll sum over a large number of random numbers with chunks done on each of the workers, comparing the time to a basic for loop.</p>
-<div id="429a32b0" class="cell" data-execution_count="12">
+<div id="d69aefda" class="cell" data-execution_count="12">
 <div class="sourceCode cell-code" id="cb22"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a><span class="kw">function</span> <span class="fu">forfun</span>(n)</span>
 <span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a>    sum <span class="op">=</span> <span class="fl">0.0</span></span>
 <span id="cb22-3"><a href="#cb22-3" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> i <span class="kw">in</span> <span class="fl">1</span><span class="op">:</span>n</span>
@@ -514,13 +514,13 @@ Task (runnable) @0x00007fe59f116590 1 62500</code></pre>
 <span id="cb22-16"><a href="#cb22-16" aria-hidden="true" tabindex="-1"></a>n<span class="op">=</span><span class="fl">50000000</span></span>
 <span id="cb22-17"><a href="#cb22-17" aria-hidden="true" tabindex="-1"></a><span class="pp">@time</span> <span class="fu">forfun</span>(n);</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>  3.005737 seconds (50.01 M allocations: 2.981 GiB, 13.08% gc time, 0.61% compilation time)</code></pre>
+<pre><code>  3.243204 seconds (50.01 M allocations: 2.981 GiB, 16.61% gc time, 0.47% compilation time)</code></pre>
 </div>
 </div>
-<div id="3e2d5a5e" class="cell" data-execution_count="13">
+<div id="7f96d988" class="cell" data-execution_count="13">
 <div class="sourceCode cell-code" id="cb24"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a><span class="pp">@time</span> <span class="fu">pforfun</span>(n); </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>  1.823901 seconds (498.54 k allocations: 33.225 MiB, 25.26% compilation time)</code></pre>
+<pre><code>  1.905673 seconds (498.54 k allocations: 33.226 MiB, 22.79% compilation time)</code></pre>
 </div>
 </div>
 <p>The use of <code>@sync</code> causes the operation to block until the result is available so we can get the correct timing.</p>
@@ -531,22 +531,22 @@ Task (runnable) @0x00007fe59f116590 1 62500</code></pre>
 <h3 class="anchored" data-anchor-id="passing-data-to-the-workers">3.3 Passing data to the workers</h3>
 <p>With multiple workers, particularly on more than one machine, one generally wants to be careful about having to copy large data objects to each worker, as that could make up a substantial portion of the time involved in the computation.</p>
 <p>One can explicitly copy a variable to the workers in an <code>@everywhere</code> block by using Julia’s interpolation syntax:</p>
-<div id="76309751" class="cell" data-execution_count="14">
+<div id="be8397be" class="cell" data-execution_count="14">
 <div class="sourceCode cell-code" id="cb26"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a><span class="pp">@everywhere</span> <span class="cf">begin</span></span>
 <span id="cb26-2"><a href="#cb26-2" aria-hidden="true" tabindex="-1"></a>    x <span class="op">=</span> <span class="op">$</span>x  <span class="co"># copy to workers using interpolation syntax</span></span>
 <span id="cb26-3"><a href="#cb26-3" aria-hidden="true" tabindex="-1"></a>    <span class="fu">println</span>(<span class="fu">pointer_from_objref</span>(x), <span class="ch">' '</span>, x[<span class="fl">1</span>])  </span>
 <span id="cb26-4"><a href="#cb26-4" aria-hidden="true" tabindex="-1"></a><span class="cf">end</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>Ptr{Nothing} @0x00007fe563e15cf0 5.917418973822031e-6
-      From worker 4:    Ptr{Nothing} @0x00007fb18b934280 5.917418973822031e-6
-      From worker 5:    Ptr{Nothing} @0x00007fe520494280 5.917418973822031e-6
-      From worker 3:    Ptr{Nothing} @0x00007f93da238280 5.917418973822031e-6
-      From worker 2:    Ptr{Nothing} @0x00007f9b72938280 5.917418973822031e-6</code></pre>
+<pre><code>Ptr{Nothing} @0x00007f4e7a854820 1.917203595658279e-6
+      From worker 2:    Ptr{Nothing} @0x00007f8c81f38280 1.917203595658279e-6
+      From worker 5:    Ptr{Nothing} @0x00007fd41b634280 1.917203595658279e-6
+      From worker 4:    Ptr{Nothing} @0x00007f3eb5438280 1.917203595658279e-6
+      From worker 3:    Ptr{Nothing} @0x00007f43ec038280 1.917203595658279e-6</code></pre>
 </div>
 </div>
 <p>We see based on <code>pointer_from_objref</code> that each copy of <code>x</code> is stored at a distinct location in memory, even when processes are on the same machine.</p>
 <p>Also note that if one creates a variable within an <code>@everywhere</code> block, that variable is available to all tasks run on the worker, so it is global’ with respect to those tasks. Note the repeated values in the result here.</p>
-<div id="d10dfe3e" class="cell" data-execution_count="15">
+<div id="70316ab4" class="cell" data-execution_count="15">
 <div class="sourceCode cell-code" id="cb28"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a><span class="pp">@everywhere</span> <span class="cf">begin</span></span>
 <span id="cb28-2"><a href="#cb28-2" aria-hidden="true" tabindex="-1"></a>    x <span class="op">=</span> <span class="fu">rand</span>(<span class="fl">5</span>)</span>
 <span id="cb28-3"><a href="#cb28-3" aria-hidden="true" tabindex="-1"></a>    <span class="kw">function</span> <span class="fu">test</span>(i)</span>
@@ -557,18 +557,18 @@ Task (runnable) @0x00007fe59f116590 1 62500</code></pre>
 <span id="cb28-8"><a href="#cb28-8" aria-hidden="true" tabindex="-1"></a>result <span class="op">=</span> <span class="fu">pmap</span>(test, <span class="fl">1</span><span class="op">:</span><span class="fl">12</span>, batch_size <span class="op">=</span> <span class="fl">3</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-display" data-execution_count="16">
 <pre><code>12-element Vector{Float64}:
- 2.2946829791594854
- 2.990563473199111
- 2.566086910330041
- 2.8483385660494345
- 2.2946829791594854
- 2.990563473199111
- 2.566086910330041
- 2.8483385660494345
- 2.2946829791594854
- 2.990563473199111
- 2.566086910330041
- 2.8483385660494345</code></pre>
+ 2.747960636276424
+ 2.3179726627806794
+ 1.8561621968142021
+ 1.2614954953785174
+ 2.747960636276424
+ 2.3179726627806794
+ 1.8561621968142021
+ 1.2614954953785174
+ 2.747960636276424
+ 2.3179726627806794
+ 1.8561621968142021
+ 1.2614954953785174</code></pre>
 </div>
 </div>
 <p>If one wants to have multiple processes all work on the same object, without copying it, one can consider using Julia’s <a href="https://docs.julialang.org/en/v1/stdlib/SharedArrays/#SharedArrays.SharedArray">SharedArray</a> (one machine) or <a href="https://juliaparallel.org/DistributedArrays.jl/stable/">DArray from the DistributedArrays package</a> (multiple machines) types, which break up arrays into pieces, with different pieces stored locally on different processes.</p>
@@ -591,7 +591,7 @@ gandalf.berkeley.edu</code></pre>
 <p>Then start Julia like this:</p>
 <pre><code>julia --machine-file machines</code></pre>
 <p>From within Julia, you can add processes like this (first we’ll remove the existing worker processes started using <code>addprocs()</code> previously):</p>
-<div id="1887b619" class="cell" data-execution_count="16">
+<div id="65c0ff92" class="cell" data-execution_count="16">
 <div class="sourceCode cell-code" id="cb33"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb33-1"><a href="#cb33-1" aria-hidden="true" tabindex="-1"></a><span class="fu">rmprocs</span>(<span class="fu">workers</span>())</span>
 <span id="cb33-2"><a href="#cb33-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb33-3"><a href="#cb33-3" aria-hidden="true" tabindex="-1"></a><span class="fu">addprocs</span>([(<span class="st">"arwen"</span>, <span class="fl">2</span>), (<span class="st">"gandalf"</span>, <span class="fl">2</span>)])</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
@@ -604,7 +604,7 @@ gandalf.berkeley.edu</code></pre>
 </div>
 </div>
 <p>To check on the number of processes:</p>
-<div id="abe6a8ee" class="cell" data-execution_count="17">
+<div id="ca113fd3" class="cell" data-execution_count="17">
 <div class="sourceCode cell-code" id="cb35"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb35-1"><a href="#cb35-1" aria-hidden="true" tabindex="-1"></a><span class="fu">nprocs</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-display" data-execution_count="18">
 <pre><code>5</code></pre>
@@ -618,7 +618,7 @@ gandalf.berkeley.edu</code></pre>
 <pre><code>x = tan(x) + 3*sin(x)</code></pre>
 <p>If run as vectorized code, this has downsides. First, it will use additional memory (temporary arrays will be created to store <code>tan(x)</code>, <code>sin(x)</code>, <code>3*sin(x)</code>). Second, multiple for loops will have to get executed when the vectorized code is run, looping over the elements of <code>x</code> to calculate <code>tan(x)</code>, <code>sin(x)</code>, etc. (For example in R or Python/numpy, multiple for loops would get run in the underlying C code.)</p>
 <p>Contrast that to running directly as a for loop (e.g., in Julia or in C/C++):</p>
-<div id="8af61e21" class="cell" data-execution_count="18">
+<div id="410022c9" class="cell" data-execution_count="18">
 <div class="sourceCode cell-code" id="cb38"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb38-1"><a href="#cb38-1" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> i <span class="kw">in</span> <span class="fl">1</span><span class="op">:</span><span class="fu">length</span>(x)</span>
 <span id="cb38-2"><a href="#cb38-2" aria-hidden="true" tabindex="-1"></a>    x[i] <span class="op">=</span> <span class="fu">tan</span>(x[i]) <span class="op">+</span> <span class="fl">3</span><span class="fu">*sin</span>(x[i])</span>
 <span id="cb38-3"><a href="#cb38-3" aria-hidden="true" tabindex="-1"></a><span class="cf">end</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
@@ -628,12 +628,12 @@ gandalf.berkeley.edu</code></pre>
 <p>Of course you might ask why use vectorized code at all given that Julia will <a href="https://en.wikipedia.org/wiki/Just-in-time_compilation">JIT compile</a> the for loop above and run it really quickly. That’s true, but reading and writing vectorized code is easier than writing for loops.</p>
 <p>Let’s compare the speed of the following approaches. We’ll put everything into functions as generally <a href="https://www.juliabloggers.com/timing-in-julia">recommended when timing Julia code</a> to avoid <a href="https://julialang.org/blog/2022/08/julia-1.8-highlights/#typed_globals">global variables that incur a performance penalty because their type can change</a>.</p>
 <p>First, let’s find the time when directly using a for loop, as a baseline.</p>
-<div id="dcd9ee00" class="cell" data-execution_count="19">
+<div id="ce1874cd" class="cell" data-execution_count="19">
 <div class="sourceCode cell-code" id="cb39"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb39-1"><a href="#cb39-1" aria-hidden="true" tabindex="-1"></a>n <span class="op">=</span> <span class="fl">50000000</span></span>
 <span id="cb39-2"><a href="#cb39-2" aria-hidden="true" tabindex="-1"></a>y <span class="op">=</span> <span class="fu">Array</span><span class="dt">{Float64}</span>(<span class="cn">undef</span>, n);</span>
 <span id="cb39-3"><a href="#cb39-3" aria-hidden="true" tabindex="-1"></a>x <span class="op">=</span> <span class="fu">rand</span>(n);</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<div id="902c6916" class="cell" data-execution_count="20">
+<div id="0ce7ccfd" class="cell" data-execution_count="20">
 <div class="sourceCode cell-code" id="cb40"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb40-1"><a href="#cb40-1" aria-hidden="true" tabindex="-1"></a><span class="kw">function</span> <span class="fu">direct_for_loop_calc</span>(x, y)</span>
 <span id="cb40-2"><a href="#cb40-2" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> i <span class="kw">in</span> <span class="fl">1</span><span class="op">:</span><span class="fu">length</span>(x)</span>
 <span id="cb40-3"><a href="#cb40-3" aria-hidden="true" tabindex="-1"></a>        y[i] <span class="op">=</span> <span class="fu">exp</span>(x[i]) <span class="op">+</span> <span class="fu">sin</span>(x[i])</span>
@@ -645,19 +645,19 @@ gandalf.berkeley.edu</code></pre>
 <div class="cell-output cell-output-display" data-execution_count="20">
 <div class="ansi-escaped-output">
 <pre>BenchmarkTools.Trial: 8 samples with 1 evaluation.
- Range <span class="ansi-bright-black-fg">(</span><span class="ansi-cyan-fg ansi-bold">min</span> … <span class="ansi-magenta-fg">max</span><span class="ansi-bright-black-fg">):  </span><span class="ansi-cyan-fg ansi-bold">645.995 ms</span> … <span class="ansi-magenta-fg">770.652 ms</span>  <span class="ansi-bright-black-fg">┊</span> GC <span class="ansi-bright-black-fg">(</span>min … max<span class="ansi-bright-black-fg">): </span>0.00% … 0.00%
- Time  <span class="ansi-bright-black-fg">(</span><span class="ansi-blue-fg ansi-bold">median</span><span class="ansi-bright-black-fg">):     </span><span class="ansi-blue-fg ansi-bold">672.480 ms               </span><span class="ansi-bright-black-fg">┊</span> GC <span class="ansi-bright-black-fg">(</span>median<span class="ansi-bright-black-fg">):    </span>0.00%
- Time  <span class="ansi-bright-black-fg">(</span><span class="ansi-green-fg ansi-bold">mean</span> ± <span class="ansi-green-fg">σ</span><span class="ansi-bright-black-fg">):   </span><span class="ansi-green-fg ansi-bold">689.201 ms</span> ± <span class="ansi-green-fg"> 44.517 ms</span>  <span class="ansi-bright-black-fg">┊</span> GC <span class="ansi-bright-black-fg">(</span>mean ± σ<span class="ansi-bright-black-fg">):  </span>0.00% ± 0.00%
-  ▁  ▁   <span class="ansi-blue-fg">█</span>          ▁  <span class="ansi-green-fg"> </span>    ▁                 ▁               ▁  
-  █▁▁█▁▁▁<span class="ansi-blue-fg">█</span>▁▁▁▁▁▁▁▁▁▁█▁▁<span class="ansi-green-fg">▁</span>▁▁▁▁█▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁█▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁█ ▁
-  646 ms<span class="ansi-bright-black-fg">           Histogram: frequency by time</span>          771 ms <span class="ansi-bold">&lt;</span>
+ Range <span class="ansi-bright-black-fg">(</span><span class="ansi-cyan-fg ansi-bold">min</span> … <span class="ansi-magenta-fg">max</span><span class="ansi-bright-black-fg">):  </span><span class="ansi-cyan-fg ansi-bold">637.283 ms</span> … <span class="ansi-magenta-fg">673.024 ms</span>  <span class="ansi-bright-black-fg">┊</span> GC <span class="ansi-bright-black-fg">(</span>min … max<span class="ansi-bright-black-fg">): </span>0.00% … 0.00%
+ Time  <span class="ansi-bright-black-fg">(</span><span class="ansi-blue-fg ansi-bold">median</span><span class="ansi-bright-black-fg">):     </span><span class="ansi-blue-fg ansi-bold">655.092 ms               </span><span class="ansi-bright-black-fg">┊</span> GC <span class="ansi-bright-black-fg">(</span>median<span class="ansi-bright-black-fg">):    </span>0.00%
+ Time  <span class="ansi-bright-black-fg">(</span><span class="ansi-green-fg ansi-bold">mean</span> ± <span class="ansi-green-fg">σ</span><span class="ansi-bright-black-fg">):   </span><span class="ansi-green-fg ansi-bold">654.386 ms</span> ± <span class="ansi-green-fg"> 12.828 ms</span>  <span class="ansi-bright-black-fg">┊</span> GC <span class="ansi-bright-black-fg">(</span>mean ± σ<span class="ansi-bright-black-fg">):  </span>0.00% ± 0.00%
+  █ █               █   █<span class="ansi-blue-fg"> </span>     <span class="ansi-green-fg"> </span>       █   █       █          █  
+  █▁█▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁█▁▁▁█<span class="ansi-blue-fg">▁</span>▁▁▁▁▁<span class="ansi-green-fg">▁</span>▁▁▁▁▁▁▁█▁▁▁█▁▁▁▁▁▁▁█▁▁▁▁▁▁▁▁▁▁█ ▁
+  637 ms<span class="ansi-bright-black-fg">           Histogram: frequency by time</span>          673 ms <span class="ansi-bold">&lt;</span>
  Memory estimate<span class="ansi-bright-black-fg">: </span><span class="ansi-yellow-fg">0 bytes</span>, allocs estimate<span class="ansi-bright-black-fg">: </span><span class="ansi-yellow-fg">0</span>.</pre>
 </div>
 </div>
 </div>
 <p>Notice the lack of additional memory use.</p>
 <p>Now let’s try a basic vectorized calculation (for which we need the various periods to get vectorization), without fusing. We’ll reassign the result to the allocated <code>y</code> vector for comparability to the for loop implementation above.</p>
-<div id="d3de3bfa" class="cell" data-execution_count="21">
+<div id="0b65fd82" class="cell" data-execution_count="21">
 <div class="sourceCode cell-code" id="cb41"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb41-1"><a href="#cb41-1" aria-hidden="true" tabindex="-1"></a><span class="kw">function</span> <span class="fu">basic_vectorized_calc</span>(x, y)</span>
 <span id="cb41-2"><a href="#cb41-2" aria-hidden="true" tabindex="-1"></a>     y <span class="op">.=</span> <span class="fu">exp</span>.(x) <span class="op">+</span> <span class="fl">3</span> <span class="op">*</span> <span class="fu">sin</span>.(x)</span>
 <span id="cb41-3"><a href="#cb41-3" aria-hidden="true" tabindex="-1"></a><span class="kw">end</span></span>
@@ -667,19 +667,19 @@ gandalf.berkeley.edu</code></pre>
 <div class="cell-output cell-output-display" data-execution_count="21">
 <div class="ansi-escaped-output">
 <pre>BenchmarkTools.Trial: 4 samples with 1 evaluation.
- Range <span class="ansi-bright-black-fg">(</span><span class="ansi-cyan-fg ansi-bold">min</span> … <span class="ansi-magenta-fg">max</span><span class="ansi-bright-black-fg">):  </span><span class="ansi-cyan-fg ansi-bold">1.400 s</span> … <span class="ansi-magenta-fg">  1.564 s</span>  <span class="ansi-bright-black-fg">┊</span> GC <span class="ansi-bright-black-fg">(</span>min … max<span class="ansi-bright-black-fg">): </span> 5.34% … 14.34%
- Time  <span class="ansi-bright-black-fg">(</span><span class="ansi-blue-fg ansi-bold">median</span><span class="ansi-bright-black-fg">):     </span><span class="ansi-blue-fg ansi-bold">1.490 s              </span><span class="ansi-bright-black-fg">┊</span> GC <span class="ansi-bright-black-fg">(</span>median<span class="ansi-bright-black-fg">):    </span>10.63%
- Time  <span class="ansi-bright-black-fg">(</span><span class="ansi-green-fg ansi-bold">mean</span> ± <span class="ansi-green-fg">σ</span><span class="ansi-bright-black-fg">):   </span><span class="ansi-green-fg ansi-bold">1.486 s</span> ± <span class="ansi-green-fg">85.872 ms</span>  <span class="ansi-bright-black-fg">┊</span> GC <span class="ansi-bright-black-fg">(</span>mean ± σ<span class="ansi-bright-black-fg">):  </span>11.23% ±  6.02%
-  █       <span class="ansi-blue-fg">█</span>                     <span class="ansi-green-fg"> </span>                       █ █  
-  █▁▁▁▁▁▁▁<span class="ansi-blue-fg">█</span>▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁<span class="ansi-green-fg">▁</span>▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁█▁█ ▁
-  1.4 s<span class="ansi-bright-black-fg">          Histogram: frequency by time</span>        1.56 s <span class="ansi-bold">&lt;</span>
+ Range <span class="ansi-bright-black-fg">(</span><span class="ansi-cyan-fg ansi-bold">min</span> … <span class="ansi-magenta-fg">max</span><span class="ansi-bright-black-fg">):  </span><span class="ansi-cyan-fg ansi-bold">1.314 s</span> … <span class="ansi-magenta-fg">   1.525 s</span>  <span class="ansi-bright-black-fg">┊</span> GC <span class="ansi-bright-black-fg">(</span>min … max<span class="ansi-bright-black-fg">): </span> 4.78% … 14.68%
+ Time  <span class="ansi-bright-black-fg">(</span><span class="ansi-blue-fg ansi-bold">median</span><span class="ansi-bright-black-fg">):     </span><span class="ansi-blue-fg ansi-bold">1.412 s               </span><span class="ansi-bright-black-fg">┊</span> GC <span class="ansi-bright-black-fg">(</span>median<span class="ansi-bright-black-fg">):    </span>10.15%
+ Time  <span class="ansi-bright-black-fg">(</span><span class="ansi-green-fg ansi-bold">mean</span> ± <span class="ansi-green-fg">σ</span><span class="ansi-bright-black-fg">):   </span><span class="ansi-green-fg ansi-bold">1.416 s</span> ± <span class="ansi-green-fg">115.394 ms</span>  <span class="ansi-bright-black-fg">┊</span> GC <span class="ansi-bright-black-fg">(</span>mean ± σ<span class="ansi-bright-black-fg">):  </span>10.63% ±  6.54%
+  █<span class="ansi-blue-fg">█</span>                          <span class="ansi-green-fg"> </span>                       █    █  
+  █<span class="ansi-blue-fg">█</span>▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁<span class="ansi-green-fg">▁</span>▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁█▁▁▁▁█ ▁
+  1.31 s<span class="ansi-bright-black-fg">         Histogram: frequency by time</span>         1.53 s <span class="ansi-bold">&lt;</span>
  Memory estimate<span class="ansi-bright-black-fg">: </span><span class="ansi-yellow-fg">1.49 GiB</span>, allocs estimate<span class="ansi-bright-black-fg">: </span><span class="ansi-yellow-fg">8</span>.</pre>
 </div>
 </div>
 </div>
 <p>The original <code>x</code> array is 400 MB; notice the additional memory allocation and that this takes almost twice as long as the original for loop.</p>
 <p>Here’s a fused version of the vectorized calculation, where the <code>@.</code> causes the loops to be fused.</p>
-<div id="499dfd9e" class="cell" data-execution_count="22">
+<div id="8fe7e706" class="cell" data-execution_count="22">
 <div class="sourceCode cell-code" id="cb42"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb42-1"><a href="#cb42-1" aria-hidden="true" tabindex="-1"></a><span class="kw">function</span> <span class="fu">fused_vectorized_calc</span>(x, y)</span>
 <span id="cb42-2"><a href="#cb42-2" aria-hidden="true" tabindex="-1"></a>    y <span class="op">.=</span> @. <span class="fu">tan</span>(x) <span class="op">+</span> <span class="fl">3</span> <span class="op">*</span> <span class="fu">sin</span>(x)</span>
 <span id="cb42-3"><a href="#cb42-3" aria-hidden="true" tabindex="-1"></a><span class="kw">end</span></span>
@@ -688,19 +688,19 @@ gandalf.berkeley.edu</code></pre>
 <div class="cell-output cell-output-display" data-execution_count="22">
 <div class="ansi-escaped-output">
 <pre>BenchmarkTools.Trial: 5 samples with 1 evaluation.
- Range <span class="ansi-bright-black-fg">(</span><span class="ansi-cyan-fg ansi-bold">min</span> … <span class="ansi-magenta-fg">max</span><span class="ansi-bright-black-fg">):  </span><span class="ansi-cyan-fg ansi-bold">1.077 s</span> … <span class="ansi-magenta-fg">  1.146 s</span>  <span class="ansi-bright-black-fg">┊</span> GC <span class="ansi-bright-black-fg">(</span>min … max<span class="ansi-bright-black-fg">): </span>0.00% … 0.00%
- Time  <span class="ansi-bright-black-fg">(</span><span class="ansi-blue-fg ansi-bold">median</span><span class="ansi-bright-black-fg">):     </span><span class="ansi-blue-fg ansi-bold">1.095 s              </span><span class="ansi-bright-black-fg">┊</span> GC <span class="ansi-bright-black-fg">(</span>median<span class="ansi-bright-black-fg">):    </span>0.00%
- Time  <span class="ansi-bright-black-fg">(</span><span class="ansi-green-fg ansi-bold">mean</span> ± <span class="ansi-green-fg">σ</span><span class="ansi-bright-black-fg">):   </span><span class="ansi-green-fg ansi-bold">1.105 s</span> ± <span class="ansi-green-fg">28.250 ms</span>  <span class="ansi-bright-black-fg">┊</span> GC <span class="ansi-bright-black-fg">(</span>mean ± σ<span class="ansi-bright-black-fg">):  </span>0.00% ± 0.00%
-  █       <span class="ansi-blue-fg">█</span>      █       <span class="ansi-green-fg"> </span>            █                   █  
-  █▁▁▁▁▁▁▁<span class="ansi-blue-fg">█</span>▁▁▁▁▁▁█▁▁▁▁▁▁▁<span class="ansi-green-fg">▁</span>▁▁▁▁▁▁▁▁▁▁▁▁█▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁█ ▁
-  1.08 s<span class="ansi-bright-black-fg">         Histogram: frequency by time</span>        1.15 s <span class="ansi-bold">&lt;</span>
+ Range <span class="ansi-bright-black-fg">(</span><span class="ansi-cyan-fg ansi-bold">min</span> … <span class="ansi-magenta-fg">max</span><span class="ansi-bright-black-fg">):  </span><span class="ansi-cyan-fg ansi-bold">1.062 s</span> … <span class="ansi-magenta-fg">  1.103 s</span>  <span class="ansi-bright-black-fg">┊</span> GC <span class="ansi-bright-black-fg">(</span>min … max<span class="ansi-bright-black-fg">): </span>0.00% … 0.00%
+ Time  <span class="ansi-bright-black-fg">(</span><span class="ansi-blue-fg ansi-bold">median</span><span class="ansi-bright-black-fg">):     </span><span class="ansi-blue-fg ansi-bold">1.070 s              </span><span class="ansi-bright-black-fg">┊</span> GC <span class="ansi-bright-black-fg">(</span>median<span class="ansi-bright-black-fg">):    </span>0.00%
+ Time  <span class="ansi-bright-black-fg">(</span><span class="ansi-green-fg ansi-bold">mean</span> ± <span class="ansi-green-fg">σ</span><span class="ansi-bright-black-fg">):   </span><span class="ansi-green-fg ansi-bold">1.079 s</span> ± <span class="ansi-green-fg">18.681 ms</span>  <span class="ansi-bright-black-fg">┊</span> GC <span class="ansi-bright-black-fg">(</span>mean ± σ<span class="ansi-bright-black-fg">):  </span>0.00% ± 0.00%
+  █    <span class="ansi-blue-fg">█</span>     █            <span class="ansi-green-fg"> </span>                    █          █  
+  █▁▁▁▁<span class="ansi-blue-fg">█</span>▁▁▁▁▁█▁▁▁▁▁▁▁▁▁▁▁▁<span class="ansi-green-fg">▁</span>▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁█▁▁▁▁▁▁▁▁▁▁█ ▁
+  1.06 s<span class="ansi-bright-black-fg">         Histogram: frequency by time</span>         1.1 s <span class="ansi-bold">&lt;</span>
  Memory estimate<span class="ansi-bright-black-fg">: </span><span class="ansi-yellow-fg">0 bytes</span>, allocs estimate<span class="ansi-bright-black-fg">: </span><span class="ansi-yellow-fg">0</span>.</pre>
 </div>
 </div>
 </div>
 <p>We see that the time and (lack of) memory allocation are essentially the same as the original basic for loop.</p>
 <p>Finally one can achieve the same fusion by having the function just compute scalar quantities and then using the vectorized version of the function (by using <code>scalar_calc.()</code> instead of <code>scalar_calc()</code>), which also does the fusion.</p>
-<div id="9a9d67dc" class="cell" data-execution_count="23">
+<div id="1cfdfa09" class="cell" data-execution_count="23">
 <div class="sourceCode cell-code" id="cb43"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb43-1"><a href="#cb43-1" aria-hidden="true" tabindex="-1"></a><span class="kw">function</span> <span class="fu">scalar_calc</span>(x)</span>
 <span id="cb43-2"><a href="#cb43-2" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span>(<span class="fu">tan</span>(x) <span class="op">+</span> <span class="fl">3</span> <span class="op">*</span> <span class="fu">sin</span>(x))</span>
 <span id="cb43-3"><a href="#cb43-3" aria-hidden="true" tabindex="-1"></a><span class="kw">end</span></span>
@@ -709,12 +709,12 @@ gandalf.berkeley.edu</code></pre>
 <div class="cell-output cell-output-display" data-execution_count="23">
 <div class="ansi-escaped-output">
 <pre>BenchmarkTools.Trial: 5 samples with 1 evaluation.
- Range <span class="ansi-bright-black-fg">(</span><span class="ansi-cyan-fg ansi-bold">min</span> … <span class="ansi-magenta-fg">max</span><span class="ansi-bright-black-fg">):  </span><span class="ansi-cyan-fg ansi-bold">1.032 s</span> … <span class="ansi-magenta-fg">  1.091 s</span>  <span class="ansi-bright-black-fg">┊</span> GC <span class="ansi-bright-black-fg">(</span>min … max<span class="ansi-bright-black-fg">): </span>0.00% … 0.00%
- Time  <span class="ansi-bright-black-fg">(</span><span class="ansi-blue-fg ansi-bold">median</span><span class="ansi-bright-black-fg">):     </span><span class="ansi-blue-fg ansi-bold">1.047 s              </span><span class="ansi-bright-black-fg">┊</span> GC <span class="ansi-bright-black-fg">(</span>median<span class="ansi-bright-black-fg">):    </span>0.00%
- Time  <span class="ansi-bright-black-fg">(</span><span class="ansi-green-fg ansi-bold">mean</span> ± <span class="ansi-green-fg">σ</span><span class="ansi-bright-black-fg">):   </span><span class="ansi-green-fg ansi-bold">1.052 s</span> ± <span class="ansi-green-fg">22.440 ms</span>  <span class="ansi-bright-black-fg">┊</span> GC <span class="ansi-bright-black-fg">(</span>mean ± σ<span class="ansi-bright-black-fg">):  </span>0.00% ± 0.00%
-  █          <span class="ansi-blue-fg">█</span>  █ █   <span class="ansi-green-fg"> </span>                                   █  
-  █▁▁▁▁▁▁▁▁▁▁<span class="ansi-blue-fg">█</span>▁▁█▁█▁▁▁<span class="ansi-green-fg">▁</span>▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁█ ▁
-  1.03 s<span class="ansi-bright-black-fg">         Histogram: frequency by time</span>        1.09 s <span class="ansi-bold">&lt;</span>
+ Range <span class="ansi-bright-black-fg">(</span><span class="ansi-cyan-fg ansi-bold">min</span> … <span class="ansi-magenta-fg">max</span><span class="ansi-bright-black-fg">):  </span><span class="ansi-cyan-fg ansi-bold">1.030 s</span> … <span class="ansi-magenta-fg"> 1.053 s</span>  <span class="ansi-bright-black-fg">┊</span> GC <span class="ansi-bright-black-fg">(</span>min … max<span class="ansi-bright-black-fg">): </span>0.00% … 0.00%
+ Time  <span class="ansi-bright-black-fg">(</span><span class="ansi-blue-fg ansi-bold">median</span><span class="ansi-bright-black-fg">):     </span><span class="ansi-blue-fg ansi-bold">1.039 s             </span><span class="ansi-bright-black-fg">┊</span> GC <span class="ansi-bright-black-fg">(</span>median<span class="ansi-bright-black-fg">):    </span>0.00%
+ Time  <span class="ansi-bright-black-fg">(</span><span class="ansi-green-fg ansi-bold">mean</span> ± <span class="ansi-green-fg">σ</span><span class="ansi-bright-black-fg">):   </span><span class="ansi-green-fg ansi-bold">1.041 s</span> ± <span class="ansi-green-fg">9.838 ms</span>  <span class="ansi-bright-black-fg">┊</span> GC <span class="ansi-bright-black-fg">(</span>mean ± σ<span class="ansi-bright-black-fg">):  </span>0.00% ± 0.00%
+  █            <span class="ansi-blue-fg">█</span>       █      <span class="ansi-green-fg"> </span>                    █     █  
+  █▁▁▁▁▁▁▁▁▁▁▁▁<span class="ansi-blue-fg">█</span>▁▁▁▁▁▁▁█▁▁▁▁▁▁<span class="ansi-green-fg">▁</span>▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁█▁▁▁▁▁█ ▁
+  1.03 s<span class="ansi-bright-black-fg">        Histogram: frequency by time</span>        1.05 s <span class="ansi-bold">&lt;</span>
  Memory estimate<span class="ansi-bright-black-fg">: </span><span class="ansi-yellow-fg">16 bytes</span>, allocs estimate<span class="ansi-bright-black-fg">: </span><span class="ansi-yellow-fg">1</span>.</pre>
 </div>
 </div>
@@ -738,7 +738,7 @@ gandalf.berkeley.edu</code></pre>
 <section id="matrix-multiplication" class="level3">
 <h3 class="anchored" data-anchor-id="matrix-multiplication">5.1 Matrix multiplication</h3>
 <p>Let’s first consider basic matrix multiplication. In this case since we generate the matrices on the CPU, they are 64-bit.</p>
-<div id="086efb5c" class="cell" data-execution_count="24">
+<div id="a924c332" class="cell" data-execution_count="24">
 <div class="sourceCode cell-code" id="cb44"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb44-1"><a href="#cb44-1" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">BenchmarkTools</span></span>
 <span id="cb44-2"><a href="#cb44-2" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">CUDA</span></span>
 <span id="cb44-3"><a href="#cb44-3" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">LinearAlgebra</span></span>
@@ -776,7 +776,7 @@ gandalf.berkeley.edu</code></pre>
 </div>
 <p>Clearly the the GPU calculation is much faster, taking about 75 milliseconds, compared to 17 seconds on the CPU (albeit using a single thread).</p>
 <p>Let’s compare that to the time of copying the data to the GPU:</p>
-<div id="9b8eabef" class="cell" data-execution_count="25">
+<div id="007a3ee1" class="cell" data-execution_count="25">
 <div class="sourceCode cell-code" id="cb45"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb45-1"><a href="#cb45-1" aria-hidden="true" tabindex="-1"></a><span class="pp">@benchmark</span> CUDA.<span class="pp">@sync</span> tmp <span class="op">=</span> <span class="fu">CuArray</span>(x)</span>
 <span id="cb45-2"><a href="#cb45-2" aria-hidden="true" tabindex="-1"></a><span class="co"># BenchmarkTools.Trial: 59 samples with 1 evaluation.</span></span>
 <span id="cb45-3"><a href="#cb45-3" aria-hidden="true" tabindex="-1"></a><span class="co">#  Range (min … max):  83.766 ms … 137.849 ms  ┊ GC (min … max): 0.00% … 0.00%</span></span>
@@ -785,7 +785,7 @@ gandalf.berkeley.edu</code></pre>
 </div>
 <p>This suggests that the time in copying the data is similar to that for doing the computation.</p>
 <p>If we count the time of transferring the data to and from the GPU, that ends up being a substantial part of the time, compared to the 75 ms for simply doing the matrix multiplication.</p>
-<div id="c33bb92c" class="cell" data-execution_count="26">
+<div id="ef1b620b" class="cell" data-execution_count="26">
 <div class="sourceCode cell-code" id="cb46"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb46-1"><a href="#cb46-1" aria-hidden="true" tabindex="-1"></a><span class="kw">function</span> <span class="fu">matmult_with_transfer</span>(x, y)</span>
 <span id="cb46-2"><a href="#cb46-2" aria-hidden="true" tabindex="-1"></a>    xc <span class="op">=</span> <span class="fu">CuArray</span>(x)</span>
 <span id="cb46-3"><a href="#cb46-3" aria-hidden="true" tabindex="-1"></a>    yc <span class="op">=</span> <span class="fu">CuArray</span>(y)</span>
@@ -800,11 +800,11 @@ gandalf.berkeley.edu</code></pre>
 <span id="cb46-12"><a href="#cb46-12" aria-hidden="true" tabindex="-1"></a><span class="co">#  Time  (mean ± σ):   254.228 ms ±   1.708 ms  ┊ GC (mean ± σ):  4.33% ± 6.78%</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>As a sidenote, we can force use of 64-bit numbers on the GPU (in this case when generating values on the GPU) like this.</p>
-<div id="5dc2a706" class="cell" data-execution_count="27">
+<div id="103fd0bd" class="cell" data-execution_count="27">
 <div class="sourceCode cell-code" id="cb47"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb47-1"><a href="#cb47-1" aria-hidden="true" tabindex="-1"></a>x_gpu <span class="op">=</span> CUDA.<span class="fu">randn</span>(<span class="dt">Float64</span>, n, n);</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>Finally, let’s consider whether the matrix multiplication is faster using 32-bit numbers.</p>
-<div id="6aa52de7" class="cell" data-execution_count="28">
+<div id="5b093462" class="cell" data-execution_count="28">
 <div class="sourceCode cell-code" id="cb48"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb48-1"><a href="#cb48-1" aria-hidden="true" tabindex="-1"></a>x <span class="op">=</span> <span class="fu">randn</span>(<span class="dt">Float32</span>, n, n);</span>
 <span id="cb48-2"><a href="#cb48-2" aria-hidden="true" tabindex="-1"></a>y <span class="op">=</span> <span class="fu">randn</span>(<span class="dt">Float32</span>, n, n);</span>
 <span id="cb48-3"><a href="#cb48-3" aria-hidden="true" tabindex="-1"></a>x_gpu <span class="op">=</span> <span class="fu">CuArray</span>(x);</span>
@@ -825,7 +825,7 @@ gandalf.berkeley.edu</code></pre>
 <section id="vectorized-calculations" class="level3">
 <h3 class="anchored" data-anchor-id="vectorized-calculations">5.2 Vectorized calculations</h3>
 <p>Here we’ll consider using the GPU for vectorized calculations, noting that <a href="./#4-loops-and-fused-operations">earlier</a> we talked about using <code>.</code> to vectorize and <code>@</code> to fuse loops in the context of CPU-based calculations.</p>
-<div id="a70bb243" class="cell" data-execution_count="29">
+<div id="a4315f38" class="cell" data-execution_count="29">
 <div class="sourceCode cell-code" id="cb49"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb49-1"><a href="#cb49-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Scalar function to do something.</span></span>
 <span id="cb49-2"><a href="#cb49-2" aria-hidden="true" tabindex="-1"></a><span class="kw">function</span> <span class="fu">myfun</span>(x)</span>
 <span id="cb49-3"><a href="#cb49-3" aria-hidden="true" tabindex="-1"></a>    y <span class="op">=</span> <span class="fu">tan</span>(x) <span class="op">+</span> <span class="fl">3</span> <span class="op">*</span> <span class="fu">sin</span>(x)</span>
@@ -861,7 +861,7 @@ gandalf.berkeley.edu</code></pre>
 <h3 class="anchored" data-anchor-id="basic-example">6.1 Basic example</h3>
 <p>Here’s a basic example in which we’ll do a calculation in place. We run 1000 scalar calculations using 1000 threads.</p>
 <p>We use <code>@cuda</code> to compile and run the kernel.</p>
-<div id="84542f70" class="cell" data-execution_count="30">
+<div id="a5f273d2" class="cell" data-execution_count="30">
 <div class="sourceCode cell-code" id="cb50"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb50-1"><a href="#cb50-1" aria-hidden="true" tabindex="-1"></a><span class="kw">function</span> <span class="fu">my_kernel</span>(x)</span>
 <span id="cb50-2"><a href="#cb50-2" aria-hidden="true" tabindex="-1"></a>  idx <span class="op">=</span> <span class="fu">threadIdx</span>().x;   <span class="co"># What thread am I?</span></span>
 <span id="cb50-3"><a href="#cb50-3" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> idx <span class="op">&lt;=</span> <span class="fu">length</span>(x)</span>
@@ -879,7 +879,7 @@ gandalf.berkeley.edu</code></pre>
 <span id="cb50-15"><a href="#cb50-15" aria-hidden="true" tabindex="-1"></a><span class="co"># -28.875708f0</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>There are limits on the number of threads we can use.</p>
-<div id="38ab5009" class="cell" data-execution_count="31">
+<div id="32f036ef" class="cell" data-execution_count="31">
 <div class="sourceCode cell-code" id="cb51"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb51-1"><a href="#cb51-1" aria-hidden="true" tabindex="-1"></a>n <span class="op">=</span> <span class="fl">2000</span>;</span>
 <span id="cb51-2"><a href="#cb51-2" aria-hidden="true" tabindex="-1"></a>x_gpu <span class="op">=</span> CUDA.<span class="fu">randn</span>(n);</span>
 <span id="cb51-3"><a href="#cb51-3" aria-hidden="true" tabindex="-1"></a><span class="pp">@cuda</span> threads<span class="op">=</span>n <span class="fu">my_kernel</span>(x_gpu);</span>
@@ -888,7 +888,7 @@ gandalf.berkeley.edu</code></pre>
 <section id="multiple-blocks" class="level4">
 <h4 class="anchored" data-anchor-id="multiple-blocks">6.1.1 Multiple blocks</h4>
 <p>We need to use at least as many threads as computations, and in addition to only being able to use 1024 threads in the x dimension, we can have at most 1024 threads in a block on the A100 GPU we’re using. So we’ll need multiple blocks.</p>
-<div id="cc66385e" class="cell" data-execution_count="32">
+<div id="242b2d7e" class="cell" data-execution_count="32">
 <div class="sourceCode cell-code" id="cb52"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb52-1"><a href="#cb52-1" aria-hidden="true" tabindex="-1"></a><span class="kw">function</span> <span class="fu">my_kernel</span>(x)</span>
 <span id="cb52-2"><a href="#cb52-2" aria-hidden="true" tabindex="-1"></a>  i <span class="op">=</span> <span class="fu">threadIdx</span>().x;  <span class="co"># What thread am I within the block?</span></span>
 <span id="cb52-3"><a href="#cb52-3" aria-hidden="true" tabindex="-1"></a>  j <span class="op">=</span> <span class="fu">blockIdx</span>().x;   <span class="co"># What block am I in?</span></span>
@@ -909,7 +909,7 @@ gandalf.berkeley.edu</code></pre>
 <span id="cb52-18"><a href="#cb52-18" aria-hidden="true" tabindex="-1"></a>(initial, <span class="fu">Array</span>(x_gpu)[n])  <span class="co"># Check that calculation was done.</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>Let’s do a smaller test run in which we can check on the thread and block indexing.</p>
-<div id="75ef2fb0" class="cell" data-execution_count="33">
+<div id="26645293" class="cell" data-execution_count="33">
 <div class="sourceCode cell-code" id="cb53"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb53-1"><a href="#cb53-1" aria-hidden="true" tabindex="-1"></a><span class="kw">function</span> <span class="fu">my_kernel_print</span>(x)</span>
 <span id="cb53-2"><a href="#cb53-2" aria-hidden="true" tabindex="-1"></a>  i <span class="op">=</span> <span class="fu">threadIdx</span>().x;  <span class="co"># What thread am I within the block?</span></span>
 <span id="cb53-3"><a href="#cb53-3" aria-hidden="true" tabindex="-1"></a>  j <span class="op">=</span> <span class="fu">blockIdx</span>().x;   <span class="co"># What block am I in?</span></span>
@@ -934,7 +934,7 @@ gandalf.berkeley.edu</code></pre>
 <p>In many cases we’ll have more tasks than the total number of GPU cores. As long as we don’t exceed the maximum size of a block or grid, we can just ask for as many threads as we have tasks and rely on the GPU to manage assigning the tasks to the GPU cores.</p>
 <p>We’d want to check that the number/dimension of the block here does not exceed the maximum block size. I didn’t do that, but it ran, so it must have been ok!</p>
 <p>Here we’ll run the computation we ran earlier when we did not write our own kernel and just relied on Julia to offload to the GPU behind the scene.</p>
-<div id="37547408" class="cell" data-execution_count="34">
+<div id="db3e6618" class="cell" data-execution_count="34">
 <div class="sourceCode cell-code" id="cb54"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb54-1"><a href="#cb54-1" aria-hidden="true" tabindex="-1"></a>n <span class="op">=</span> <span class="fl">250000000</span>;</span>
 <span id="cb54-2"><a href="#cb54-2" aria-hidden="true" tabindex="-1"></a>x_gpu <span class="op">=</span> CUDA.<span class="fu">randn</span>(n);</span>
 <span id="cb54-3"><a href="#cb54-3" aria-hidden="true" tabindex="-1"></a>nthreads <span class="op">=</span> <span class="fl">1024</span>;</span>
@@ -959,7 +959,7 @@ gandalf.berkeley.edu</code></pre>
 <h4 class="anchored" data-anchor-id="coalesced-access-to-global-memory">6.2.1 Coalesced access to global memory</h4>
 <p>If adjacent threads in a block access adjacent memory locations, a chunk of data can be obtained in a single access to global memory.</p>
 <p>We’ll implement element-wise summing of two matrices. Obviously one can just do this directly with <code>CuArray</code>s in Julia, but if we implement it ourselves, it illustrates that reading a matrix by column is much more efficient than reading by row. Here a thread block either handles part of a column (good) or part of a row (bad). The x-dimension of the blocks in the grid then handles multiple thread blocks within each column (or row; bad) and the y-dimension of the blocks in the grid handles the different columns (or rows; bad).</p>
-<div id="fd0a5a2c" class="cell" data-execution_count="35">
+<div id="335bbc3a" class="cell" data-execution_count="35">
 <div class="sourceCode cell-code" id="cb55"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb55-1"><a href="#cb55-1" aria-hidden="true" tabindex="-1"></a>n <span class="op">=</span> <span class="fl">10000</span>;</span>
 <span id="cb55-2"><a href="#cb55-2" aria-hidden="true" tabindex="-1"></a>X_gpu <span class="op">=</span> CUDA.<span class="fu">randn</span>(n,n);</span>
 <span id="cb55-3"><a href="#cb55-3" aria-hidden="true" tabindex="-1"></a>Y_gpu <span class="op">=</span> CUDA.<span class="fu">randn</span>(n,n);</span>
@@ -1015,7 +1015,7 @@ gandalf.berkeley.edu</code></pre>
 <h4 class="anchored" data-anchor-id="using-shared-memory">6.2.2 Using shared memory</h4>
 <p>Accessing global GPU memory is much slower than doing computation on the GPU. So we’d like to avoid repeated access to global memory (e.g., a bad scenario would be a ratio of one arithmetic calculation per retrieval from global memory). One strategy is for multiple threads in a block to cooperate to load data from global memory into shared memory accessible by all the threads in the block. The computation can then be done on the data in shared memory.</p>
 <p>Here’s a simplified example that shows how to load the data into shared memory. There’s no actual computation coded here, but one could imagine that each thread would then each do a computation that uses the entire chunk of data in shared memory.</p>
-<div id="da5f8e83" class="cell" data-execution_count="36">
+<div id="85e456f7" class="cell" data-execution_count="36">
 <div class="sourceCode cell-code" id="cb56"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb56-1"><a href="#cb56-1" aria-hidden="true" tabindex="-1"></a><span class="kw">function</span> <span class="fu">kernel_reader_bycol</span>(x<span class="op">::</span><span class="dt">CuDeviceArray{T}</span>) <span class="kw">where</span> T</span>
 <span id="cb56-2"><a href="#cb56-2" aria-hidden="true" tabindex="-1"></a>  i <span class="op">=</span> <span class="fu">threadIdx</span>().x;  <span class="co"># What thread am I within the block?</span></span>
 <span id="cb56-3"><a href="#cb56-3" aria-hidden="true" tabindex="-1"></a>  j <span class="op">=</span> <span class="fu">blockIdx</span>().x;   <span class="co"># What block am I in?</span></span>
@@ -1062,7 +1062,7 @@ gandalf.berkeley.edu</code></pre>
 <p>If <code>m</code> gets much bigger, we get an error “ERROR: Amount of dynamic shared memory exceeds device limit (400.000 KiB &gt; 48.000 KiB).” So for larger <code>m</code> we’d need to rework how we manipulate the data.</p>
 <p>Let’s close by seeing if the memory access patterns make a difference in this example. Instead of accessing by column, we’ll access by row, but with the matrix transposed so it is very wide instead of very long.</p>
 <p>My initial thought was that accessing by row would be slower because adjacent threads are not reading from adjacent locations in global memory.</p>
-<div id="f060930e" class="cell" data-execution_count="37">
+<div id="6eb094c8" class="cell" data-execution_count="37">
 <div class="sourceCode cell-code" id="cb57"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb57-1"><a href="#cb57-1" aria-hidden="true" tabindex="-1"></a><span class="kw">function</span> <span class="fu">kernel_reader_byrow</span>(x<span class="op">::</span><span class="dt">CuDeviceArray{T}</span>) <span class="kw">where</span> T</span>
 <span id="cb57-2"><a href="#cb57-2" aria-hidden="true" tabindex="-1"></a>  i <span class="op">=</span> <span class="fu">threadIdx</span>().x;  <span class="co"># What thread am I within the block?</span></span>
 <span id="cb57-3"><a href="#cb57-3" aria-hidden="true" tabindex="-1"></a>  j <span class="op">=</span> <span class="fu">blockIdx</span>().x;   <span class="co"># What block am I in?</span></span>
@@ -1115,7 +1115,7 @@ gandalf.berkeley.edu</code></pre>
 <p>One thing we haven’t seen so far is being able to have different threads write to the same memory location (e.g., to a scalar or to an element of an array). One can easily imagine needing to do this to carry out reduction operations (e.g., calculating a sum or a max or min).</p>
 <p>The obvious danger is that two threads might write to the memory location at the same time and somehow cause the location not to be properly updated.</p>
 <p>Suppose we want to calculate the log-likelihood (or some other loss function) across independent observations. We’d like to do the summation on the GPU to avoid passing all the log-likelihood values from GPU to CPU and then having to do the sum on the CPU.</p>
-<div id="4d2c972c" class="cell" data-execution_count="38">
+<div id="2c2fba9d" class="cell" data-execution_count="38">
 <div class="sourceCode cell-code" id="cb58"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb58-1"><a href="#cb58-1" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">BenchmarkTools</span></span>
 <span id="cb58-2"><a href="#cb58-2" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">Distributions</span></span>
 <span id="cb58-3"><a href="#cb58-3" aria-hidden="true" tabindex="-1"></a></span>
@@ -1153,7 +1153,7 @@ gandalf.berkeley.edu</code></pre>
 <h4 class="anchored" data-anchor-id="using-shared-memory-to-reduce-the-cost-of-atomic-operations">6.3.1 Using shared memory to reduce the cost of atomic operations</h4>
 <p>One solution to the performance degradation is to not have all of the summing make use of the same location in memory to accumulate the result.</p>
 <p>Instead we can use shared memory to more efficiently do the reduction within each thread block before doing the final reduction across blocks. Here’s an approach using a tree-like operation (as suggested by a ChatBot, but requiring some debugging on my part) to compute the partial sum within each thread block before using the atomic operation to compute the sum of the partial sums:</p>
-<div id="ce03f2cb" class="cell" data-execution_count="39">
+<div id="1e9f1f9b" class="cell" data-execution_count="39">
 <div class="sourceCode cell-code" id="cb59"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb59-1"><a href="#cb59-1" aria-hidden="true" tabindex="-1"></a><span class="kw">function</span> <span class="fu">loglik_kernel_shmem</span>(x<span class="op">::</span><span class="dt">CuDeviceArray{T}</span>, result<span class="op">::</span><span class="dt">CuDeviceArray{T}</span>) <span class="kw">where</span> T</span>
 <span id="cb59-2"><a href="#cb59-2" aria-hidden="true" tabindex="-1"></a>  i <span class="op">=</span> <span class="fu">threadIdx</span>().x;  <span class="co"># What thread am I within the block?</span></span>
 <span id="cb59-3"><a href="#cb59-3" aria-hidden="true" tabindex="-1"></a>  j <span class="op">=</span> <span class="fu">blockIdx</span>().x;   <span class="co"># What block am I in?</span></span>
