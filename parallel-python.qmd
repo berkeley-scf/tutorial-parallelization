@@ -1,6 +1,17 @@
 ---
-layout: default
 title: Parallel processing in Python
+format:
+  html:
+    theme: cosmo
+    css: assets/styles.css
+    toc: true
+    code-copy: true
+    code-block-bg: true
+    code-block-border-left: "#31BAE9" 
+ipynb-shell-interactivity: all
+code-overflow: wrap
+execute:
+  freeze: auto
 ---
 
 # Parallel processing in Python
@@ -690,7 +701,7 @@ for comparability. One could have JAX use 64-bit numbers like this:
 
 ```{python}
 #| eval: false
-import jax.config
+import jax
 jax.config.update("jax_enable_x64", True)  
 ```
 
@@ -728,7 +739,7 @@ print(round(time.time() - t0,3))
 ```
 
 ```{python}
-import jax.config
+import jax
 jax.config.update("jax_enable_x64", True)  
 
 x_jax = jnp.array(x, dtype = jnp.float64)

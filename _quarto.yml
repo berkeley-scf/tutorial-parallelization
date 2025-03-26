@@ -1,0 +1,44 @@
+project:
+  type: website
+  render:
+    - index.qmd
+    - parallel-julia.qmd
+    - parallel-matlab.md
+    - parallel-R.qmd
+    - parallel-python.qmd
+    - parallel-C.md
+    - license.qmd
+
+website:
+  site-url: https://computing.stat.berkeley.edu/tutorial-parallelization
+  sidebar:
+    style: docked
+    title: "SCF Parallelization Tutorial"
+    logo: assets/img/logo.svg
+    logo-href: https://statistics.berkeley.edu
+    logo-alt: "UC Berkeley Statistics logo"
+    tools:
+      - icon: github
+        href: https://github.com/berkeley-scf/tutorial-parallelization
+        aria-label: GitHub
+    contents:
+      - href: index.qmd
+        text: Overview
+      - href: parallel-python.qmd
+        text: Parallel Python
+      - href: parallel-R.qmd
+        text: Parallel R
+      - href: parallel-julia.qmd
+        text: Parallel Julia
+      - href: parallel-matlab.md
+        text: Parallel MATLAB
+      - href: parallel-C.md
+        text: Parallel C/C++
+      - href: license.qmd
+        text: License
+
+format:
+  html:
+    theme: cosmo
+    css: assets/styles.css
+    toc: true
