@@ -72,7 +72,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <link href="site_libs/quarto-html/quarto-syntax-highlighting-549806ee2085284f45b00abea8c6df48.css" rel="stylesheet" id="quarto-text-highlighting-styles">
 <script src="site_libs/bootstrap/bootstrap.min.js"></script>
 <link href="site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="site_libs/bootstrap/bootstrap-cd173fadfbc59501cc53580d670575f8.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<link href="site_libs/bootstrap/bootstrap-649e5f0678146f359c225094671654aa.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
 <script id="quarto-search-options" type="application/json">{
   "location": "sidebar",
   "copy-button": false,
@@ -197,15 +197,12 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     <h2 id="toc-title">On this page</h2>
    
   <ul>
-  <li><a href="#parallel-processing-in-matlab" id="toc-parallel-processing-in-matlab" class="nav-link active" data-scroll-target="#parallel-processing-in-matlab">Parallel processing in MATLAB</a>
-  <ul class="collapse">
-  <li><a href="#overview" id="toc-overview" class="nav-link" data-scroll-target="#overview">1 Overview</a></li>
+  <li><a href="#overview" id="toc-overview" class="nav-link active" data-scroll-target="#overview">1 Overview</a></li>
   <li><a href="#threading" id="toc-threading" class="nav-link" data-scroll-target="#threading">2 Threading</a></li>
   <li><a href="#parallel-for-loops-on-one-machine" id="toc-parallel-for-loops-on-one-machine" class="nav-link" data-scroll-target="#parallel-for-loops-on-one-machine">3 Parallel for loops on one machine</a></li>
   <li><a href="#parallel-random-number-generation" id="toc-parallel-random-number-generation" class="nav-link" data-scroll-target="#parallel-random-number-generation">4 Parallel random number generation</a></li>
   <li><a href="#manually-parallelizing-individual-tasks" id="toc-manually-parallelizing-individual-tasks" class="nav-link" data-scroll-target="#manually-parallelizing-individual-tasks">5 Manually parallelizing individual tasks</a></li>
   <li><a href="#using-matlab-across-multiple-nodes" id="toc-using-matlab-across-multiple-nodes" class="nav-link" data-scroll-target="#using-matlab-across-multiple-nodes">6 Using MATLAB across multiple nodes</a></li>
-  </ul></li>
   </ul>
 </nav>
     </div>
@@ -231,8 +228,6 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </header>
 
 
-<section id="parallel-processing-in-matlab" class="level1">
-<h1>Parallel processing in MATLAB</h1>
 <section id="overview" class="level2">
 <h2 class="anchored" data-anchor-id="overview">1 Overview</h2>
 <p>MATLAB provides a variety of functionality for parallelization, including threaded operations (linear algebra and more), parallel for loops, and parallelization across multiple machines. This material will just scratch the surface of what is possible.</p>
@@ -346,7 +341,6 @@ randn(5, 1)</code></pre>
 <p>To use MATLAB across multiple nodes, you need to have the MATLAB Parallel Server, which often requires an additional license. If it is installed, one can set up MATLAB so that <em>parfor</em> will distribute its work across multiple nodes. Details may vary depending on how Parallel Server is set up on your system.</p>
 
 
-</section>
 </section>
 
 </main> <!-- /main -->

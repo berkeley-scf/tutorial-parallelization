@@ -201,9 +201,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     <h2 id="toc-title">On this page</h2>
    
   <ul>
-  <li><a href="#parallel-processing-in-python" id="toc-parallel-processing-in-python" class="nav-link active" data-scroll-target="#parallel-processing-in-python">Parallel processing in Python</a>
-  <ul class="collapse">
-  <li><a href="#overview" id="toc-overview" class="nav-link" data-scroll-target="#overview">1 Overview</a></li>
+  <li><a href="#overview" id="toc-overview" class="nav-link active" data-scroll-target="#overview">1 Overview</a></li>
   <li><a href="#threading" id="toc-threading" class="nav-link" data-scroll-target="#threading">2 Threading</a>
   <ul class="collapse">
   <li><a href="#what-is-the-blas" id="toc-what-is-the-blas" class="nav-link" data-scroll-target="#what-is-the-blas">2.1 What is the BLAS?</a></li>
@@ -240,7 +238,6 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   <li><a href="#vmap-and-for-vectorized-map-operations" id="toc-vmap-and-for-vectorized-map-operations" class="nav-link" data-scroll-target="#vmap-and-for-vectorized-map-operations">7.5 vmap and for vectorized map operations</a></li>
   </ul></li>
   <li><a href="#using-cupy" id="toc-using-cupy" class="nav-link" data-scroll-target="#using-cupy">8 Using CuPy</a></li>
-  </ul></li>
   </ul>
 </nav>
     </div>
@@ -266,8 +263,6 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </header>
 
 
-<section id="parallel-processing-in-python" class="level1">
-<h1>Parallel processing in Python</h1>
 <section id="overview" class="level2">
 <h2 class="anchored" data-anchor-id="overview">1 Overview</h2>
 <p>Python provides a variety of functionality for parallelization, including threaded operations (in particular for linear algebra), parallel looping and map statements, and parallelization across multiple machines. For the CPU, this material focuses on Python’s ipyparallel package and JAX, with some discussion of Dask and Ray. For the GPU, the material focuses on PyTorch and JAX, with a bit of discussion of CuPy.</p>
@@ -290,7 +285,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <h3 class="anchored" data-anchor-id="example-syntax">2.2 Example syntax</h3>
 <p>Threading in Python is limited to linear algebra (provided Python is linked against a threaded BLAS, except if using Dask or JAX or various other packages). Python has something called the <a href="https://wiki.python.org/moin/GlobalInterpreterLock">Global Interpreter Lock</a> that interferes with threading in Python (but not in threaded linear algebra packages called by Python).</p>
 <p>Here’s some linear algebra in Python that will use threading if <em>numpy</em> is linked against a threaded BLAS, though I don’t compare the timing for different numbers of threads here.</p>
-<div id="bb037257" class="cell" data-execution_count="1">
+<div id="d04e1e9d" class="cell" data-execution_count="1">
 <div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>n <span class="op">=</span> <span class="dv">5000</span></span>
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>x <span class="op">=</span> np.random.normal(<span class="dv">0</span>, <span class="dv">1</span>, size<span class="op">=</span>(n, n))</span>
@@ -317,7 +312,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <h4 class="anchored" data-anchor-id="starting-the-workers">3.1.1 Starting the workers</h4>
 <p>First we’ll cover IPython Parallel (i.e., the <code>ipyparallel</code> package) functionality, which allows one to parallelize on a single machine (discussed here) or across multiple machines (see next section). In later sections, I’ll discuss other packages that can be used for parallelization.</p>
 <p>First we need to start our workers. As of ipyparallel version 7, we can start the workers from within Python.</p>
-<div id="bfd674ec" class="cell" data-execution_count="2">
+<div id="f263df82" class="cell" data-execution_count="2">
 <div class="sourceCode cell-code" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="co">## In newer versions of ipyparallel (v. 7 and later)</span></span>
 <span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> ipyparallel <span class="im">as</span> ipp</span>
 <span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="co"># Check the version:</span></span>
@@ -333,7 +328,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </div>
 <div class="cell-output cell-output-display">
 <script type="application/vnd.jupyter.widget-view+json">
-{"model_id":"e6d6198b8ed1421798f7534ace15684c","version_major":2,"version_minor":0,"quarto_mimetype":"application/vnd.jupyter.widget-view+json"}
+{"model_id":"b987552117044ecaa790fbcaa2598dc8","version_major":2,"version_minor":0,"quarto_mimetype":"application/vnd.jupyter.widget-view+json"}
 </script>
 </div>
 </div>
@@ -341,14 +336,14 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <section id="testing-our-workers" class="level4">
 <h4 class="anchored" data-anchor-id="testing-our-workers">3.1.2 Testing our workers</h4>
 <p>Let’s verify that things seem set up ok and we can interact with all our workers:</p>
-<div id="a66116d4" class="cell" data-execution_count="3">
+<div id="395ef625" class="cell" data-execution_count="3">
 <div class="sourceCode cell-code" id="cb7"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="co">## Check that we have the number of workers expected:</span></span>
 <span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>c.ids</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-display" data-execution_count="2">
 <pre><code>[0, 1, 2, 3]</code></pre>
 </div>
 </div>
-<div id="bad504ab" class="cell" data-execution_count="4">
+<div id="807f1aa3" class="cell" data-execution_count="4">
 <div class="sourceCode cell-code" id="cb9"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="co">## Set up a direct view to interface with all the workers</span></span>
 <span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>dview <span class="op">=</span> c[:]</span>
 <span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>dview</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
@@ -356,7 +351,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <pre><code>&lt;DirectView [0, 1, 2, 3]&gt;</code></pre>
 </div>
 </div>
-<div id="7715300c" class="cell" data-execution_count="5">
+<div id="39b7785c" class="cell" data-execution_count="5">
 <div class="sourceCode cell-code" id="cb11"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="co">## Set blocking so that we wait for the result of the parallel execution</span></span>
 <span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>dview.block <span class="op">=</span> <span class="va">True</span> </span>
 <span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>dview.<span class="bu">apply</span>(<span class="kw">lambda</span> : <span class="st">"Hello, World"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
@@ -371,7 +366,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <p>Now let’s see an example of how we can use our workers to run code in parallel.</p>
 <p>We’ll carry out a statistics/machine learning prediction method (random forest regression) with leave-one-out cross-validation, parallelizing over different held out data.</p>
 <p>First let’s set up packages, data and our main function on the workers:</p>
-<div id="c82af1e7" class="cell" data-execution_count="6">
+<div id="c5b77630" class="cell" data-execution_count="6">
 <div class="sourceCode cell-code" id="cb13"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a>dview.execute(<span class="st">'from sklearn.ensemble import RandomForestRegressor as rfr'</span>)</span>
 <span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>dview.execute(<span class="st">'import numpy as np'</span>)</span>
 <span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a></span>
@@ -405,7 +400,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <section id="parallelized-machine-learning-example-execution" class="level4">
 <h4 class="anchored" data-anchor-id="parallelized-machine-learning-example-execution">3.1.4 Parallelized machine learning example: execution</h4>
 <p>Now let’s set up a “load-balanced view”. With this type of interface, one submits the tasks and the controller decides how to divide up the tasks, ideally achieving good load balancing. A load-balanced computation is one that keeps all the workers busy throughout the computation</p>
-<div id="486468a5" class="cell" data-execution_count="7">
+<div id="f3f90ecd" class="cell" data-execution_count="7">
 <div class="sourceCode cell-code" id="cb17"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a>lview <span class="op">=</span> c.load_balanced_view()</span>
 <span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a>lview.block <span class="op">=</span> <span class="va">True</span></span>
 <span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a></span>
@@ -418,7 +413,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb17-10"><a href="#cb17-10" aria-hidden="true" tabindex="-1"></a><span class="co"># Check a few predictions:</span></span>
 <span id="cb17-11"><a href="#cb17-11" aria-hidden="true" tabindex="-1"></a>pred[<span class="dv">0</span>:<span class="dv">3</span>]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-display" data-execution_count="6">
-<pre><code>[2.0850713209987055, -0.5851021584001974, -0.43467549946448186]</code></pre>
+<pre><code>[1.9296172922186579, -0.8198999928947027, -0.3196902457141113]</code></pre>
 </div>
 </div>
 </section>
@@ -429,7 +424,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a><span class="bu">export</span> <span class="va">NWORKERS</span><span class="op">=</span>4</span>
 <span id="cb19-3"><a href="#cb19-3" aria-hidden="true" tabindex="-1"></a><span class="ex">ipcluster</span> start <span class="at">-n</span> <span class="va">${NWORKERS}</span> <span class="kw">&amp;</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <p>Now in Python, we can connect to the running workers:</p>
-<div id="188a7345" class="cell" data-execution_count="8">
+<div id="5103521e" class="cell" data-execution_count="8">
 <div class="sourceCode cell-code" id="cb20"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="co"># In python</span></span>
 <span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> os</span>
 <span id="cb20-3"><a href="#cb20-3" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> ipyparallel <span class="im">as</span> ipp</span>
@@ -454,9 +449,19 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb22-6"><a href="#cb22-6" aria-hidden="true" tabindex="-1"></a><span class="co"># so it knows it is running within a Slurm allocation</span></span>
 <span id="cb22-7"><a href="#cb22-7" aria-hidden="true" tabindex="-1"></a><span class="ex">srun</span> ipengine <span class="kw">&amp;</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <p>At this point you should be able to connect to the running cluster using the syntax seen for single-node usage.</p>
-<blockquote class="blockquote">
-<p><strong>Warning</strong>: Be careful to set the sleep period long enough that the controller starts before trying to start the workers and the workers start before trying to connect to the workers from within Python.</p>
-</blockquote>
+<div class="callout callout-style-default callout-warning callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Warning
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Be careful to set the sleep period long enough that the controller starts before trying to start the workers and the workers start before trying to connect to the workers from within Python.</p>
+</div>
+</div>
 <p>After doing your computations and quitting your main Python session, shut down the cluster of workers:</p>
 <div class="sourceCode" id="cb23"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a><span class="ex">ipcluster</span> stop</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <p>To start the engines in a context outside of using Slurm (provided all machines share a filesystem), you should be able ssh to each machine and run <code>ipengine &amp;</code> for as many worker processes as you want to start as follows. In some, but not all cases (depending on how the network is set up) you may not need the <code>--location</code> flag, but if you do, it should be set to the name of the machine you’re working on, e.g., by using the HOST environment variable. Here we start all the workers on a single other machine, “other_host”:</p>
@@ -474,12 +479,12 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <h3 class="anchored" data-anchor-id="parallel-looping-in-dask">4.1 Parallel looping in Dask</h3>
 <p>There are various ways to do parallel loops in Dask, as discussed in detail in <a href="https://berkeley-scf.github.io/tutorial-dask-future/python-dask.html">this Dask tutorial</a>.</p>
 <p>Here’s an example of doing it with “delayed” calculations set up via list comprehension. First we’ll start workers on a single machine. One can also start workers on multiple machines, as discussed in the tutorial linked to just above.</p>
-<div id="1c862a59" class="cell" data-execution_count="9">
+<div id="df87b07a" class="cell" data-execution_count="9">
 <div class="sourceCode cell-code" id="cb25"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> dask.multiprocessing</span>
 <span id="cb25-2"><a href="#cb25-2" aria-hidden="true" tabindex="-1"></a>dask.config.<span class="bu">set</span>(scheduler<span class="op">=</span><span class="st">'processes'</span>, num_workers <span class="op">=</span> <span class="dv">4</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>Now we’ll execute a set of tasks in parallel by wrapping the function of interest in <code>dask.delayed</code> to set up lazy evaluation that will be done in parallel using the workers already set up with the ‘processes’ scheduler above.</p>
-<div id="c2e6a8cf" class="cell" data-execution_count="10">
+<div id="8f546510" class="cell" data-execution_count="10">
 <div class="sourceCode cell-code" id="cb26"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> calc_mean(i, n):</span>
 <span id="cb26-2"><a href="#cb26-2" aria-hidden="true" tabindex="-1"></a>    <span class="im">import</span> numpy <span class="im">as</span> np</span>
 <span id="cb26-3"><a href="#cb26-3" aria-hidden="true" tabindex="-1"></a>    rng <span class="op">=</span> np.random.default_rng(i)</span>
@@ -503,12 +508,12 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <section id="parallel-looping-in-ray" class="level3">
 <h3 class="anchored" data-anchor-id="parallel-looping-in-ray">4.2 Parallel looping in Ray</h3>
 <p>We’ll start up workers on a single machine. To run across multiple workers, see <a href="https://berkeley-scf.github.io/tutorial-dask-future/python-ray.html">this tutorial</a> or the <a href="https://www.ray.io/docs">Ray documentation</a>.</p>
-<div id="9c772fdc" class="cell" data-execution_count="11">
+<div id="26563e91" class="cell" data-execution_count="11">
 <div class="sourceCode cell-code" id="cb27"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> ray</span>
 <span id="cb27-2"><a href="#cb27-2" aria-hidden="true" tabindex="-1"></a>ray.init(num_cpus <span class="op">=</span> <span class="dv">4</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>To run a computation in parallel, we decorate the function of interest with the <code>remote</code> tag:</p>
-<div id="569c7f36" class="cell" data-execution_count="12">
+<div id="43c868a3" class="cell" data-execution_count="12">
 <div class="sourceCode cell-code" id="cb28"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a><span class="at">@ray.remote</span></span>
 <span id="cb28-2"><a href="#cb28-2" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> calc_mean(i, n):</span>
 <span id="cb28-3"><a href="#cb28-3" aria-hidden="true" tabindex="-1"></a>    <span class="im">import</span> numpy <span class="im">as</span> np</span>
@@ -542,7 +547,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <p>In recent versions of numpy there has been attention paid to this problem and there are now <a href="https://numpy.org/doc/stable/reference/random/parallel.html">multiple approaches to getting high-quality random number generation for parallel code</a>.</p>
 <p>One approach is to generate one random seed per task such that the blocks of random numbers avoid overlapping with high probability, as implemented in numpy’s <code>SeedSequence</code> approach.</p>
 <p>Here we use that approach within the context of an ipyparallel load-balanced view.</p>
-<div id="9bb932b5" class="cell" data-execution_count="13">
+<div id="3d503c02" class="cell" data-execution_count="13">
 <div class="sourceCode cell-code" id="cb29"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb29-1"><a href="#cb29-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
 <span id="cb29-2"><a href="#cb29-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> ipyparallel <span class="im">as</span> ipp</span>
 <span id="cb29-3"><a href="#cb29-3" aria-hidden="true" tabindex="-1"></a>n <span class="op">=</span> <span class="dv">4</span></span>
@@ -581,7 +586,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb29-36"><a href="#cb29-36" aria-hidden="true" tabindex="-1"></a>results <span class="op">=</span> lview.<span class="bu">map</span>(wrapper, <span class="bu">range</span>(p))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>A second approach is to advance the state of the random number generator as if a large number of random numbers had been drawn.</p>
-<div id="43968014" class="cell" data-execution_count="14">
+<div id="9ba92e34" class="cell" data-execution_count="14">
 <div class="sourceCode cell-code" id="cb30"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a>seed <span class="op">=</span> <span class="dv">1</span></span>
 <span id="cb30-2"><a href="#cb30-2" aria-hidden="true" tabindex="-1"></a>pcg64 <span class="op">=</span> np.random.PCG64(seed)</span>
 <span id="cb30-3"><a href="#cb30-3" aria-hidden="true" tabindex="-1"></a></span>
@@ -628,7 +633,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <h3 class="anchored" data-anchor-id="linear-algebra">6.1 Linear algebra</h3>
 <p>Here’s an example of doing some linear algebra (simply matrix multiplication) on the GPU using PyTorch.</p>
 <p>By default PyTorch will use 32-bit numbers.</p>
-<div id="d73cc5f4" class="cell" data-execution_count="15">
+<div id="058966d7" class="cell" data-execution_count="15">
 <div class="sourceCode cell-code" id="cb31"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb31-1"><a href="#cb31-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> torch</span>
 <span id="cb31-2"><a href="#cb31-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> time</span>
 <span id="cb31-3"><a href="#cb31-3" aria-hidden="true" tabindex="-1"></a></span>
@@ -665,7 +670,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </div>
 <p>So we achieved a speedup of about 100-fold over a single CPU core using an A100 GPU in this case.</p>
 <p>Let’s consider the time for copying data to the GPU:</p>
-<div id="ee39a556" class="cell" data-execution_count="16">
+<div id="a0c8f1da" class="cell" data-execution_count="16">
 <div class="sourceCode cell-code" id="cb32"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a>x <span class="op">=</span> torch.randn(n,n)</span>
 <span id="cb32-2"><a href="#cb32-2" aria-hidden="true" tabindex="-1"></a>start.record()</span>
 <span id="cb32-3"><a href="#cb32-3" aria-hidden="true" tabindex="-1"></a>x_gpu <span class="op">=</span> x.cuda()</span>
@@ -675,14 +680,14 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </div>
 <p>This suggests that the time in copying the data is similar to that for doing the matrix multiplication.</p>
 <p>We can generate data on the GPU like this:</p>
-<div id="e609f40c" class="cell" data-execution_count="17">
+<div id="b5dfef03" class="cell" data-execution_count="17">
 <div class="sourceCode cell-code" id="cb33"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb33-1"><a href="#cb33-1" aria-hidden="true" tabindex="-1"></a>x_gpu <span class="op">=</span> torch.randn(n,n, device<span class="op">=</span>gpu)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </section>
 <section id="vectorized-calculations-and-loop-fusion" class="level3">
 <h3 class="anchored" data-anchor-id="vectorized-calculations-and-loop-fusion">6.2 Vectorized calculations (and loop fusion)</h3>
 <p>Here we’ll consider using the GPU for vectorized calculations. We’ll compare using numpy, CPU-based PyTorch, and GPU-based PyTorch, again with 32-bit numbers.</p>
-<div id="ca691d8c" class="cell" data-execution_count="18">
+<div id="3ad1eb74" class="cell" data-execution_count="18">
 <div class="sourceCode cell-code" id="cb34"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb34-1"><a href="#cb34-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> torch</span>
 <span id="cb34-2"><a href="#cb34-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
 <span id="cb34-3"><a href="#cb34-3" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> time</span>
@@ -729,7 +734,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <p>So using the GPU speeds things up by 150-fold (compared to numpy) and 250-fold (compared to CPU-based PyTorch).</p>
 <p>One can also have PyTorch “fuse” the operations in the loop, which avoids having the different vectorized operations in <code>myfun</code> being done in separate loops under the hood. For an overview of loop fusion, see <a href="./parallel-julia#4-loops-and-fused-operations">this discussion</a> in the context of Julia.</p>
 <p>To fuse the operations, we need to have the function in a module. In this case I defined <code>myfun_torch</code> in <code>myfun_torch.py</code>, and we need to compile the code using <code>torch.jit.script</code>.</p>
-<div id="833d4f42" class="cell" data-execution_count="19">
+<div id="8dbfec1e" class="cell" data-execution_count="19">
 <div class="sourceCode cell-code" id="cb35"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb35-1"><a href="#cb35-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> myfun_torch <span class="im">import</span> myfun_torch <span class="im">as</span> myfun_torch_tmp</span>
 <span id="cb35-2"><a href="#cb35-2" aria-hidden="true" tabindex="-1"></a>myfun_torch_compiled <span class="op">=</span> torch.jit.script(myfun_torch_tmp)</span>
 <span id="cb35-3"><a href="#cb35-3" aria-hidden="true" tabindex="-1"></a></span>
@@ -752,7 +757,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <h3 class="anchored" data-anchor-id="using-apples-m2-gpu">6.3 Using Apple’s M2 GPU</h3>
 <p>One can also use PyTorch to run computations on the GPU that comes with Apple’s M2 chips.</p>
 <p>The “backend” is called “MPS”, where “M” stands for “Metal”, which is what Apple calls its GPU framework.</p>
-<div id="eadcb5db" class="cell" data-execution_count="20">
+<div id="52981d83" class="cell" data-execution_count="20">
 <div class="sourceCode cell-code" id="cb36"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb36-1"><a href="#cb36-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> torch</span>
 <span id="cb36-2"><a href="#cb36-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> time</span>
 <span id="cb36-3"><a href="#cb36-3" aria-hidden="true" tabindex="-1"></a></span>
@@ -784,7 +789,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </div>
 <p>So there is about a two-fold speed up, which isn’t impressive compared to the speedup on a standard GPU.</p>
 <p>Let’s see how much time is involved in transferring the data.</p>
-<div id="d9d7f29b" class="cell" data-execution_count="21">
+<div id="2fc6c1d3" class="cell" data-execution_count="21">
 <div class="sourceCode cell-code" id="cb37"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb37-1"><a href="#cb37-1" aria-hidden="true" tabindex="-1"></a>x <span class="op">=</span> torch.randn(n,n)</span>
 <span id="cb37-2"><a href="#cb37-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb37-3"><a href="#cb37-3" aria-hidden="true" tabindex="-1"></a>start.record()</span>
@@ -795,7 +800,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </div>
 <p>So it looks like the transfer time is pretty small compared to the computation time (and to the savings involved in using the M2 GPU).</p>
 <p>We can generate data on the GPU like this:</p>
-<div id="bbad0ea6" class="cell" data-execution_count="22">
+<div id="23ad9f96" class="cell" data-execution_count="22">
 <div class="sourceCode cell-code" id="cb38"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb38-1"><a href="#cb38-1" aria-hidden="true" tabindex="-1"></a>x_mps <span class="op">=</span> torch.randn(n,n, device<span class="op">=</span>mps_device)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </section>
@@ -807,7 +812,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <section id="vectorized-calculations-and-loop-fusion-1" class="level3">
 <h3 class="anchored" data-anchor-id="vectorized-calculations-and-loop-fusion-1">7.1 Vectorized calculations (and loop fusion)</h3>
 <p>Let’s first consider running a vectorized calculation using JAX on the CPU, which will use multiple threads, each thread running on a separate CPU core on our computer.</p>
-<div id="c4cc0418" class="cell" data-execution_count="23">
+<div id="6be943d1" class="cell" data-execution_count="23">
 <div class="sourceCode cell-code" id="cb39"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb39-1"><a href="#cb39-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> time</span>
 <span id="cb39-2"><a href="#cb39-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
 <span id="cb39-3"><a href="#cb39-3" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> jax.numpy <span class="im">as</span> jnp</span>
@@ -829,7 +834,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <pre><code>cpu</code></pre>
 </div>
 </div>
-<div id="d6441965" class="cell" data-execution_count="24">
+<div id="05630540" class="cell" data-execution_count="24">
 <div class="sourceCode cell-code" id="cb41"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb41-1"><a href="#cb41-1" aria-hidden="true" tabindex="-1"></a>t0 <span class="op">=</span> time.time()</span>
 <span id="cb41-2"><a href="#cb41-2" aria-hidden="true" tabindex="-1"></a>z <span class="op">=</span> myfun_np(x)</span>
 <span id="cb41-3"><a href="#cb41-3" aria-hidden="true" tabindex="-1"></a>t1 <span class="op">=</span> time.time() <span class="op">-</span> t0</span>
@@ -840,19 +845,19 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb41-8"><a href="#cb41-8" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb41-9"><a href="#cb41-9" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"numpy time: </span><span class="sc">{</span><span class="bu">round</span>(t1,<span class="dv">3</span>)<span class="sc">}</span><span class="ch">\n</span><span class="ss">jax time: </span><span class="sc">{</span><span class="bu">round</span>(t2,<span class="dv">3</span>)<span class="sc">}</span><span class="ss">"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>numpy time: 4.474
-jax time: 1.397</code></pre>
+<pre><code>numpy time: 4.565
+jax time: 19.517</code></pre>
 </div>
 </div>
 <p>There’s a nice speedup compared to numpy.</p>
 <p>Since JAX will often execute computations asynchronously (in particular when using the GPU), the <code>block_until_ready</code> invocation ensures that the computation finishes before we stop timing.</p>
 <p>By default the JAX floating point type is 32-bit so we forced the use of 32-bit numbers for numpy for comparability. One could have JAX use 64-bit numbers like this:</p>
-<div id="64d84680" class="cell" data-execution_count="25">
+<div id="73c1f730" class="cell" data-execution_count="25">
 <div class="sourceCode cell-code" id="cb43"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb43-1"><a href="#cb43-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> jax</span>
 <span id="cb43-2"><a href="#cb43-2" aria-hidden="true" tabindex="-1"></a>jax.config.update(<span class="st">"jax_enable_x64"</span>, <span class="va">True</span>)  </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>Next let’s consider JIT compiling it, which should <a href="./parallel-julia#4-loops-and-fused-operations">fuse the vectorized operations</a> and avoid temporary objects. The JAX docs have a <a href="https://jax.readthedocs.io/en/latest/notebooks/thinking_in_jax.html#to-jit-or-not-to-jit">nice discussion</a> of when JIT compilation will be beneficial.</p>
-<div id="2dad36a1" class="cell" data-execution_count="26">
+<div id="d6911561" class="cell" data-execution_count="26">
 <div class="sourceCode cell-code" id="cb44"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb44-1"><a href="#cb44-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> jax</span>
 <span id="cb44-2"><a href="#cb44-2" aria-hidden="true" tabindex="-1"></a>myfun_jnp_jit <span class="op">=</span> jax.jit(myfun_jnp)</span>
 <span id="cb44-3"><a href="#cb44-3" aria-hidden="true" tabindex="-1"></a></span>
@@ -861,7 +866,7 @@ jax time: 1.397</code></pre>
 <span id="cb44-6"><a href="#cb44-6" aria-hidden="true" tabindex="-1"></a>t3 <span class="op">=</span> time.time() <span class="op">-</span> t0</span>
 <span id="cb44-7"><a href="#cb44-7" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"jitted jax time: </span><span class="sc">{</span><span class="bu">round</span>(t3,<span class="dv">3</span>)<span class="sc">}</span><span class="ss">"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>jitted jax time: 0.84</code></pre>
+<pre><code>jitted jax time: 0.893</code></pre>
 </div>
 </div>
 <p>So that gives another almost 2x speedup.</p>
@@ -869,7 +874,7 @@ jax time: 1.397</code></pre>
 <section id="linear-algebra-1" class="level3">
 <h3 class="anchored" data-anchor-id="linear-algebra-1">7.2 Linear algebra</h3>
 <p>Linear algebra in JAX will use multiple threads (<a href="./parallel-python#2-threading">as discussed for numpy</a>). Here we’ll compare 64-bit calculation, since matrix decompositions sometimes need more precision.</p>
-<div id="33c6d826" class="cell" data-execution_count="27">
+<div id="05450e02" class="cell" data-execution_count="27">
 <div class="sourceCode cell-code" id="cb46"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb46-1"><a href="#cb46-1" aria-hidden="true" tabindex="-1"></a>n <span class="op">=</span> <span class="dv">7000</span></span>
 <span id="cb46-2"><a href="#cb46-2" aria-hidden="true" tabindex="-1"></a>x <span class="op">=</span> np.random.normal(<span class="dv">0</span>, <span class="dv">1</span>, size<span class="op">=</span>(n, n))</span>
 <span id="cb46-3"><a href="#cb46-3" aria-hidden="true" tabindex="-1"></a></span>
@@ -883,11 +888,11 @@ jax time: 1.397</code></pre>
 <span id="cb46-11"><a href="#cb46-11" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="bu">round</span>(time.time() <span class="op">-</span> t0,<span class="dv">3</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>numpy time:
-3.473
-1.519</code></pre>
+4.701
+2.422</code></pre>
 </div>
 </div>
-<div id="614791f9" class="cell" data-execution_count="28">
+<div id="3698011d" class="cell" data-execution_count="28">
 <div class="sourceCode cell-code" id="cb48"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb48-1"><a href="#cb48-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> jax</span>
 <span id="cb48-2"><a href="#cb48-2" aria-hidden="true" tabindex="-1"></a>jax.config.update(<span class="st">"jax_enable_x64"</span>, <span class="va">True</span>)  </span>
 <span id="cb48-3"><a href="#cb48-3" aria-hidden="true" tabindex="-1"></a></span>
@@ -905,8 +910,8 @@ jax time: 1.397</code></pre>
 <div class="cell-output cell-output-stdout">
 <pre><code>JAX dtype is float64
 jax time:
-8.633
-2.217</code></pre>
+8.992
+3.479</code></pre>
 </div>
 </div>
 <p>So here the matrix multiplication is slower using JAX with 64-bit numbers but the Cholesky is a bit faster. If one uses 32-bit numbers, JAX is faster for both (not shown).</p>
@@ -918,7 +923,7 @@ jax time:
 <p>Note my general comments about using the GPU in the <a href="./#6-using-the-gpu-via-pytorch">PyTorch section</a>.</p>
 <p>Note that for this section, I’m pasting in the output when running the code separately on a machine with a GPU because this document is generated on a machine without a GPU.</p>
 <p>We’ll just repeat the experiments we ran earlier comparing numpy- and JAX-based calculations, but on a machine with an A100 GPU.</p>
-<div id="ee2216b2" class="cell" data-execution_count="29">
+<div id="df83cbed" class="cell" data-execution_count="29">
 <div class="sourceCode cell-code" id="cb50"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb50-1"><a href="#cb50-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> time</span>
 <span id="cb50-2"><a href="#cb50-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
 <span id="cb50-3"><a href="#cb50-3" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> jax.numpy <span class="im">as</span> jnp</span>
@@ -946,7 +951,7 @@ jax time:
 <span id="cb50-25"><a href="#cb50-25" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(time.time() <span class="op">-</span> t0)    <span class="co"># 0.0099 s.</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>So that gives a speedup of more than 100x.</p>
-<div id="79632903" class="cell" data-execution_count="30">
+<div id="6481d9f2" class="cell" data-execution_count="30">
 <div class="sourceCode cell-code" id="cb51"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb51-1"><a href="#cb51-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> jax</span>
 <span id="cb51-2"><a href="#cb51-2" aria-hidden="true" tabindex="-1"></a>myfun_jnp_jit <span class="op">=</span> jax.jit(myfun_jnp)</span>
 <span id="cb51-3"><a href="#cb51-3" aria-hidden="true" tabindex="-1"></a></span>
@@ -956,7 +961,7 @@ jax time:
 </div>
 <p>JIT compilation helps a bit (about 2x).</p>
 <p>Finally, here’s the linear algebra example on the GPU.</p>
-<div id="9232a7c7" class="cell" data-execution_count="31">
+<div id="56bbb46f" class="cell" data-execution_count="31">
 <div class="sourceCode cell-code" id="cb52"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb52-1"><a href="#cb52-1" aria-hidden="true" tabindex="-1"></a>n <span class="op">=</span> <span class="dv">7000</span></span>
 <span id="cb52-2"><a href="#cb52-2" aria-hidden="true" tabindex="-1"></a>x <span class="op">=</span> np.random.normal(<span class="dv">0</span>, <span class="dv">1</span>, size<span class="op">=</span>(n, n)).astype(np.float32) <span class="co"># for consistency</span></span>
 <span id="cb52-3"><a href="#cb52-3" aria-hidden="true" tabindex="-1"></a></span>
@@ -968,7 +973,7 @@ jax time:
 <span id="cb52-9"><a href="#cb52-9" aria-hidden="true" tabindex="-1"></a>U <span class="op">=</span> np.linalg.cholesky(mat)  <span class="co"># 3.3 s.</span></span>
 <span id="cb52-10"><a href="#cb52-10" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(time.time() <span class="op">-</span> t0)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<div id="4babbce4" class="cell" data-execution_count="32">
+<div id="5f2c7a00" class="cell" data-execution_count="32">
 <div class="sourceCode cell-code" id="cb53"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb53-1"><a href="#cb53-1" aria-hidden="true" tabindex="-1"></a>x_jax <span class="op">=</span> jnp.array(x)</span>
 <span id="cb53-2"><a href="#cb53-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb53-3"><a href="#cb53-3" aria-hidden="true" tabindex="-1"></a>t0 <span class="op">=</span> time.time()</span>
@@ -985,7 +990,7 @@ jax time:
 <h3 class="anchored" data-anchor-id="some-comments">7.4 Some comments</h3>
 <p>As discussed elsewhere in this tutorial, it takes time to transfer data to and from the GPU, so it’s best to generate values on the GPU and keep objects on the GPU when possible.</p>
 <p>Also, JAX objects are designed to be manipulated as objects, rather than manipulating individual values.</p>
-<div id="e183e647" class="cell" data-execution_count="33">
+<div id="9abe4508" class="cell" data-execution_count="33">
 <div class="sourceCode cell-code" id="cb54"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb54-1"><a href="#cb54-1" aria-hidden="true" tabindex="-1"></a>x_jax[<span class="dv">0</span>,<span class="dv">0</span>] <span class="op">=</span> <span class="fl">3.17</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <pre><code>Traceback (most recent call last):
@@ -999,7 +1004,7 @@ TypeError: '&lt;class 'jaxlib.xla_extension.ArrayImpl'&gt;' object does not supp
 <p>We can use JAX’s <code>vmap</code> to automatically vectorize a map operation. Unlike numpy’s <code>vectorize</code> or <code>apply_along_axis</code>, which are just handy syntax (“syntactic sugar”) and don’t actually speed anything up (because the looping is still done in Python), <code>vmap</code> actually vectorizes the loop. Behind the scenes it generates a vectorized version of the code that can run in parallel on CPU or GPU.</p>
 <p>In general, one would use this to automatically iterate over the dimension(s) of one or more arrays. This is convenient from a coding perspective (compared to explicitly writing a loop) and potentially speeds up the computation based on parallelization and by avoiding the overhead of looping at the Python level.</p>
 <p>Here we’ll standardize each column of an array using <code>vmap</code> rather than writing a loop over the columns.</p>
-<div id="30a03622" class="cell" data-execution_count="34">
+<div id="165669b2" class="cell" data-execution_count="34">
 <div class="sourceCode cell-code" id="cb56"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb56-1"><a href="#cb56-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> jax</span>
 <span id="cb56-2"><a href="#cb56-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> jax.numpy <span class="im">as</span> jnp</span>
 <span id="cb56-3"><a href="#cb56-3" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> time</span>
@@ -1030,12 +1035,12 @@ TypeError: '&lt;class 'jaxlib.xla_extension.ArrayImpl'&gt;' object does not supp
 <span id="cb56-28"><a href="#cb56-28" aria-hidden="true" tabindex="-1"></a>t2 <span class="op">=</span> time.time() <span class="op">-</span> t0</span>
 <span id="cb56-29"><a href="#cb56-29" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"numpy time: </span><span class="sc">{</span><span class="bu">round</span>(t1,<span class="dv">3</span>)<span class="sc">}</span><span class="ch">\n</span><span class="ss">jax vmap time: </span><span class="sc">{</span><span class="bu">round</span>(t2,<span class="dv">3</span>)<span class="sc">}</span><span class="ss">"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>numpy time: 3.345
-jax vmap time: 1.249</code></pre>
+<pre><code>numpy time: 3.373
+jax vmap time: 1.424</code></pre>
 </div>
 </div>
 <p>That gives a nice speedup. Let’s also try JIT’ing it. That gives a further speedup.</p>
-<div id="2535b72a" class="cell" data-execution_count="35">
+<div id="c5df51b1" class="cell" data-execution_count="35">
 <div class="sourceCode cell-code" id="cb58"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb58-1"><a href="#cb58-1" aria-hidden="true" tabindex="-1"></a>f_jax_vmap_jit <span class="op">=</span> jax.jit(f_jax_vmap)</span>
 <span id="cb58-2"><a href="#cb58-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb58-3"><a href="#cb58-3" aria-hidden="true" tabindex="-1"></a>t0 <span class="op">=</span> time.time()</span>
@@ -1043,12 +1048,12 @@ jax vmap time: 1.249</code></pre>
 <span id="cb58-5"><a href="#cb58-5" aria-hidden="true" tabindex="-1"></a>t3 <span class="op">=</span> time.time() <span class="op">-</span> t0</span>
 <span id="cb58-6"><a href="#cb58-6" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"jitted jax vmap time: </span><span class="sc">{</span><span class="bu">round</span>(t3,<span class="dv">3</span>)<span class="sc">}</span><span class="ss">"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>jitted jax vmap time: 0.327</code></pre>
+<pre><code>jitted jax vmap time: 0.359</code></pre>
 </div>
 </div>
 <p>It would make sense to explore the benefits of using a GPU here, though I haven’t done so.</p>
 <p><code>vmap</code> has a lot of flexibility to operate on various axes of its input arguments (and structure the output axes). Suppose we want to do the same standardization but using the columns of a different array as what to standardize based on.</p>
-<div id="618d72d0" class="cell" data-execution_count="36">
+<div id="b8d8e1c7" class="cell" data-execution_count="36">
 <div class="sourceCode cell-code" id="cb60"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb60-1"><a href="#cb60-1" aria-hidden="true" tabindex="-1"></a>y <span class="op">=</span> np.random.normal(size <span class="op">=</span> (nr,nc)).astype(np.float32)</span>
 <span id="cb60-2"><a href="#cb60-2" aria-hidden="true" tabindex="-1"></a>y_jax <span class="op">=</span> jnp.array(y) </span>
 <span id="cb60-3"><a href="#cb60-3" aria-hidden="true" tabindex="-1"></a></span>
@@ -1066,7 +1071,7 @@ jax vmap time: 1.249</code></pre>
 <h2 class="anchored" data-anchor-id="using-cupy">8 Using CuPy</h2>
 <p>CuPy is another package allowing one to execute numpy-type calculations on the GPU (Nvidia only). It has some similarity to JAX.</p>
 <p>Here’s a basic illustration, where we get a 175x speedup for generating a random matrix and matrix multiplication when using an A100 GPU.</p>
-<div id="908bf411" class="cell" data-execution_count="37">
+<div id="fdf543e3" class="cell" data-execution_count="37">
 <div class="sourceCode cell-code" id="cb61"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb61-1"><a href="#cb61-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> cupy</span>
 <span id="cb61-2"><a href="#cb61-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
 <span id="cb61-3"><a href="#cb61-3" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> time</span>
@@ -1097,11 +1102,10 @@ jax vmap time: 1.249</code></pre>
 
 
 </section>
-</section>
 
 </main> <!-- /main -->
 <script type="application/vnd.jupyter.widget-state+json">
-{"state":{"200fe5199f674d3abf5312987198fda8":{"model_module":"@jupyter-widgets/controls","model_module_version":"2.0.0","model_name":"HTMLModel","state":{"_dom_classes":[],"_model_module":"@jupyter-widgets/controls","_model_module_version":"2.0.0","_model_name":"HTMLModel","_view_count":null,"_view_module":"@jupyter-widgets/controls","_view_module_version":"2.0.0","_view_name":"HTMLView","description":"","description_allow_html":false,"layout":"IPY_MODEL_e7d00697b8b2411f839c87f9d7d6471c","placeholder":"​","style":"IPY_MODEL_b3b9e0268d1b47fdb856d3ec168a2123","tabbable":null,"tooltip":null,"value":"100%"}},"4666560399724d80addd9da8aa2666e4":{"model_module":"@jupyter-widgets/controls","model_module_version":"2.0.0","model_name":"HTMLModel","state":{"_dom_classes":[],"_model_module":"@jupyter-widgets/controls","_model_module_version":"2.0.0","_model_name":"HTMLModel","_view_count":null,"_view_module":"@jupyter-widgets/controls","_view_module_version":"2.0.0","_view_name":"HTMLView","description":"","description_allow_html":false,"layout":"IPY_MODEL_5cc35c95d9714f258a7026630374eef5","placeholder":"​","style":"IPY_MODEL_b3281b9a3f3b440e9c84539a42d1c425","tabbable":null,"tooltip":null,"value":" 4/4 [00:05&lt;00:00,  5.50s/engine]"}},"5cc35c95d9714f258a7026630374eef5":{"model_module":"@jupyter-widgets/base","model_module_version":"2.0.0","model_name":"LayoutModel","state":{"_model_module":"@jupyter-widgets/base","_model_module_version":"2.0.0","_model_name":"LayoutModel","_view_count":null,"_view_module":"@jupyter-widgets/base","_view_module_version":"2.0.0","_view_name":"LayoutView","align_content":null,"align_items":null,"align_self":null,"border_bottom":null,"border_left":null,"border_right":null,"border_top":null,"bottom":null,"display":null,"flex":null,"flex_flow":null,"grid_area":null,"grid_auto_columns":null,"grid_auto_flow":null,"grid_auto_rows":null,"grid_column":null,"grid_gap":null,"grid_row":null,"grid_template_areas":null,"grid_template_columns":null,"grid_template_rows":null,"height":null,"justify_content":null,"justify_items":null,"left":null,"margin":null,"max_height":null,"max_width":null,"min_height":null,"min_width":null,"object_fit":null,"object_position":null,"order":null,"overflow":null,"padding":null,"right":null,"top":null,"visibility":null,"width":null}},"84fd65f408604b8696066287c32e494d":{"model_module":"@jupyter-widgets/controls","model_module_version":"2.0.0","model_name":"FloatProgressModel","state":{"_dom_classes":[],"_model_module":"@jupyter-widgets/controls","_model_module_version":"2.0.0","_model_name":"FloatProgressModel","_view_count":null,"_view_module":"@jupyter-widgets/controls","_view_module_version":"2.0.0","_view_name":"ProgressView","bar_style":"success","description":"","description_allow_html":false,"layout":"IPY_MODEL_b4cc49856c954aaa969eb84997ca49c6","max":4,"min":0,"orientation":"horizontal","style":"IPY_MODEL_8e23ae095f3043efb02d068b4353d952","tabbable":null,"tooltip":null,"value":4}},"8e23ae095f3043efb02d068b4353d952":{"model_module":"@jupyter-widgets/controls","model_module_version":"2.0.0","model_name":"ProgressStyleModel","state":{"_model_module":"@jupyter-widgets/controls","_model_module_version":"2.0.0","_model_name":"ProgressStyleModel","_view_count":null,"_view_module":"@jupyter-widgets/base","_view_module_version":"2.0.0","_view_name":"StyleView","bar_color":null,"description_width":""}},"b3281b9a3f3b440e9c84539a42d1c425":{"model_module":"@jupyter-widgets/controls","model_module_version":"2.0.0","model_name":"HTMLStyleModel","state":{"_model_module":"@jupyter-widgets/controls","_model_module_version":"2.0.0","_model_name":"HTMLStyleModel","_view_count":null,"_view_module":"@jupyter-widgets/base","_view_module_version":"2.0.0","_view_name":"StyleView","background":null,"description_width":"","font_size":null,"text_color":null}},"b3b9e0268d1b47fdb856d3ec168a2123":{"model_module":"@jupyter-widgets/controls","model_module_version":"2.0.0","model_name":"HTMLStyleModel","state":{"_model_module":"@jupyter-widgets/controls","_model_module_version":"2.0.0","_model_name":"HTMLStyleModel","_view_count":null,"_view_module":"@jupyter-widgets/base","_view_module_version":"2.0.0","_view_name":"StyleView","background":null,"description_width":"","font_size":null,"text_color":null}},"b4cc49856c954aaa969eb84997ca49c6":{"model_module":"@jupyter-widgets/base","model_module_version":"2.0.0","model_name":"LayoutModel","state":{"_model_module":"@jupyter-widgets/base","_model_module_version":"2.0.0","_model_name":"LayoutModel","_view_count":null,"_view_module":"@jupyter-widgets/base","_view_module_version":"2.0.0","_view_name":"LayoutView","align_content":null,"align_items":null,"align_self":null,"border_bottom":null,"border_left":null,"border_right":null,"border_top":null,"bottom":null,"display":null,"flex":null,"flex_flow":null,"grid_area":null,"grid_auto_columns":null,"grid_auto_flow":null,"grid_auto_rows":null,"grid_column":null,"grid_gap":null,"grid_row":null,"grid_template_areas":null,"grid_template_columns":null,"grid_template_rows":null,"height":null,"justify_content":null,"justify_items":null,"left":null,"margin":null,"max_height":null,"max_width":null,"min_height":null,"min_width":null,"object_fit":null,"object_position":null,"order":null,"overflow":null,"padding":null,"right":null,"top":null,"visibility":null,"width":null}},"e6d6198b8ed1421798f7534ace15684c":{"model_module":"@jupyter-widgets/controls","model_module_version":"2.0.0","model_name":"HBoxModel","state":{"_dom_classes":[],"_model_module":"@jupyter-widgets/controls","_model_module_version":"2.0.0","_model_name":"HBoxModel","_view_count":null,"_view_module":"@jupyter-widgets/controls","_view_module_version":"2.0.0","_view_name":"HBoxView","box_style":"","children":["IPY_MODEL_200fe5199f674d3abf5312987198fda8","IPY_MODEL_84fd65f408604b8696066287c32e494d","IPY_MODEL_4666560399724d80addd9da8aa2666e4"],"layout":"IPY_MODEL_ec6ba23381cc4e768582e67d453f35d8","tabbable":null,"tooltip":null}},"e7d00697b8b2411f839c87f9d7d6471c":{"model_module":"@jupyter-widgets/base","model_module_version":"2.0.0","model_name":"LayoutModel","state":{"_model_module":"@jupyter-widgets/base","_model_module_version":"2.0.0","_model_name":"LayoutModel","_view_count":null,"_view_module":"@jupyter-widgets/base","_view_module_version":"2.0.0","_view_name":"LayoutView","align_content":null,"align_items":null,"align_self":null,"border_bottom":null,"border_left":null,"border_right":null,"border_top":null,"bottom":null,"display":null,"flex":null,"flex_flow":null,"grid_area":null,"grid_auto_columns":null,"grid_auto_flow":null,"grid_auto_rows":null,"grid_column":null,"grid_gap":null,"grid_row":null,"grid_template_areas":null,"grid_template_columns":null,"grid_template_rows":null,"height":null,"justify_content":null,"justify_items":null,"left":null,"margin":null,"max_height":null,"max_width":null,"min_height":null,"min_width":null,"object_fit":null,"object_position":null,"order":null,"overflow":null,"padding":null,"right":null,"top":null,"visibility":null,"width":null}},"ec6ba23381cc4e768582e67d453f35d8":{"model_module":"@jupyter-widgets/base","model_module_version":"2.0.0","model_name":"LayoutModel","state":{"_model_module":"@jupyter-widgets/base","_model_module_version":"2.0.0","_model_name":"LayoutModel","_view_count":null,"_view_module":"@jupyter-widgets/base","_view_module_version":"2.0.0","_view_name":"LayoutView","align_content":null,"align_items":null,"align_self":null,"border_bottom":null,"border_left":null,"border_right":null,"border_top":null,"bottom":null,"display":null,"flex":null,"flex_flow":null,"grid_area":null,"grid_auto_columns":null,"grid_auto_flow":null,"grid_auto_rows":null,"grid_column":null,"grid_gap":null,"grid_row":null,"grid_template_areas":null,"grid_template_columns":null,"grid_template_rows":null,"height":null,"justify_content":null,"justify_items":null,"left":null,"margin":null,"max_height":null,"max_width":null,"min_height":null,"min_width":null,"object_fit":null,"object_position":null,"order":null,"overflow":null,"padding":null,"right":null,"top":null,"visibility":null,"width":null}}},"version_major":2,"version_minor":0}
+{"state":{"00ffa72dbb5c4b9ab2af10127e790521":{"model_module":"@jupyter-widgets/controls","model_module_version":"2.0.0","model_name":"FloatProgressModel","state":{"_dom_classes":[],"_model_module":"@jupyter-widgets/controls","_model_module_version":"2.0.0","_model_name":"FloatProgressModel","_view_count":null,"_view_module":"@jupyter-widgets/controls","_view_module_version":"2.0.0","_view_name":"ProgressView","bar_style":"success","description":"","description_allow_html":false,"layout":"IPY_MODEL_3c29109d3c2c4cd6b2c389f038de8268","max":4,"min":0,"orientation":"horizontal","style":"IPY_MODEL_4abc6853a77f4866ad21d79a60f7c936","tabbable":null,"tooltip":null,"value":4}},"17c857d28179475c83fcd1c9ca364226":{"model_module":"@jupyter-widgets/controls","model_module_version":"2.0.0","model_name":"HTMLModel","state":{"_dom_classes":[],"_model_module":"@jupyter-widgets/controls","_model_module_version":"2.0.0","_model_name":"HTMLModel","_view_count":null,"_view_module":"@jupyter-widgets/controls","_view_module_version":"2.0.0","_view_name":"HTMLView","description":"","description_allow_html":false,"layout":"IPY_MODEL_64653536dfc8414fa02badc703e047a6","placeholder":"​","style":"IPY_MODEL_6ece7d0126d5459d990455b4350d1905","tabbable":null,"tooltip":null,"value":"100%"}},"3c29109d3c2c4cd6b2c389f038de8268":{"model_module":"@jupyter-widgets/base","model_module_version":"2.0.0","model_name":"LayoutModel","state":{"_model_module":"@jupyter-widgets/base","_model_module_version":"2.0.0","_model_name":"LayoutModel","_view_count":null,"_view_module":"@jupyter-widgets/base","_view_module_version":"2.0.0","_view_name":"LayoutView","align_content":null,"align_items":null,"align_self":null,"border_bottom":null,"border_left":null,"border_right":null,"border_top":null,"bottom":null,"display":null,"flex":null,"flex_flow":null,"grid_area":null,"grid_auto_columns":null,"grid_auto_flow":null,"grid_auto_rows":null,"grid_column":null,"grid_gap":null,"grid_row":null,"grid_template_areas":null,"grid_template_columns":null,"grid_template_rows":null,"height":null,"justify_content":null,"justify_items":null,"left":null,"margin":null,"max_height":null,"max_width":null,"min_height":null,"min_width":null,"object_fit":null,"object_position":null,"order":null,"overflow":null,"padding":null,"right":null,"top":null,"visibility":null,"width":null}},"49add23504bc4803a471acb13a6816e3":{"model_module":"@jupyter-widgets/controls","model_module_version":"2.0.0","model_name":"HTMLStyleModel","state":{"_model_module":"@jupyter-widgets/controls","_model_module_version":"2.0.0","_model_name":"HTMLStyleModel","_view_count":null,"_view_module":"@jupyter-widgets/base","_view_module_version":"2.0.0","_view_name":"StyleView","background":null,"description_width":"","font_size":null,"text_color":null}},"4abc6853a77f4866ad21d79a60f7c936":{"model_module":"@jupyter-widgets/controls","model_module_version":"2.0.0","model_name":"ProgressStyleModel","state":{"_model_module":"@jupyter-widgets/controls","_model_module_version":"2.0.0","_model_name":"ProgressStyleModel","_view_count":null,"_view_module":"@jupyter-widgets/base","_view_module_version":"2.0.0","_view_name":"StyleView","bar_color":null,"description_width":""}},"4c2842b4157b4553921a36daebe9ce99":{"model_module":"@jupyter-widgets/controls","model_module_version":"2.0.0","model_name":"HTMLModel","state":{"_dom_classes":[],"_model_module":"@jupyter-widgets/controls","_model_module_version":"2.0.0","_model_name":"HTMLModel","_view_count":null,"_view_module":"@jupyter-widgets/controls","_view_module_version":"2.0.0","_view_name":"HTMLView","description":"","description_allow_html":false,"layout":"IPY_MODEL_54cdf4b6015541ae84cc09933cfb2859","placeholder":"​","style":"IPY_MODEL_49add23504bc4803a471acb13a6816e3","tabbable":null,"tooltip":null,"value":" 4/4 [00:05&lt;00:00,  5.44s/engine]"}},"54cdf4b6015541ae84cc09933cfb2859":{"model_module":"@jupyter-widgets/base","model_module_version":"2.0.0","model_name":"LayoutModel","state":{"_model_module":"@jupyter-widgets/base","_model_module_version":"2.0.0","_model_name":"LayoutModel","_view_count":null,"_view_module":"@jupyter-widgets/base","_view_module_version":"2.0.0","_view_name":"LayoutView","align_content":null,"align_items":null,"align_self":null,"border_bottom":null,"border_left":null,"border_right":null,"border_top":null,"bottom":null,"display":null,"flex":null,"flex_flow":null,"grid_area":null,"grid_auto_columns":null,"grid_auto_flow":null,"grid_auto_rows":null,"grid_column":null,"grid_gap":null,"grid_row":null,"grid_template_areas":null,"grid_template_columns":null,"grid_template_rows":null,"height":null,"justify_content":null,"justify_items":null,"left":null,"margin":null,"max_height":null,"max_width":null,"min_height":null,"min_width":null,"object_fit":null,"object_position":null,"order":null,"overflow":null,"padding":null,"right":null,"top":null,"visibility":null,"width":null}},"64653536dfc8414fa02badc703e047a6":{"model_module":"@jupyter-widgets/base","model_module_version":"2.0.0","model_name":"LayoutModel","state":{"_model_module":"@jupyter-widgets/base","_model_module_version":"2.0.0","_model_name":"LayoutModel","_view_count":null,"_view_module":"@jupyter-widgets/base","_view_module_version":"2.0.0","_view_name":"LayoutView","align_content":null,"align_items":null,"align_self":null,"border_bottom":null,"border_left":null,"border_right":null,"border_top":null,"bottom":null,"display":null,"flex":null,"flex_flow":null,"grid_area":null,"grid_auto_columns":null,"grid_auto_flow":null,"grid_auto_rows":null,"grid_column":null,"grid_gap":null,"grid_row":null,"grid_template_areas":null,"grid_template_columns":null,"grid_template_rows":null,"height":null,"justify_content":null,"justify_items":null,"left":null,"margin":null,"max_height":null,"max_width":null,"min_height":null,"min_width":null,"object_fit":null,"object_position":null,"order":null,"overflow":null,"padding":null,"right":null,"top":null,"visibility":null,"width":null}},"6ece7d0126d5459d990455b4350d1905":{"model_module":"@jupyter-widgets/controls","model_module_version":"2.0.0","model_name":"HTMLStyleModel","state":{"_model_module":"@jupyter-widgets/controls","_model_module_version":"2.0.0","_model_name":"HTMLStyleModel","_view_count":null,"_view_module":"@jupyter-widgets/base","_view_module_version":"2.0.0","_view_name":"StyleView","background":null,"description_width":"","font_size":null,"text_color":null}},"b29ad7e641bf4f299d4de36b03dcdcd7":{"model_module":"@jupyter-widgets/base","model_module_version":"2.0.0","model_name":"LayoutModel","state":{"_model_module":"@jupyter-widgets/base","_model_module_version":"2.0.0","_model_name":"LayoutModel","_view_count":null,"_view_module":"@jupyter-widgets/base","_view_module_version":"2.0.0","_view_name":"LayoutView","align_content":null,"align_items":null,"align_self":null,"border_bottom":null,"border_left":null,"border_right":null,"border_top":null,"bottom":null,"display":null,"flex":null,"flex_flow":null,"grid_area":null,"grid_auto_columns":null,"grid_auto_flow":null,"grid_auto_rows":null,"grid_column":null,"grid_gap":null,"grid_row":null,"grid_template_areas":null,"grid_template_columns":null,"grid_template_rows":null,"height":null,"justify_content":null,"justify_items":null,"left":null,"margin":null,"max_height":null,"max_width":null,"min_height":null,"min_width":null,"object_fit":null,"object_position":null,"order":null,"overflow":null,"padding":null,"right":null,"top":null,"visibility":null,"width":null}},"b987552117044ecaa790fbcaa2598dc8":{"model_module":"@jupyter-widgets/controls","model_module_version":"2.0.0","model_name":"HBoxModel","state":{"_dom_classes":[],"_model_module":"@jupyter-widgets/controls","_model_module_version":"2.0.0","_model_name":"HBoxModel","_view_count":null,"_view_module":"@jupyter-widgets/controls","_view_module_version":"2.0.0","_view_name":"HBoxView","box_style":"","children":["IPY_MODEL_17c857d28179475c83fcd1c9ca364226","IPY_MODEL_00ffa72dbb5c4b9ab2af10127e790521","IPY_MODEL_4c2842b4157b4553921a36daebe9ce99"],"layout":"IPY_MODEL_b29ad7e641bf4f299d4de36b03dcdcd7","tabbable":null,"tooltip":null}}},"version_major":2,"version_minor":0}
 </script>
 <script id="quarto-html-after-body" type="application/javascript">
 window.document.addEventListener("DOMContentLoaded", function (event) {

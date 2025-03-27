@@ -72,7 +72,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <link href="site_libs/quarto-html/quarto-syntax-highlighting-549806ee2085284f45b00abea8c6df48.css" rel="stylesheet" id="quarto-text-highlighting-styles">
 <script src="site_libs/bootstrap/bootstrap.min.js"></script>
 <link href="site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="site_libs/bootstrap/bootstrap-cd173fadfbc59501cc53580d670575f8.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<link href="site_libs/bootstrap/bootstrap-649e5f0678146f359c225094671654aa.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
 <script id="quarto-search-options" type="application/json">{
   "location": "sidebar",
   "copy-button": false,
@@ -197,9 +197,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     <h2 id="toc-title">On this page</h2>
    
   <ul>
-  <li><a href="#parallel-processing-in-cc" id="toc-parallel-processing-in-cc" class="nav-link active" data-scroll-target="#parallel-processing-in-cc">Parallel processing in C/C++</a>
-  <ul class="collapse">
-  <li><a href="#overview" id="toc-overview" class="nav-link" data-scroll-target="#overview">1 Overview</a></li>
+  <li><a href="#overview" id="toc-overview" class="nav-link active" data-scroll-target="#overview">1 Overview</a></li>
   <li><a href="#using-openmp-threads-for-basic-shared-memory-programming-in-c" id="toc-using-openmp-threads-for-basic-shared-memory-programming-in-c" class="nav-link" data-scroll-target="#using-openmp-threads-for-basic-shared-memory-programming-in-c">2 Using <em>OpenMP</em> threads for basic shared memory programming in C</a>
   <ul class="collapse">
   <li><a href="#basics-of-openmp" id="toc-basics-of-openmp" class="nav-link" data-scroll-target="#basics-of-openmp">2.1 Basics of OpenMP</a></li>
@@ -211,7 +209,6 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   <li><a href="#mpi-overview" id="toc-mpi-overview" class="nav-link" data-scroll-target="#mpi-overview">3.1 MPI Overview</a></li>
   <li><a href="#basic-syntax-for-mpi-in-c" id="toc-basic-syntax-for-mpi-in-c" class="nav-link" data-scroll-target="#basic-syntax-for-mpi-in-c">3.2 Basic syntax for MPI in C</a></li>
   <li><a href="#starting-mpi-based-jobs" id="toc-starting-mpi-based-jobs" class="nav-link" data-scroll-target="#starting-mpi-based-jobs">3.3 Starting MPI-based jobs</a></li>
-  </ul></li>
   </ul></li>
   </ul>
 </nav>
@@ -238,8 +235,6 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </header>
 
 
-<section id="parallel-processing-in-cc" class="level1">
-<h1>Parallel processing in C/C++</h1>
 <section id="overview" class="level2">
 <h2 class="anchored" data-anchor-id="overview">1 Overview</h2>
 <p>Some long-standing tools for parallelizing C, C++, and Fortran code are <code>openMP</code> for writing threaded code to run in parallel on one machine and <code>MPI</code> for writing code that passages message to run in parallel across (usually) multiple nodes.</p>
@@ -491,7 +486,6 @@ QUAD_MPI:
 <p>There are additional details involved in carefully controlling how processes are allocated to nodes, but the default arguments for mpirun should do a reasonable job in many situations.</p>
 
 
-</section>
 </section>
 </section>
 </section>
