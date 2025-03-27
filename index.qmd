@@ -22,13 +22,11 @@ You should be able to replicate much of what is covered here provided you have t
 
 This tutorial assumes you have a working knowledge of the relevant language, but not necessarily knowledge of parallelization.
 
-Materials for this tutorial, including the Markdown files and associated code files that were used to create these documents are available on [GitHub](https://github.com/berkeley-scf/tutorial-parallelization) in the `gh-pages` branch.  You can download the files by doing a git clone from a terminal window on a UNIX-like machine, as follows:
+Materials for this tutorial, including the Markdown files and associated code files that were used to create these documents are available on [GitHub](https://github.com/berkeley-scf/tutorial-parallelization). You can download the files by doing a git clone from a terminal window on a UNIX-like machine, as follows:
 
 ```bash
 git clone https://github.com/berkeley-scf/tutorial-parallelization
 ```
-
-This tutorial by Christopher Paciorek of the UC Berkeley Statistical Computing Facility is licensed under a Creative Commons Attribution 3.0 Unported License.
 
 ## 2 Some useful terminology
 

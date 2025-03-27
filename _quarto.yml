@@ -3,10 +3,10 @@ project:
   render:
     - index.qmd
     - parallel-julia.qmd
-    - parallel-matlab.md
+    - parallel-matlab.qmd
     - parallel-R.qmd
     - parallel-python.qmd
-    - parallel-C.md
+    - parallel-C.qmd
     - license.qmd
 
 website:
@@ -30,9 +30,9 @@ website:
         text: Parallel R
       - href: parallel-julia.qmd
         text: Parallel Julia
-      - href: parallel-matlab.md
+      - href: parallel-matlab.qmd
         text: Parallel MATLAB
-      - href: parallel-C.md
+      - href: parallel-C.qmd
         text: Parallel C/C++
       - href: license.qmd
         text: License

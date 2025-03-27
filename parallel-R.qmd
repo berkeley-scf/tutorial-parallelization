@@ -14,7 +14,6 @@ execute:
   freeze: auto
 ---
 
-# Parallel processing in R
 
 ## 1 Overview
 
@@ -506,10 +505,4 @@ RNGkind("L'Ecuyer-CMRG")
 res <- mclapply(seq_len(Y), looFit, Y, X, mc.cores = 4, 
     mc.set.seed = TRUE) 
 ```
-
-## 6 The *partools* package
-
-*partools* is a package developed by Norm Matloff at UC-Davis. He has the perspective that Spark/Hadoop are not the right tools in many cases when doing statistics-related work and has developed some simple tools for parallelizing computation across multiple nodes, also referred to as *Snowdoop*. The tools make use of the key idea in Spark/Hadoop of a distributed file system and distributed data objects but avoid the complications of trying to ensure fault tolerance, which is critical only on very large clusters of machines.
-
-I won't go into details, but *partools* allows you to split up your data across multiple nodes and then read the data into R in parallel across R sessions running on those nodes, all controlled from a single master R session. You can then do operations on the subsets and gather results back to the master session as needed. One point that confused me in the *partools* vignette is that it shows how to split up a dataset that you can read into your R session, but it's not clear what one does if the dataset is too big to read into a single R session. 
 

@@ -14,8 +14,6 @@ execute:
   freeze: auto
 ---
 
-# Parallel processing in Python
-
 ## 1 Overview
 
 Python provides a variety of functionality for parallelization, including threaded operations (in particular for linear algebra), parallel looping and map statements, and parallelization across multiple machines. For the CPU, this material focuses on Python's ipyparallel package and JAX, with some discussion of Dask and Ray. For the GPU, the material focuses on PyTorch and JAX, with a bit of discussion of CuPy.
@@ -224,7 +222,9 @@ srun ipengine &
 
 At this point you should be able to connect to the running cluster using the syntax seen for single-node usage.
 
-> **Warning**: Be careful to set the sleep period long enough that the controller starts before trying to start the workers and the workers start before trying to connect to the workers from within Python.
+:::{.callout-warning}
+Be careful to set the sleep period long enough that the controller starts before trying to start the workers and the workers start before trying to connect to the workers from within Python.
+:::
 
 After doing your computations and quitting your main Python session, shut down the cluster of workers:
 ```bash

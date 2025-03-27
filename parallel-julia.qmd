@@ -381,7 +381,7 @@ end
 
 Here temporary arrays don't need to be allocated and there is only a single for loop.
 
-Combining loops is called 'fusing' and is an [important optimization that Julia can do](https://docs.julialang.org/en/v1/manual/performance-tips/#More-dots:-Fuse-vectorized-operations). (It's also a [key optimization done by XLA](https://www.tensorflow.org/xla), a compiler used with Tensorflow.)
+Combining loops is called 'fusing' and is an [important optimization that Julia can do](https://docs.julialang.org/en/v1/manual/performance-tips/#More-dots:-Fuse-vectorized-operations). (It's also a [key optimization done by XLA](https://www.tensorflow.org/xla), a compiler used with JAX and Tensorflow.)
 
 Of course you might ask why use vectorized code at all given that Julia will [JIT compile](https://en.wikipedia.org/wiki/Just-in-time_compilation) the for loop above and run it really quickly. That's true, but reading and writing vectorized code is easier than writing for loops.
 
