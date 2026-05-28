@@ -161,6 +161,24 @@ Here the low user time is because the time spent in the worker processes is not 
 
 Note that one can use `plan` without specifying the number of workers, in which case it will call `parallelly::availableCores()` and in general set the number of workers to a sensible value based on your system (and your scheduler allocation if your code is running on a cluster under a scheduler such as Slurm).
 
+### Using `futurize`
+
+Alternatively with the futurize package (new in 2026), on does not need to change the name of the function call. Instead pipe your original code into `futurize()`:
+
+```{r, futurize_lapply}
+#| eval: false
+source('rf.R')  # loads in data (X and Y) and looFit()
+
+library(futurize)
+## Set up four workers to run calculations in parallel
+plan(multisession, workers = 4)
+
+## Run the cross-validation in parallel, four tasks at a time on the four workers
+system.time(
+  out <- lapply(seq_along(Y), looFit, Y, X) |> futurize(seed = TRUE)
+)   
+```
+
 ### 3.2 Parallel for loops
 
 We can use the future package in combination with the `foreach` command to run a for loop in parallel.
@@ -222,6 +240,21 @@ out <- foreach(i = seq_along(Y), .combine = c) %dorng% {
 }
 out[1:3]
 ```
+
+Or with `futurize`, you can do this:
+
+```{r, foreach}
+source('rf.R')  # loads in data (X and Y) and looFit()
+
+plan(multisession, workers = 4)
+
+## Toy example of using foreach+future
+out <- foreach(i = seq_len(30)) %do% {
+    mean(1:i)
+} |> futurize()
+out[1:3]
+```
+
 
 Note that *foreach*
 also provides functionality for collecting and managing
