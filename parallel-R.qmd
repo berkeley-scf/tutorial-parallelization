@@ -243,7 +243,8 @@ out[1:3]
 
 Or with `futurize`, you can do this:
 
-```{r, foreach}
+```{r, foreach-futurize}
+library(futurize)
 source('rf.R')  # loads in data (X and Y) and looFit()
 
 plan(multisession, workers = 4)
@@ -307,7 +308,7 @@ Here we want to use two cores on one machine and two on another.
 
 ```{r, cluster2}
 library(future.apply)
-workers <- c(rep('arwen.berkeley.edu', 2), rep('radagast.berkeley.edu', 2))
+workers <- c(rep('gandalf.berkeley.edu', 2), rep('radagast.berkeley.edu', 2))
 plan(cluster, workers = workers)
 # Now use parallel_lapply, foreach, etc. as before
 ```
@@ -407,7 +408,7 @@ Then one can use `parLapply` and `foreach` with that cluster of workers.
 
 ```{r, foreach-multiple}
 library(parallel)
-machines = c(rep("gandalf.berkeley.edu", 2), rep("arwen.berkeley.edu", 2))
+machines = c(rep("gandalf.berkeley.edu", 2), rep("radagast.berkeley.edu", 2))
 
 cl = makeCluster(machines, type = "SOCK")
 
